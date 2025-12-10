@@ -1,0 +1,17 @@
+.home-page {
+  padding: 16px;
+}
+.home-space {
+  gap: 12px;
+}
+.home-title {
+  font-size: 22px;
+  font-weight: 700;
+}
+.home-subtitle {
+  color: #8c8c8c;
+}
+.home-card {
+  border-radius: 12px;
+}
+
