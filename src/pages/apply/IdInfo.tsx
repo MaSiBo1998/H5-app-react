@@ -10,49 +10,8 @@ import {
   CheckCircleFill
 } from 'antd-mobile-icons'
 import { idcardOcr, saveIdInfo } from '@/services/api/apply'
+import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
-
-// 图片压缩辅助函数
-const compressImage = async (blob: Blob): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const img = document.createElement('img')
-    img.src = URL.createObjectURL(blob)
-    img.onload = () => {
-      let w = img.width
-      let h = img.height
-      const max = 4096
-      // 如果需要则调整大小
-      if (w > max || h > max) {
-        if (w > h) {
-          h = Math.round(h * max / w)
-          w = max
-        } else {
-          w = Math.round(w * max / h)
-          h = max
-        }
-      }
-
-      const canvas = document.createElement('canvas')
-      canvas.width = w
-      canvas.height = h
-      const ctx = canvas.getContext('2d')
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, w, h)
-        // 压缩为 jpeg，质量 0.7（通常足够小于 0.5MB）
-        // 如果需要严格小于 0.5MB，我们可以循环，但 0.7 是一个很好的起点。
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.7)
-        resolve(dataUrl)
-      } else {
-        reject(new Error('Canvas context failed'))
-      }
-      URL.revokeObjectURL(img.src)
-    }
-    img.onerror = (e) => {
-      URL.revokeObjectURL(img.src)
-      reject(e)
-    }
-  })
-}
 
 // --- 相机组件 ---
 interface CameraViewProps {

@@ -6,6 +6,7 @@ import HeaderNav from '@/components/common/HeaderNav'
 import ApplySteps from '@/pages/apply/components/ApplySteps'
 import { CameraOutline, RedoOutline, CheckCircleFill } from 'antd-mobile-icons'
 import { saveFaceInfo } from '@/services/api/apply'
+import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
 
 export default function FaceCapture(): ReactElement {
@@ -107,13 +108,18 @@ export default function FaceCapture(): ReactElement {
         ctx.scale(-1, 1)
         
         ctx.drawImage(video, x, y, size, size, 0, 0, size, size)
-        // Match ID card quality 0.7
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.7)
-        setImgSrc(dataUrl)
+        
+        // 获取原始图片
+        const rawDataUrl = canvas.toDataURL('image/jpeg', 1.0)
+        
+        // 使用标准压缩 (Max 1024, Q 0.7)
+        const compressedDataUrl = await compressImage(rawDataUrl)
+        
+        setImgSrc(compressedDataUrl)
         stopCamera()
         
         // Direct submit
-        await submitFace(dataUrl)
+        await submitFace(compressedDataUrl)
       }
     }
   }
@@ -123,8 +129,11 @@ export default function FaceCapture(): ReactElement {
     setLoading(true)
     setIsError(false)
     try {
+      // 移除 base64 前缀
+      const cleanBase64 = base64Str.split(',')[1]
+
       const payload = {
-        moil: base64Str,
+        moil: cleanBase64,
         haslet: 1,
         coxswain: stepTime
       }
