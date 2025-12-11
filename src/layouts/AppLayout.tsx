@@ -4,19 +4,24 @@ import { AppOutline, UserOutline } from 'antd-mobile-icons'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 const tabs: { key: string; title: string; icon: ReactNode }[] = [
+  // 首页 Tab
   { key: '/', title: 'Inicio', icon: <AppOutline /> },
+  // 个人中心 Tab
   { key: '/profile', title: 'Perfil', icon: <UserOutline /> },
 ]
 
 export default function AppLayout(): ReactElement {
   const location = useLocation()
   const navigate = useNavigate()
+  // 当前激活的 Tab key
   const activeKey = location.pathname === '/' ? '/' : location.pathname
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {/* 页面内容区域 */}
       <div style={{ height: 'calc(100vh - 50px)', overflow: 'auto' }}>
         <Outlet />
       </div>
+      {/* 底部导航栏 */}
       <TabBar
         activeKey={activeKey}
         onChange={(key) => navigate(key)}

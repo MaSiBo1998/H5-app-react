@@ -3,6 +3,7 @@ import '@/pages/Home/Home.module.css'
 import { getHomeData } from '@/services/api/home'
 import StatusView from '@/components/status/StatusView'
 import type { StatusData } from '@/components/status/types'
+// 上下文对象
 const HomeContext = createContext<{ homeData: any, loading: boolean }>({ homeData: {}, loading: false })
 // 封装自定义 Hook（简化子组件调用）
 export function useHomeContext() {
@@ -10,8 +11,11 @@ export function useHomeContext() {
 }
 
 export default function Home(): ReactElement {
+  // 首页状态数据
   const [homeData, setHomeData] = useState<StatusData | null>(null)
+  // 加载状态
   const [loading, setLoading] = useState<boolean>(false)
+  // 初始化获取数据
   useEffect(() => {
     ; (async () => {
       setLoading(true)

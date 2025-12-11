@@ -12,18 +12,21 @@ export default function ContactsInfo(): ReactElement {
 
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  // 是否从个人中心进入
   const isProfileEntry = searchParams.get('entry') === 'profile'
 
   // 下一步跳转路径
   const [nextPath, setNextPath] = useState('')
   // 当前正在编辑的联系人索引
   const [currentContactIndex, setCurrentContactIndex] = useState<number>(0)
+  // 关系选择器显示状态
   const [relationVisible, setRelationVisible] = useState(false)
+  // 选项配置
   const [options, setOptions] = useState({
     // 联系人关系选项（变量名decile为历史遗留命名）
     relation: [] as Array<{ deicide: string, shoddy: string }>,
   })
-  // 表单
+  // 表单状态
   const [form, setForm] = useState({
     // 页面进入时间戳（变量名coxswain为历史遗留命名，实际存储进入页面的毫秒时间戳）
     coxswain: 0,
@@ -39,8 +42,10 @@ export default function ContactsInfo(): ReactElement {
       jacobin: ''
     }))
   })
+  // 加载状态
   const [loading, setLoading] = useState(false)
 
+  // 初始化
   useEffect(() => {
     setForm({...form,coxswain:new Date().getTime()})
     // 获取下一步直接跳转的路径
@@ -68,6 +73,8 @@ export default function ContactsInfo(): ReactElement {
 
     }
   }, [])
+
+  // 返回处理
   const handleBack = () => {
     if (isProfileEntry) {
       navigate('/my-info')
@@ -76,6 +83,7 @@ export default function ContactsInfo(): ReactElement {
     }
   }
 
+  // 提交表单
   const onSubmit = () => {
     // 校验逻辑
     for (let i = 0; i < form.deedy.length; i++) {

@@ -8,6 +8,7 @@ import { getStepConfigInfo } from '@/services/api/apply'
 import { getConfigInfo } from '@/services/api/home'
 
 export default function App(): ReactElement {
+  // 初始化设备信息
   useEffect(() => {
     // Initialize device info collection on app startup
     collectDeviceInfo().then(info => {
@@ -17,17 +18,20 @@ export default function App(): ReactElement {
     })
   }, [])
 
+  // 初始化配置信息
   useEffect(() => {
     const loginInfo = localStorage.getItem('loginInfo')
     if (!loginInfo) return
 
     ;(async () => {
+      // 获取认证步骤配置
       try {
         const cfg = await getStepConfigInfo({})
         localStorage.setItem('applyStepConfig', JSON.stringify(cfg))
       } catch {
         void 0
       }
+      // 获取通用配置
       try {
         const commonCfg = await getConfigInfo()
         localStorage.setItem('commonConfig', JSON.stringify(commonCfg))

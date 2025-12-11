@@ -27,6 +27,7 @@ export default function ApplySteps({ steps, current }: ApplyStepsProps): ReactEl
           const state = i < idx ? 'done' : (i === idx ? 'doing' : 'todo')
           const isLast = i === steps.length - 1
           
+          // 基础样式配置
           const base: React.CSSProperties = {
             width: 28,
             height: 28,
@@ -43,8 +44,9 @@ export default function ApplySteps({ steps, current }: ApplyStepsProps): ReactEl
           }
           
           let style: React.CSSProperties = { ...base }
-          // 根据状态设置样式
+          // 根据状态设置不同样式
           if (state === 'done') {
+            // 已完成样式：绿色主题
             style = { 
               ...style, 
               background: '#e0f2f1', 
@@ -52,6 +54,7 @@ export default function ApplySteps({ steps, current }: ApplyStepsProps): ReactEl
               border: '1px solid #00897b' 
             }
           } else if (state === 'doing') {
+            // 进行中样式：高亮显示，带阴影
             style = { 
               ...style, 
               background: '#00897b', 
@@ -61,6 +64,7 @@ export default function ApplySteps({ steps, current }: ApplyStepsProps): ReactEl
               border: 'none' 
             }
           } else {
+            // 未开始样式：灰色
             style = { 
               ...style, 
               background: '#f5f5f5', 
@@ -69,6 +73,7 @@ export default function ApplySteps({ steps, current }: ApplyStepsProps): ReactEl
             }
           }
 
+          // 连接线样式
           const lineStyle: React.CSSProperties = {
             flex: 1,
             height: 3,

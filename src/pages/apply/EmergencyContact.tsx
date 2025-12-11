@@ -16,36 +16,36 @@ import styles from './ApplyPublic.module.css'
 export default function EmergencyContact(): ReactElement {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  // 是否从个人中心进入
   const isProfileEntry = searchParams.get('entry') === 'profile'
 
+  // 加载状态
   const [loading, setLoading] = useState(false)
   
-  // Options from config
+  // 选项配置
   const [options, setOptions] = useState({
     relation: [] as Array<{ label: string; value: string }>,
   })
 
-  // Form State
-  // The user didn't specify the exact structure, but usually it's a list of contacts.
-  // "Emergency contact submission has the above parameters" implies similar to ContactsInfo.
-  // We'll use a list structure but maybe just 2 contacts as is common, or dynamic.
-  // ContactsInfo had 5 slots. I'll stick to a dynamic list or fixed slots.
-  // Let's assume standard 2-3 emergency contacts. I'll initialize 2.
+  // 表单状态
+  // 紧急联系人列表（默认为2个）
   const [contacts, setContacts] = useState([
     { name: '', phone: '', relation: '', relationValue: '' },
     { name: '', phone: '', relation: '', relationValue: '' }
   ])
 
-  // Visibles for relation pickers
+  // 关系选择器显示状态
   const [relationVisible, setRelationVisible] = useState(false)
+  // 当前操作的联系人索引
   const [currentContactIndex, setCurrentContactIndex] = useState(0)
 
+  // 初始化
   useEffect(() => {
-    // Load configs
+    // 加载配置
     try {
       const stepConfig: Array<any> = JSON.parse(localStorage.getItem('applyStepConfig') || '[]')
       if (stepConfig) {
-        // Relation config code 10
+        // 关系配置代码 10
         const extract = (code: number) => {
           const hit = stepConfig.find(item => item.calices === code)
           return (hit?.sawback || []).map((x: any) => ({ 
@@ -61,23 +61,15 @@ export default function EmergencyContact(): ReactElement {
       console.error(error)
     }
 
-    // Setup global callback for native contact selection
-    // Assuming native calls window.onContactSelected(name, phone)
+    // 设置原生回调（用于通讯录选择）
     
   }, [])
   
+  // 选择联系人处理
   const handleSelectContact = (index: number) => {
-    // Save index
-    // activeIndexRef.current = index 
-    // Since I don't have useRef imported in the snippet above, I will add it.
-    
-    // Call native bridge
-    // Placeholder logic:
+    // 调用原生方法选择联系人
     console.log('Open address book for index', index)
     try {
-        // Common bridge patterns:
-        // Android: window.Android.pickContact()
-        // iOS: window.webkit.messageHandlers.pickContact.postMessage({})
         if ((window as any).Android && (window as any).Android.pickContact) {
             (window as any).Android.pickContact(index) // Passing index to get it back?
         } else if ((window as any).webkit && (window as any).webkit.messageHandlers && (window as any).webkit.messageHandlers.pickContact) {
@@ -94,17 +86,15 @@ export default function EmergencyContact(): ReactElement {
     }
   }
 
-  // We need to expose a function for Native to call to update the contact
-  // Let's define it inside useEffect or outside.
+  // 注册原生回调
   useEffect(() => {
     (window as any).updateContactFromNative = (index: number, name: string, phone: string) => {
         setContacts(prev => {
             const next = [...prev]
             if (next[index]) {
-                // Formatting phone: remove non-digits, maybe slice
+                // 格式化手机号
                 let cleanPhone = phone.replace(/\D/g, '')
-                // If it starts with +57 or 57, remove it if we want just the number, 
-                // but the form usually expects 10 digits.
+                // 去除前缀
                 if (cleanPhone.startsWith('57') && cleanPhone.length > 10) {
                     cleanPhone = cleanPhone.slice(2)
                 }
@@ -118,8 +108,9 @@ export default function EmergencyContact(): ReactElement {
     }
   }, [])
 
+  // 提交表单
   const onSubmit = async () => {
-    // Validation
+    // 校验逻辑
     for (let i = 0; i < contacts.length; i++) {
         const c = contacts[i]
         if (!c.name || !c.phone || !c.relationValue) {
@@ -134,30 +125,20 @@ export default function EmergencyContact(): ReactElement {
 
     setLoading(true)
     try {
-      // Construct payload matching ContactsInfo pattern or API requirements
-      // The API saveContactInfo usually expects 'deedy' array.
-      // Based on ContactsInfo.tsx:
-      // deedy: [{ verdure: phone, decile: relation, jacobin: name, erasure: 1 }]
-      // verdure needs '57' prefix? ContactsInfo adds it.
-      
+      // 构建提交参数
       const payload = {
         deedy: contacts.map(c => ({
             verdure: `57${c.phone}`,
             decile: c.relationValue,
             jacobin: c.name,
-            erasure: 0 // 0 for address book, 1 for manual. We can toggle this or just send 1?
-            // The user requirement said "can go to address book". 
-            // If they type manually, erasure=1. If picked, erasure=0?
-            // Let's assume 1 is safe or maybe I should track how it was entered.
-            // I'll stick to 1 (manual) as default or check if picked.
-            // For now, I'll send 1 unless I strictly know.
+            erasure: 0 // 0:通讯录选择, 1:手动输入
         })),
         coxswain: new Date().getTime() // Start time
       }
 
       await saveContactInfo(payload)
       
-      markCompleted('contacts') // Or 'emergency'? 'contacts' seems to be the key in ApplySteps
+      markCompleted('contacts')
       if (isProfileEntry) {
         navigate('/my-info')
       } else {

@@ -9,6 +9,7 @@ import getNowAndNextStep from "@/pages/apply/progress"
 
 export default function EntryForm({ data }: { data: StatusData }): ReactElement {
   const navigate = useNavigate()
+  // 获取第一条额度数据
   const first: StatusItem | undefined = Array.isArray(data?.atony) ? data!.atony![0] : undefined
   const maxAmount = first?.shammash
   const minAmount = first?.bindwood
@@ -16,14 +17,21 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
 
   const min = typeof minAmount === 'number' ? minAmount : 0
   const max = typeof maxAmount === 'number' ? maxAmount : 0
+  // 是否有效
   const valid = max > min
+  // 默认金额
   const defaultAmount = useMemo(() => (valid ? max : 0), [max, valid])
+  // 金额状态
   const [amount, setAmount] = useState<number>(defaultAmount)
+  // 期限状态
   const [days, setDays] = useState<number>(180)
+  // 当前日期
   const today = useMemo(() => new Date(), [])
   const fmtDate = (d: Date) => new Intl.DateTimeFormat('es-CO', { year: 'numeric', month: 'short', day: '2-digit' }).format(d)
+  // 到期日期
   const dueDate = useMemo(() => new Date(today.getTime() + days * 24 * 60 * 60 * 1000), [today, days])
   const step = 5000
+  // 快捷金额选项
   const quickValues = useMemo(() => {
     if (!valid) return [] as number[]
     const ps = [0.25, 0.5, 0.75, 1]
@@ -35,8 +43,10 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
     { label: '120 días', value: 120 },
     { label: '180 días', value: 180 },
   ]
+  // 当前路径
   const [nowPath, setNowPath] = useState('')
 
+  // 初始化获取状态
   useEffect(() => {
     const fetchStatus = async () => {
       try {
@@ -54,6 +64,7 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
     fetchStatus()
   }, [])
 
+  // 跳转申请
   const goEntry = async () => {
     if (nowPath) {
       navigate(nowPath)
@@ -79,7 +90,7 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
 
   return (
     <div className={styles.container}>
-      {/* Header Card */}
+      {/* 头部卡片 */}
       <div className={styles['header-card']}>
         <div className={styles['header-bg-pattern']}></div>
         <div className={styles['header-content']}>
@@ -94,10 +105,10 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
         </div>
       </div>
 
-      {/* Main Interaction Card */}
+      {/* 主要交互卡片 */}
       <div className={styles['main-card']}>
 
-        {/* Amount Section */}
+        {/* 金额选择部分 */}
         <div className={styles['section-label']}>¿Cuánto dinero necesitas?</div>
 
         <div className={styles['amount-display-wrapper']}>
@@ -134,7 +145,7 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
           </div>
         )}
 
-        {/* Term Section */}
+        {/* 期限选择部分 */}
         <div className={styles['section-label']} style={{ marginTop: 32 }}>Plazo de pago</div>
         <div className={styles['term-selector']}>
           <div className={styles['term-options']}>
@@ -151,7 +162,7 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
           </div>
         </div>
 
-        {/* Summary Section */}
+        {/* 摘要部分 */}
         <div className={styles['summary-box']}>
           <div className={styles['summary-row']}>
             <div className={styles['summary-label']}>
@@ -169,7 +180,7 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
 
       </div>
 
-      {/* Fixed Footer */}
+      {/* 底部固定按钮 */}
       <div className={styles['footer-fixed']}>
         <button onClick={goEntry} className={styles['submit-btn']}>
           Solicitar ahora

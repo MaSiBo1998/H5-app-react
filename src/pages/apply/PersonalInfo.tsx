@@ -23,7 +23,7 @@ export default function PersonalInfo(): ReactElement {
   const [codeLoading, setCodeLoading] = useState(false)
   const [countdown, setCountdown] = useState(0)
 
-  // Options from config
+  // 配置选项
   const [options, setOptions] = useState({
     education: [] as Array<{ label: string; value: string }>,
     marital: [] as Array<{ label: string; value: string }>,
@@ -33,7 +33,7 @@ export default function PersonalInfo(): ReactElement {
     emailSuffixes: [] as Array<string>,
   })
 
-  // Form State
+  // 表单状态
   const [form, setForm] = useState({
     education: '',
     educationValue: '',
@@ -52,7 +52,7 @@ export default function PersonalInfo(): ReactElement {
     stepTime: 0
   })
 
-  // Visibles
+  // 显示控制
   const [visibles, setVisibles] = useState({
     education: false,
     marital: false,
@@ -66,10 +66,10 @@ export default function PersonalInfo(): ReactElement {
   const [addrOptions, setAddrOptions] = useState<any[]>([])
 
   useEffect(() => {
-    // Set start time
+    // 设置开始时间
     setForm(prev => ({ ...prev, stepTime: new Date().getTime() }))
 
-    // Load configs
+    // 加载配置
     try {
       const stepConfig: Array<any> = JSON.parse(localStorage.getItem('applyStepConfig') || '[]')
       const commonConfig: { peanut: Array<any> } = JSON.parse(localStorage.getItem('commonConfig') || '{}')
@@ -82,10 +82,10 @@ export default function PersonalInfo(): ReactElement {
           }))
         }
 
-        // Config 13 for email suffixes might be different structure, usually it's just strings or objects
+        // 配置 13 是邮箱后缀，结构可能不同
         const extractSuffixes = (code: number) => {
           const hit = commonConfig?.peanut.find((item: any) => item.ingress === code)
-          // Assuming sawback is array of objects with deicide as the suffix
+          // 假设 sawback 是对象数组，deicide 为后缀
           console.log(hit)
           return hit?.popgun.split(',')
         }
@@ -121,7 +121,7 @@ export default function PersonalInfo(): ReactElement {
     fetchAddress()
   }, [])
 
-  // Countdown timer
+  // 倒计时
   useEffect(() => {
     let timer: any
     if (countdown > 0) {
@@ -147,7 +147,7 @@ export default function PersonalInfo(): ReactElement {
       Toast.show('Por favor ingrese el correo electrónico')
       return
     }
-    // Basic email regex
+    // 基础邮箱正则
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(form.emailAccount)) {
       Toast.show('Por favor ingrese un correo electrónico válido')
@@ -160,14 +160,14 @@ export default function PersonalInfo(): ReactElement {
       Toast.show('Código enviado')
       setCountdown(60)
     } catch (e) {
-      // Error handled by request interceptor usually, or show toast
+      // 错误通常由请求拦截器处理，或显示 Toast
     } finally {
       setCodeLoading(false)
     }
   }
 
   const onSubmit = async () => {
-    // Basic validation
+    // 基础校验
     if (!form.educationValue || !form.postalCode || !form.emailAccount || !form.emailCode ||
       !form.maritalValue || !form.childrenValue || !form.residenceTypeValue ||
       !form.residenceAddress || !form.residenceAddressDetail || !form.loanUse) {
@@ -200,7 +200,7 @@ export default function PersonalInfo(): ReactElement {
         navigate(getNextPath())
       }
     } catch (e) {
-      // Error handling
+      // 错误处理
     } finally {
       setLoading(false)
     }
@@ -233,7 +233,7 @@ export default function PersonalInfo(): ReactElement {
         </div>
         <Space direction="vertical" block>
 
-          {/* Education */}
+          {/* 教育程度 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Nivel educativo</label>
             <div className={styles['input-wrapper']} onClick={() => setVisibles(v => ({ ...v, education: true }))}>
@@ -245,7 +245,7 @@ export default function PersonalInfo(): ReactElement {
             </div>
           </div>
 
-          {/* Marital Status */}
+          {/* 婚姻状况 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Estado civil</label>
             <div className={styles['input-wrapper']} onClick={() => setVisibles(v => ({ ...v, marital: true }))}>
@@ -257,7 +257,7 @@ export default function PersonalInfo(): ReactElement {
             </div>
           </div>
 
-          {/* Children */}
+          {/* 子女数量 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Número de hijos</label>
             <div className={styles['input-wrapper']} onClick={() => setVisibles(v => ({ ...v, children: true }))}>
@@ -269,7 +269,7 @@ export default function PersonalInfo(): ReactElement {
             </div>
           </div>
 
-          {/* Residence Type */}
+          {/* 居住类型 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Tipo de vivienda</label>
             <div className={styles['input-wrapper']} onClick={() => setVisibles(v => ({ ...v, residenceType: true }))}>
@@ -281,7 +281,7 @@ export default function PersonalInfo(): ReactElement {
             </div>
           </div>
 
-          {/* Residence Address */}
+          {/* 居住地址 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Dirección de residencia</label>
             <div className={styles['input-wrapper']} onClick={openAddr}>
@@ -293,7 +293,7 @@ export default function PersonalInfo(): ReactElement {
             </div>
           </div>
 
-          {/* Detailed Address */}
+          {/* 详细地址 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Detalle de la dirección</label>
             <div className={styles['input-wrapper']}>
@@ -312,7 +312,7 @@ export default function PersonalInfo(): ReactElement {
 
 
 
-          {/* Email */}
+          {/* 电子邮箱 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Correo electrónico</label>
             <div className={styles['input-wrapper']} style={{ position: 'relative', overflow: 'visible' }}>
@@ -337,7 +337,7 @@ export default function PersonalInfo(): ReactElement {
                 style={{ '--font-size': '16px', flex: 1 }}
               />
 
-              {/* Email Suffix Suggestions */}
+              {/* 邮箱后缀建议 */}
               {visibles.emailSuffix && (
                 <div style={{
                   position: 'absolute',
@@ -401,7 +401,7 @@ export default function PersonalInfo(): ReactElement {
               </Button>
             </div>
           </div>
-          {/* Loan Purpose */}
+          {/* 贷款用途 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Propósito del préstamo</label>
             <div className={styles['input-wrapper']} onClick={() => setVisibles(v => ({ ...v, loanUse: true }))}>
@@ -422,7 +422,7 @@ export default function PersonalInfo(): ReactElement {
         <Button color="primary" loading={loading} onClick={onSubmit} block className={styles['submit-btn']}>Continuar</Button>
       </div>
 
-      {/* Pickers */}
+      {/* 选择器 */}
       <Picker
         closeOnMaskClick={false}
         confirmText="Confirmar"
@@ -483,7 +483,7 @@ export default function PersonalInfo(): ReactElement {
         }}
       />
 
-      {/* Address Cascader */}
+      {/* 地址级联选择器 */}
       <Cascader
         confirmText="Confirmar"
         cancelText="Cancelar"

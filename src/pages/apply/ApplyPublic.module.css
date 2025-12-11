@@ -6,17 +6,17 @@
 }
 
 .form-card {
-  border-radius: 16px !important;
-  background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 24px rgba(0, 77, 64, 0.04) !important;
-  margin: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px rgba(0, 77, 64, 0.08) !important;
+  margin: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .section-header {
   margin-bottom: 24px;
-  padding: 0 12px;
+  padding: 0 16px;
 }
 
 .section-title {
@@ -122,49 +122,42 @@
   color: #b0bec5 !important;
 }
 
-@keyframes scan {
-  0% {
-    top: 0;
-    opacity: 0;
+.submit-btn:active {
+  transform: none !important;
+  opacity: 1 !important;
+}
+
+@keyframes breathe {
+  0% { 
+    box-shadow: 0 0 0 0 rgba(38, 166, 154, 0.4); 
+    transform: scale(1);
   }
-  20% {
-    opacity: 1;
+  50% { 
+    box-shadow: 0 0 0 12px rgba(38, 166, 154, 0); 
+    transform: scale(1.02);
   }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    top: 100%;
-    opacity: 0;
+  100% { 
+    box-shadow: 0 0 0 0 rgba(38, 166, 154, 0); 
+    transform: scale(1);
   }
 }
 
-.scan-line {
+.advanced-ring {
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(to right, transparent, #26a69a, transparent);
-  box-shadow: 0 0 15px rgba(38, 166, 154, 0.8);
-  animation: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  top: 0;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, #26a69a, #00897b) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: breathe 4s ease-in-out infinite;
+  opacity: 0.8;
 }
 
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(38, 166, 154, 0.4);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(38, 166, 154, 0);
-    transform: scale(1.1);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(38, 166, 154, 0);
-    transform: scale(1);
-  }
-}
-
-.shutter-anim {
-  animation: pulse 2s infinite;
+.advanced-overlay {
+  background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.8) 100%);
 }

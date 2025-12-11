@@ -16,6 +16,7 @@ import AppList from "@/components/status/AppList"
 
 type StatusProps = { data?: StatusData; status?: number }
 
+// 状态码对应的组件映射
 const COMPONENT_MAP: Record<number, (p: { data: StatusData }) => ReactElement> = {
   100: EntryForm,
   150: AuditCountdown,
@@ -31,6 +32,7 @@ const COMPONENT_MAP: Record<number, (p: { data: StatusData }) => ReactElement> =
   600: AppList,
 }
 
+// 状态码对应的描述文本（用于降级显示）
 const FALLBACK_LABEL: Record<number, string> = {
   100: "未授信-展示进件页面",
   150: "首贷-审核倒计时",
@@ -47,10 +49,13 @@ const FALLBACK_LABEL: Record<number, string> = {
 }
 
 export default function StatusView({ data, status }: StatusProps): ReactElement {
+  // 获取状态码
   const raw = status ?? (data?.kaki ?? data?.status)
   const s = typeof raw === "number" ? raw : undefined
+  // 根据状态码获取组件
   const Comp = s !== undefined ? COMPONENT_MAP[s] : undefined
   if (typeof Comp === 'function') return <Comp data={data as StatusData} />
+  // 降级显示
   const label = s !== undefined ? FALLBACK_LABEL[s] ?? `未知状态(${s})` : "无状态"
   return (
     <Card>

@@ -1,54 +1,54 @@
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
 
-// Initialize the agent at application startup.
+// 在应用启动时初始化代理
 const fpPromise = FingerprintJS.load()
 
 export interface DeviceInfo {
   amidol: {
-    daybreak: string // device_id
+    daybreak: string // 设备ID
     uuid: string
     drmid: string
     gaid: string
-    grating: string // deviceModel
-    indium: string // deviceBrand
-    rivage: string | null // longitude
-    required: string | null // latitude
+    grating: string // 设备型号
+    indium: string // 设备品牌
+    rivage: string | null // 经度
+    required: string | null // 纬度
     dangly: string | null // wifi ssid
     conger: string | null // wifi mac
-    doeth: string | null // local ip
-    trouser: string | null // public ip
-    suite: string | null // package name
-    aiie: string // appVersion
+    doeth: string | null // 局域网 ip
+    trouser: string | null // 公网 ip
+    suite: string | null // 包名
+    aiie: string // 应用版本
   }
   showily: {
-    sappy: number // screenWidth
-    osculum: number // screenHeight
-    reciter: string // deviceBrand
-    roomette: string // osVersion
-    tartar: string // deviceModel
-    eighty: number | null // cpu count
+    sappy: number // 屏幕宽度
+    osculum: number // 屏幕高度
+    reciter: string // 设备品牌
+    roomette: string // 系统版本
+    tartar: string // 设备型号
+    eighty: number | null // CPU 核心数
   }
   decree: {
-    charka: string | null // RAM
-    nineveh: string | null // max memory
-    korai: string | null // available memory
+    charka: string | null // 内存
+    nineveh: string | null // 最大内存
+    korai: string | null // 可用内存
   }
   sediment: {
-    suzhou: number // uptime (ms) excluding sleep
-    kasolite: number // uptime (ms) including sleep
-    prentice: string | null // network type
-    disport: boolean | null // is emulator
+    suzhou: number // 运行时间(ms) 不含休眠
+    kasolite: number // 运行时间(ms) 含休眠
+    prentice: string | null // 网络类型
+    disport: boolean | null // 是否模拟器
     jejunely: string | null // android id
-    endville: string // timezone
-    calking: string // country code
-    mild: string // language (e.g., en_US)
+    endville: string // 时区
+    calking: string // 国家代码
+    mild: string // 语言 (如: en_US)
   }
   azoturia: {
-    // Battery info
+    // 电池信息
   }
 }
 
-// Helper to get or generate UUID
+// 获取或生成 UUID 辅助函数
 export const getUUID = async (): Promise<string> => {
   let uuid = localStorage.getItem('uuid')
   if (!uuid) {
@@ -61,8 +61,8 @@ export const getUUID = async (): Promise<string> => {
   return uuid
 }
 
-// Helper to detect iPhone model (basic approximation based on screen size/pixel ratio)
-// Since exact model detection is limited in web, we return 'iPhone' or specific models if distinguishable
+// 检测 iPhone 型号辅助函数 (基于屏幕尺寸/像素比的粗略近似)
+// 由于 Web 端精确检测型号受限，我们返回 'iPhone' 或可区分的具体型号
 const detectIPhoneModel = (): string => {
   const { width, height } = window.screen
   if (width === 375 && height === 812) return 'iPhone X/XS/11 Pro'
@@ -72,7 +72,7 @@ const detectIPhoneModel = (): string => {
   return 'iPhone'
 }
 
-// Helper to get location
+// 获取位置信息辅助函数
 const getLocation = (): Promise<{ longitude: string | null; latitude: string | null }> => {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
@@ -94,7 +94,7 @@ const getLocation = (): Promise<{ longitude: string | null; latitude: string | n
   })
 }
 
-// Helper to get network type
+// 获取网络类型辅助函数
 const getNetworkType = (): string | null => {
   const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
   return conn ? conn.effectiveType : null
@@ -116,10 +116,10 @@ export const collectDeviceInfo = async (): Promise<DeviceInfo> => {
   let osVersion = 'Unknown'
 
   if (isAndroid) {
-    deviceBrand = 'Android' // Browser doesn't give exact brand reliably
+    deviceBrand = 'Android' // 浏览器无法可靠获取确切品牌
     const match = userAgent.match(/Android\s([0-9.]+)/)
     osVersion = match ? match[1] : 'Unknown'
-    // Try to extract model from UA (e.g., "Pixel 5")
+    // 尝试从 UA 中提取型号 (如: "Pixel 5")
     const modelMatch = userAgent.match(/\)\s+([\w\s]+)\s+Build/)
     deviceModel = modelMatch ? modelMatch[1] : 'Android Device'
   } else if (isIOS) {
@@ -145,12 +145,12 @@ export const collectDeviceInfo = async (): Promise<DeviceInfo> => {
       indium: deviceBrand,
       rivage: location.longitude,
       required: location.latitude,
-      dangly: null, // Web API limitation
-      conger: null, // Web API limitation
-      doeth: null, // Web API limitation
-      trouser: null, // Web API limitation
-      suite: null, // Web API limitation
-      aiie: '1.0.0', // Hardcoded or from env
+      dangly: null, // Web API 限制
+      conger: null, // Web API 限制
+      doeth: null, // Web API 限制
+      trouser: null, // Web API 限制
+      suite: null, // Web API 限制
+      aiie: '1.0.0', // 硬编码或从环境变量获取
     },
     showily: {
       sappy: screenWidth,
@@ -161,16 +161,16 @@ export const collectDeviceInfo = async (): Promise<DeviceInfo> => {
       eighty: navigator.hardwareConcurrency || null,
     },
     decree: {
-      charka: null, // Web API limitation
-      nineveh: null, // Web API limitation
-      korai: null, // Web API limitation
+      charka: null, // Web API 限制
+      nineveh: null, // Web API 限制
+      korai: null, // Web API 限制
     },
     sediment: {
       suzhou: uptime,
-      kasolite: uptime, // Cannot distinguish sleep time easily in web
+      kasolite: uptime, // Web 端难以区分休眠时间
       prentice: getNetworkType(),
-      disport: null, // Hard to detect emulator reliably in web
-      jejunely: null, // Web API limitation
+      disport: null, // Web 端难以可靠检测模拟器
+      jejunely: null, // Web API 限制
       endville: Intl.DateTimeFormat().resolvedOptions().timeZone,
       calking: language.split('-')[1] || language,
       mild: language,
@@ -178,11 +178,11 @@ export const collectDeviceInfo = async (): Promise<DeviceInfo> => {
     azoturia: {},
   }
 
-  // Save location to local storage if available
+  // 如果可用，保存位置到本地存储
   if (location.longitude && location.latitude) {
     localStorage.setItem('location', JSON.stringify(location))
   } else {
-      // Try to load from local storage if current fetch failed
+      // 如果本次获取失败，尝试从本地存储加载
       const savedLoc = localStorage.getItem('location')
       if (savedLoc) {
           const parsed = JSON.parse(savedLoc)
@@ -191,7 +191,7 @@ export const collectDeviceInfo = async (): Promise<DeviceInfo> => {
       }
   }
 
-  // Persist full device info
+  // 持久化完整设备信息
   localStorage.setItem('deviceInfo', JSON.stringify(info))
   
   return info

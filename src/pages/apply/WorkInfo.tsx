@@ -24,6 +24,7 @@ export default function WorkInfo(): ReactElement {
   const isProfileEntry = searchParams.get('entry') === 'profile'
   
   const [loading, setLoading] = useState(false)
+  // 选项配置
   const [options, setOptions] = useState({
     workType: [] as Array<{ label: string; value: string | number }>,
     salaryRange: [] as Array<{ label: string; value: string | number }>,
@@ -45,6 +46,8 @@ export default function WorkInfo(): ReactElement {
   const [addrVisible, setAddrVisible] = useState(false)
   const [addrOptions, setAddrOptions] = useState<any[]>([])
   const [payFreqModeMap, setPayFreqModeMap] = useState<Record<string | number, 'no' | 'weekly' | 'biweekly' | 'monthly'>>({})
+  
+  // 显示状态控制
   const [workTypeVisible, setWorkTypeVisible] = useState(false)
   const [salaryRangeVisible, setSalaryRangeVisible] = useState(false)
   const [workYearsVisible, setWorkYearsVisible] = useState(false)
@@ -57,6 +60,8 @@ export default function WorkInfo(): ReactElement {
   const [nextPath, setNextPath] = useState('')
   let startTime: number = 0
   const isWorker = form.workType == 1 || form.workType == 2
+  
+  // 初始化
   useEffect(() => {
     startTime = new Date().getTime()
     console.log('EntryForm', 'startTime', startTime)
@@ -126,6 +131,7 @@ export default function WorkInfo(): ReactElement {
     init()
   }, [])
 
+  // 提交表单
   const onSubmit = async () => {
     if (!form.workType || !form.salaryRange || (isWorker && (!form.workYears || !form.payFreq))) {
       Toast.show({ content: 'Por favor complete la información requerida' })
@@ -160,6 +166,7 @@ export default function WorkInfo(): ReactElement {
     setAddrVisible(true)
   }
 
+  // 计算当前发薪模式
   const curMode: 'no' | 'weekly' | 'biweekly' | 'monthly' | undefined = (() => {
     const key = form.payFreq as any
     const m = payFreqModeMap[key]

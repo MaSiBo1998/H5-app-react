@@ -2,6 +2,7 @@ import { Toast } from 'antd-mobile'
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
+// HTTP 错误类
 export class HttpError extends Error {
   status: number
   code?: string
@@ -14,6 +15,7 @@ export class HttpError extends Error {
   }
 }
 
+// 请求配置选项
 export interface RequestOptions {
   method?: HttpMethod
   headers?: Record<string, string>
@@ -24,6 +26,7 @@ export interface RequestOptions {
   isLoading?: boolean
 }
 
+// 将参数对象转换为查询字符串
 function toQuery(params?: RequestOptions['params']): string {
   if (!params) return ''
   const usp = new URLSearchParams()
@@ -35,33 +38,34 @@ function toQuery(params?: RequestOptions['params']): string {
   return s ? `?${s}` : ''
 }
 
+// 构建请求头
 function buildHeaders(opts: RequestOptions, body: unknown): HeadersInit {
   const headers: Record<string, string> = {
     Accept: 'application/json',
     'Content-Type': 'application/json;',
     ...opts.headers,
   }
-  // Default headers from user requirements
+  // 根据用户需求添加默认请求头
   const uuid = localStorage.getItem('uuid') || ''
   const loginInfoStr = localStorage.getItem('loginInfo')
   let loginInfo: any = {}
   try {
     loginInfo = loginInfoStr ? JSON.parse(loginInfoStr) : {}
   } catch {
-    // ignore parse error
+    // 忽略解析错误
   }
 
   const isAndroid = /Android/i.test(navigator.userAgent)
 
-  headers['custumal'] = import.meta.env.VITE_APP_VERSION // App Version
-  headers['etching'] = '2' // Business line
+  headers['custumal'] = import.meta.env.VITE_APP_VERSION // 应用版本
+  headers['etching'] = '2' // 业务线
   headers['wharf'] = import.meta.env.VITE_APP_NAME
   headers['reges'] = isAndroid ? '1' : '2'
   headers['comber'] = ''
   headers['rusty'] = uuid
   headers['urundi'] = ''
   headers['maraca'] = uuid
-  // Handle Content-Type for FormData
+  // 处理 FormData 的 Content-Type
   const withAuth = opts.withAuth ?? true
   if (withAuth) {
     headers['jukebox'] = loginInfo.ifni
@@ -73,13 +77,14 @@ function buildHeaders(opts: RequestOptions, body: unknown): HeadersInit {
   return headers
 }
 
+// 解析响应数据
 async function parseResponse(resp: Response): Promise<unknown> {
   const ct = resp.headers.get('content-type') || ''
   if (ct.includes('application/json')) {
     try {
       return await resp.json()
     } catch {
-      // fall through to text parsing below
+      // 如果 JSON 解析失败，则回退到文本解析
     }
   }
   const text = await resp.text()
@@ -90,6 +95,7 @@ async function parseResponse(resp: Response): Promise<unknown> {
   }
 }
 
+// 处理 Token 过期
 function handleTokenExpired(payload: Record<string, unknown>): never {
   Toast.show({ content: typeof payload.msg === 'string' ? payload.msg : 'Token expired' })
   try {
@@ -103,6 +109,7 @@ function handleTokenExpired(payload: Record<string, unknown>): never {
   throw new HttpError('Token expired', 401, 'R6566S', payload)
 }
 
+// 核心请求函数
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const base = import.meta.env.VITE_API_BASE_URL || ''
   const url = `${base}${path}${toQuery(options.params)}`

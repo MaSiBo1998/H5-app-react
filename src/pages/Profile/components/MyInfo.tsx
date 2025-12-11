@@ -14,16 +14,23 @@ import {
 import { getUserDetail } from '@/services/api/user';
 
 interface StepStatus {
+    // 工作信息是否完成
     workInfo: boolean;
+    // 联系人信息是否完成
     contactInfo: boolean;
+    // 个人信息是否完成
     personalInfo: boolean;
+    // 身份信息是否完成
     identityInfo: boolean;
+    // 人脸信息是否完成
     faceInfo: boolean;
+    // 银行信息是否完成
     bankInfo: boolean;
 }
 
 export default function MyInfo(): ReactElement {
     const navigate = useNavigate();
+    // 步骤完成状态
     const [status, setStatus] = useState<StepStatus>({
         workInfo: false,
         contactInfo: false,
@@ -33,6 +40,7 @@ export default function MyInfo(): ReactElement {
         bankInfo: false
     });
 
+    // 获取用户详情及步骤状态
     useEffect(() => {
         const fetchStatus = async () => {
             try {
@@ -44,6 +52,7 @@ export default function MyInfo(): ReactElement {
                 const res = await getUserDetail();
                 Toast.clear();
                 if (res) {
+                    // champak === 1 表示全部完成
                     if (res.champak === 1) {
                          setStatus({
                              workInfo: true,
@@ -54,9 +63,10 @@ export default function MyInfo(): ReactElement {
                              bankInfo: true
                          });
                     } else if (res.pentoxid) {
+                        // pentoxid 包含各步骤状态
                         const newStatus = { ...status };
                         res.pentoxid.forEach((item: any) => {
-                            // leonora: 1 means complete, 0 means incomplete
+                            // leonora: 1 表示完成, 0 表示未完成
                             if (item.creditPage in newStatus) {
                                 newStatus[item.creditPage as keyof StepStatus] = item.leonora === 1;
                             }
@@ -73,11 +83,13 @@ export default function MyInfo(): ReactElement {
         fetchStatus();
     }, []);
 
+    // 页面跳转处理
     const handleNavigate = (path: string, isComplete: boolean) => {
         if (isComplete) return;
         navigate(`${path}?entry=profile`);
     };
 
+    // 渲染列表项
     const renderItem = (
         title: string, 
         icon: ReactElement, 
@@ -135,14 +147,14 @@ export default function MyInfo(): ReactElement {
         </div>
     );
 
-    // Combined ID verification logic
+    // 组合 ID 验证逻辑
     const isIdComplete = status.identityInfo;
     const isFaceComplete = status.faceInfo;
     const isIdVerificationComplete = isIdComplete && isFaceComplete;
     
-    // Determine which path to go for ID verification
-    // If ID is incomplete -> go to ID
-    // If ID is complete but Face is incomplete -> go to Face
+    // 确定 ID 验证跳转路径
+    // 如果 ID 未完成 -> 去 ID
+    // 如果 ID 完成但 Face 未完成 -> 去 Face
     const idVerificationPath = !isIdComplete ? '/id' : '/face-capture';
 
     return (

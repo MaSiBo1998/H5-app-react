@@ -7,8 +7,10 @@ import HeaderNav from '@/components/common/HeaderNav'
 export default function BankInfo(): ReactElement {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  // 是否从个人中心进入
   const isProfileEntry = searchParams.get('entry') === 'profile'
 
+  // 返回处理
   const handleBack = () => {
     if (isProfileEntry) {
       navigate('/my-info')
@@ -17,6 +19,7 @@ export default function BankInfo(): ReactElement {
     }
   }
 
+  // 完成处理
   const handleComplete = () => {
     markCompleted('bank')
     if (isProfileEntry) {

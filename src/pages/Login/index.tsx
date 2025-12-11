@@ -6,33 +6,46 @@ import PhoneInput from './components/PhoneInput'
 import { useLoginForm } from './hooks/useLoginForm'
 
 export default function Login(): ReactElement {
+  // 登录表单逻辑 Hook
   const {
+    // 手机号（不含前缀）
     phoneRest,
     setPhoneRest,
+    // 验证码
     code,
     setCode,
+    // 邀请码
     invite,
     setInvite,
+    // 倒计时
     timeLeft,
+    // 协议同意状态
     accepted,
     setAccepted,
+    // 是否可发送验证码
     canSend,
+    // 是否可登录
     canLogin,
+    // 发送验证码处理
     handleSend,
+    // 登录处理
     handleLogin,
   } = useLoginForm()
 
   return (
     <div className={styles['login-page']}>
       <div className={styles['login-card']}>
+        {/* 头部标题 */}
         <div className={styles['login-header']}>
           <div className={styles['login-title']}>¡Bienvenido!</div>
           <div className={styles['login-subtitle']}>Ingresa tu número y código para continuar</div>
         </div>
 
         <Space direction="vertical" block style={{ gap: 0 }}>
+          {/* 手机号输入组件 */}
           <PhoneInput value={phoneRest} onChange={setPhoneRest} />
 
+          {/* 验证码输入 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Código de verificación</label>
             <div className={styles['verification-wrapper']}>
@@ -63,6 +76,7 @@ export default function Login(): ReactElement {
             </div>
           </div>
 
+          {/* 邀请码输入 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Código de invitación (Opcional)</label>
             <div className={styles['input-wrapper']}>
@@ -76,6 +90,7 @@ export default function Login(): ReactElement {
             </div>
           </div>
 
+          {/* 协议勾选 */}
           <div className={styles['agreement-wrapper']}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <Checkbox
@@ -91,6 +106,7 @@ export default function Login(): ReactElement {
             </div>
           </div>
 
+          {/* 登录按钮 */}
           <Button
             color="primary"
             disabled={!canLogin}
@@ -101,6 +117,7 @@ export default function Login(): ReactElement {
             Ingresar
           </Button>
 
+          {/* 底部链接 */}
           <div className={styles['footer-links']}>
             <a href="#" className={styles['footer-link']}>¿Olvidaste tu contraseña?</a>
             <a href="#" className={styles['footer-link']}>

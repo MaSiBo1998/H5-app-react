@@ -13,6 +13,7 @@ import {
 } from 'antd-mobile-icons'
 import '@/pages/profile/profile.modules.css'
 
+// 手机号脱敏处理
 function maskPhone(raw: string | null): string {
   if (!raw) return 'Invitado'
   return raw
@@ -20,6 +21,7 @@ function maskPhone(raw: string | null): string {
 
 export default function Profile(): ReactElement {
   const navigate = useNavigate()
+  // 获取上次登录的手机号
   const lastPhone = ((): string | null => {
     const userPhone = localStorage.getItem('userPhone')
     if (userPhone) return userPhone
@@ -41,9 +43,13 @@ export default function Profile(): ReactElement {
     const lp = localStorage.getItem('lastPhone')
     return lp
   })()
+  // 缓存脱敏后的手机号
   const masked = useMemo(() => maskPhone(lastPhone), [lastPhone])
 
+  // 跳转登录
   const goLogin = () => navigate('/login')
+  
+  // 菜单点击处理
   const todo = (label: string) =>{
     switch (label) {
       case 'Mi perfil':
@@ -55,6 +61,7 @@ export default function Profile(): ReactElement {
     }
   }
 
+  // 菜单配置
   const menuItems = [
     { label: 'Mi perfil', icon: <UserOutline />, action: () => todo('Mi perfil') },
     { label: 'Cupones', icon: <AppOutline />, action: () => todo('Cupones') },

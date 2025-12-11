@@ -12,7 +12,7 @@ import {
 import { idcardOcr, saveIdInfo } from '@/services/api/apply'
 import styles from './ApplyPublic.module.css'
 
-// Helper for image compression
+// 图片压缩辅助函数
 const compressImage = async (blob: Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
     const img = document.createElement('img')
@@ -21,7 +21,7 @@ const compressImage = async (blob: Blob): Promise<string> => {
       let w = img.width
       let h = img.height
       const max = 4096
-      // Resize if needed
+      // 如果需要则调整大小
       if (w > max || h > max) {
         if (w > h) {
           h = Math.round(h * max / w)
@@ -38,8 +38,8 @@ const compressImage = async (blob: Blob): Promise<string> => {
       const ctx = canvas.getContext('2d')
       if (ctx) {
         ctx.drawImage(img, 0, 0, w, h)
-        // Compress to jpeg with quality 0.7 (should be enough for < 0.5MB usually)
-        // If strict < 0.5MB is needed, we could loop, but 0.7 is a good start.
+        // 压缩为 jpeg，质量 0.7（通常足够小于 0.5MB）
+        // 如果需要严格小于 0.5MB，我们可以循环，但 0.7 是一个很好的起点。
         const dataUrl = canvas.toDataURL('image/jpeg', 0.7)
         resolve(dataUrl)
       } else {
@@ -54,7 +54,7 @@ const compressImage = async (blob: Blob): Promise<string> => {
   })
 }
 
-// --- Camera Component ---
+// --- 相机组件 ---
 interface CameraViewProps {
   onCapture: (blob: Blob) => void
   onClose: () => void
@@ -74,21 +74,21 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
       if (landscape) {
         setRotation(0)
       } else {
-        // Default to -90 (Landscape Left) if no sensor data overrides it later
+        // 如果稍后没有传感器数据覆盖，默认为 -90（横向左侧）
         setRotation(prev => prev === 0 ? -90 : prev)
       }
     }
 
     const handleOrientation = (e: DeviceOrientationEvent) => {
-      // Only apply sensor logic if we are in Portrait Viewport
+      // 仅在纵向视口中应用传感器逻辑
       if (window.innerWidth < window.innerHeight) {
         const { gamma } = e
         if (gamma != null) {
-          // gamma range: -90 (tilted left) to 90 (tilted right)
+          // gamma 范围：-90（向左倾斜）到 90（向右倾斜）
           if (gamma > 30) {
-            setRotation(-90) // Tilted Right (CW) -> Text top points Left (Physical Up)
+            setRotation(-90) // 向右倾斜 (顺时针) -> 文字顶部指向左侧 (物理上方)
           } else if (gamma < -30) {
-            setRotation(90) // Tilted Left (CCW) -> Text top points Right (Physical Up)
+            setRotation(90) // 向左倾斜 (逆时针) -> 文字顶部指向右侧 (物理上方)
           }
         }
       }
@@ -97,7 +97,7 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
     window.addEventListener('resize', handleResize)
     window.addEventListener('deviceorientation', handleOrientation)
 
-    // Initial check
+    // 初始检查
     handleResize()
 
     return () => {
@@ -112,7 +112,7 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
       try {
         const s = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: 'environment', // Use back camera
+            facingMode: 'environment', // 使用后置摄像头
             width: { ideal: 1920 },
             height: { ideal: 1080 }
           },
@@ -156,8 +156,8 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
   }
 
   const isNativeLandscape = isLayoutLandscape
-  // In portrait, if rotation is -90 (Tilted Right, CW), button bar should be at Top (Physical Right)
-  // If rotation is 90 (Tilted Left, CCW), button bar should be at Bottom (Physical Right) -> default 'column'
+  // 在纵向模式下，如果旋转为 -90（向右倾斜，顺时针），按钮栏应位于顶部（物理右侧）
+  // 如果旋转为 90（向左倾斜，逆时针），按钮栏应位于底部（物理右侧）-> 默认 'column'
   const isBarAtTop = !isNativeLandscape && rotation === -90
 
   return (
@@ -189,7 +189,7 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
           width: isNativeLandscape ? '60vh' : '60vw',
           height: isNativeLandscape ? 'calc(60vh / 1.585)' : 'calc(60vw * 1.585)',
           borderRadius: '12px',
-          boxShadow: '0 0 0 9999px #FFFF', // Solid black mask
+          boxShadow: '0 0 0 9999px #FFFF', // 纯黑遮罩
           zIndex: 10,
           transition: 'all 0.3s ease'
         }}>
@@ -198,24 +198,24 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
             position: 'absolute', inset: 0,
             border: '2px dashed rgba(38, 166, 154, 0.5)',
             borderRadius: '12px',
-            overflow: 'hidden' // Clip the scan line inside the border
+            overflow: 'hidden' // 将扫描线裁剪在边框内
           }}>
             {/* Scan Line */}
             <div className={styles['scan-line']}></div>
           </div>
 
-          {/* Tech Corners - Outside the dashed border */}
+          {/* 科技角标 - 虚线边框外 */}
           <div style={{ position: 'absolute', top: -2, left: -2, width: 24, height: 24, borderTop: '4px solid #26a69a', borderLeft: '4px solid #26a69a', borderTopLeftRadius: 4 }}></div>
           <div style={{ position: 'absolute', top: -2, right: -2, width: 24, height: 24, borderTop: '4px solid #26a69a', borderRight: '4px solid #26a69a', borderTopRightRadius: 4 }}></div>
           <div style={{ position: 'absolute', bottom: -2, left: -2, width: 24, height: 24, borderBottom: '4px solid #26a69a', borderLeft: '4px solid #26a69a', borderBottomLeftRadius: 4 }}></div>
           <div style={{ position: 'absolute', bottom: -2, right: -2, width: 24, height: 24, borderBottom: '4px solid #26a69a', borderRight: '4px solid #26a69a', borderBottomRightRadius: 4 }}></div>
 
-          {/* Crosshair */}
+          {/* 十字准星 */}
           <div style={{ position: 'absolute', top: '50%', left: '50%', width: 20, height: 2, background: 'rgba(38, 166, 154, 0.3)', transform: 'translate(-50%, -50%)' }}></div>
           <div style={{ position: 'absolute', top: '50%', left: '50%', width: 2, height: 20, background: 'rgba(38, 166, 154, 0.3)', transform: 'translate(-50%, -50%)' }}></div>
         </div>
 
-        {/* Rotated HUD Instructions - Top */}
+        {/* 旋转的 HUD 指示 - 顶部 */}
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -243,7 +243,7 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
           </div>
         </div>
 
-        {/* Rotated HUD Instructions - Bottom */}
+        {/* 旋转的 HUD 指示 - 底部 */}
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -272,9 +272,9 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
 
       </div>
 
-      {/* Controls Bar */}
+      {/* 控制栏 */}
       <div style={{
-        // Dynamic size based on layout
+        // 基于布局的动态尺寸
         width: isNativeLandscape ? '96px' : '100vw',
         height: isNativeLandscape ? '100vh' : '130px',
         background: '#fff',
@@ -286,7 +286,7 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-        {/* Slot 1: Cancel Button (Top/Left/Right depending on rotation) */}
+        {/* 插槽 1：取消按钮（根据旋转情况位于上/左/右） */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <div onClick={onClose} style={{ 
               color: '#333', 
@@ -301,7 +301,7 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
           </div>
         </div>
         
-        {/* Slot 2: Shutter Button (Center) */}
+        {/* 插槽 2：快门按钮（居中） */}
         <div
           className={styles['shutter-anim']}
           onClick={handleCapture}
@@ -333,7 +333,7 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
           </div>
         </div>
         
-        {/* Slot 3: Spacer to balance the layout and ensure Shutter is centered */}
+        {/* 插槽 3：用于平衡布局并确保快门居中的占位符 */}
         <div style={{ flex: 1 }}></div>
       </div>
     </div>
@@ -345,32 +345,32 @@ export default function IdInfo(): ReactElement {
   const [searchParams] = useSearchParams()
   const isProfileEntry = searchParams.get('entry') === 'profile'
 
-  // Form State
+  // 表单状态
   const [form, setForm] = useState({
     name: '',
-    surname: '', // Father name
+    surname: '', // 父姓
     idNumber: '',
-    gender: '', // value
+    gender: '', // 值
     genderLabel: '',
-    birthday: '', // display
+    birthday: '', // 显示
     birthdayValue: null as Date | null,
     stepTime: 0
   })
 
-  // Images
-  const [frontImg, setFrontImg] = useState('') // URL for display
+  // 图片
+  const [frontImg, setFrontImg] = useState('') // 用于显示的 URL
   const [backImg, setBackImg] = useState('')
   const [frontBase64, setFrontBase64] = useState('')
   const [backBase64, setBackBase64] = useState('')
 
-  // Control
+  // 控制
   const [showCamera, setShowCamera] = useState(false)
   const [cameraType, setCameraType] = useState<'front' | 'back'>('front')
   const [loading, setLoading] = useState(false)
   const [ocrFailCount, setOcrFailCount] = useState(0)
   const [showForm, setShowForm] = useState(false)
 
-  // Visibles
+  // 可见性
   const [visibleGender, setVisibleGender] = useState(false)
   const [visibleDate, setVisibleDate] = useState(false)
 
@@ -398,12 +398,12 @@ export default function IdInfo(): ReactElement {
         liminal: fBase64,
         kenyon: bBase64,
         coxswain: form.stepTime,
-        trysail: 1 // Default apply flow
+        trysail: 1 // 默认申请流程
       }
 
       const res: any = await idcardOcr(payload)
 
-      // Success
+      // 成功
       setShowForm(true)
       if (res?.towy) setFrontImg(res.towy)
       if (res?.curpBack) setBackImg(res.curpBack)
@@ -418,7 +418,7 @@ export default function IdInfo(): ReactElement {
       }
       if (res.hemiopia) {
         updates.birthday = res.hemiopia
-        // Parse DD/MM/YYYY
+        // 解析 DD/MM/YYYY
         const parts = res.hemiopia.split('/')
         if (parts.length === 3) {
           updates.birthdayValue = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]))
@@ -452,18 +452,13 @@ export default function IdInfo(): ReactElement {
 
     try {
       const fullBase64 = await compressImage(blob)
-      // Split to get raw content
+      // 分割以获取原始内容
       const rawContent = fullBase64.split(',')[1] || fullBase64
-
-      // Display still needs the prefix if it's base64, 
-      // OR we can use URL.createObjectURL(blob) for display to save memory?
-      // But the previous code used base64 for display. 
-      // Let's stick to using fullBase64 for display, but rawContent for state/api.
 
       if (cameraType === 'front') {
         setFrontImg(fullBase64)
         setFrontBase64(rawContent)
-        // Check if we can OCR
+        // 检查是否可以进行 OCR
         if (backBase64) {
           performOcr(rawContent, backBase64)
         } else {
@@ -472,7 +467,7 @@ export default function IdInfo(): ReactElement {
       } else {
         setBackImg(fullBase64)
         setBackBase64(rawContent)
-        // Check if we can OCR
+        // 检查是否可以进行 OCR
         if (frontBase64) {
           performOcr(frontBase64, rawContent)
         } else {
@@ -516,8 +511,8 @@ export default function IdInfo(): ReactElement {
         cavalier: form.idNumber,
         hurter: form.gender,
         hemiopia: form.birthday,
-        opiatic: 1, // Camera
-        kyushu: 1, // Camera
+        opiatic: 1, // 相机
+        kyushu: 1, // 相机
         coxswain: form.stepTime
       }
       await saveIdInfo(payload)
@@ -567,14 +562,14 @@ export default function IdInfo(): ReactElement {
           <div className={styles['section-subtitle']}>Sube fotos de tu identificación</div>
         </div>
 
-        {/* Upload Area */}
+        {/* 上传区域 */}
         <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
-          {/* Front */}
+          {/* 正面 */}
           <div
             onClick={() => openCamera('front')}
             style={{
               flex: 1,
-              aspectRatio: '1.585 / 1', // ID-1 ratio
+              aspectRatio: '1.585 / 1', // ID-1 比例
               background: '#f8f9fa',
               borderRadius: 12,
               display: 'flex',
@@ -628,7 +623,7 @@ export default function IdInfo(): ReactElement {
             )}
           </div>
 
-          {/* Back */}
+          {/* 背面 */}
           <div
             onClick={() => openCamera('back')}
             style={{
@@ -690,7 +685,7 @@ export default function IdInfo(): ReactElement {
 
         {showForm && (
           <Space direction="vertical" block>
-            {/* Name */}
+            {/* 名字 */}
             <div className={styles['form-group']}>
               <label className={styles['form-label']}>Nombre</label>
               <div className={styles['input-wrapper']}>
@@ -702,7 +697,7 @@ export default function IdInfo(): ReactElement {
               </div>
             </div>
 
-            {/* Surname */}
+            {/* 姓氏 */}
             <div className={styles['form-group']}>
               <label className={styles['form-label']}>Apellido</label>
               <div className={styles['input-wrapper']}>
@@ -714,7 +709,7 @@ export default function IdInfo(): ReactElement {
               </div>
             </div>
 
-            {/* ID Number */}
+            {/* 身份证号 */}
             <div className={styles['form-group']}>
               <label className={styles['form-label']}>Número de identificación</label>
               <div className={styles['input-wrapper']}>
@@ -726,7 +721,7 @@ export default function IdInfo(): ReactElement {
               </div>
             </div>
 
-            {/* Gender */}
+            {/* 性别 */}
             <div className={styles['form-group']}>
               <label className={styles['form-label']}>Género</label>
               <div
@@ -742,7 +737,7 @@ export default function IdInfo(): ReactElement {
               </div>
             </div>
 
-            {/* Birthday */}
+            {/* 生日 */}
             <div className={styles['form-group']}>
               <label className={styles['form-label']}>Fecha de nacimiento</label>
               <div

@@ -2,6 +2,7 @@ import { request } from '@/services/http'
 import { encryptByRSA, rsaPublicKey } from '@/utils/encryption.ts'
 import type { DeviceInfo } from '@/utils/device'
 
+// 发送验证码参数
 export interface SendCodeParams {
   mobile: string
   loginType: number
@@ -9,11 +10,13 @@ export interface SendCodeParams {
   bayadere?: string
 }
 
+// 登录参数
 export interface LoginParams {
   mobile: string
   code: string
 }
 
+// 发送验证码
 export const toSendCode = (data: SendCodeParams) => {
   return request<{ success: boolean; ttl?: number; message?: string }>(
     '/reeb/salween/seizer',
@@ -31,6 +34,7 @@ export const toSendCode = (data: SendCodeParams) => {
   )
 }
 
+// 登录
 export const toLogin = (data: LoginParams) => {
   return request<{ success: boolean; token?: string; message?: string }>(
     '/api/login',
@@ -46,6 +50,7 @@ export const toLogin = (data: LoginParams) => {
   )
 }
 
+// 获取 Cookie
 function getCookie(name: string): string | null {
   const match = document.cookie.match(
     new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\/+^])/g, '\\$1') + '=([^;]*)'),
@@ -53,6 +58,7 @@ function getCookie(name: string): string | null {
   return match ? decodeURIComponent(match[1]) : null
 }
 
+// 验证码登录参数
 export interface LoginByCodeParams {
   mobile: string
   code: string
@@ -60,6 +66,7 @@ export interface LoginByCodeParams {
   deviceInfo?: DeviceInfo | Record<string, unknown>
 }
 
+// 验证码登录
 export const toLoginByCode = (data: LoginByCodeParams) => {
   const adjustInfoStr = localStorage.getItem('adjustInfo')
   let adjustInfo: Record<string, unknown> | null = null
@@ -113,11 +120,13 @@ export const toLoginByCode = (data: LoginByCodeParams) => {
   )
 }
 
+// 用户详情
 export interface UserDetail {
   champak?: number | null
   pentoxid?: Array<{ creditPage: string; leonora: number }> | []
 }
 
+// 获取用户详情
 export const getUserDetail = () => {
   return request<UserDetail>('/troffer/audit/frow', { method: 'GET' })
 }
