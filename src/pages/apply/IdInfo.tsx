@@ -122,7 +122,7 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
           setStream(s)
           if (videoRef.current) {
             videoRef.current.srcObject = s
-            videoRef.current.play()
+            videoRef.current.play().catch(e => console.error("Video play failed:", e))
           }
         }
       } catch (err) {
