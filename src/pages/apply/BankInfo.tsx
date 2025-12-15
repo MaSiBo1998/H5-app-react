@@ -1,4 +1,4 @@
-import { type ReactElement, useState, useEffect, useMemo } from 'react'
+import { type ReactElement, useState, useEffect } from 'react'
 import { Card, Button, Input, Toast, Space } from 'antd-mobile'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { RightOutline, BankcardOutline, UserOutline } from 'antd-mobile-icons'
@@ -203,7 +203,7 @@ export default function BankInfo(): ReactElement {
           <div className={styles['section-subtitle']}>Cuenta para recibir el préstamo</div>
         </div>
         
-        <Space direction="vertical" block size={24}>
+        <Space direction="vertical" block style={{ '--gap': '24px' }}>
           {/* 银行类型选择 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Tipo de cuenta</label>

@@ -6,6 +6,7 @@ import { router } from '@/router'
 import { collectDeviceInfo } from '@/utils/device'
 import { getStepConfigInfo } from '@/services/api/apply'
 import { getConfigInfo } from '@/services/api/home'
+import TestTools from '@/components/TestTools/TestTools'
 
 export default function App(): ReactElement {
   // 初始化设备信息
@@ -45,6 +46,7 @@ export default function App(): ReactElement {
     <Suspense fallback={<div style={{ padding: 16 }}></div>}>
       <ConfigProvider>
         <RouterProvider router={router} />
+        <TestTools />
       </ConfigProvider>
     </Suspense>
   )

@@ -4,7 +4,7 @@ import { getHomeData } from '@/services/api/home'
 import StatusView from '@/components/status/StatusView'
 import type { StatusData } from '@/components/status/types'
 // 上下文对象
-const HomeContext = createContext<{ homeData: any, loading: boolean }>({ homeData: {}, loading: false })
+export const HomeContext = createContext<{ homeData: any, loading: boolean, refresh: () => void }>({ homeData: {}, loading: false, refresh: () => {} })
 // 封装自定义 Hook（简化子组件调用）
 export function useHomeContext() {
   return useContext(HomeContext)
@@ -15,19 +15,23 @@ export default function Home(): ReactElement {
   const [homeData, setHomeData] = useState<StatusData | null>(null)
   // 加载状态
   const [loading, setLoading] = useState<boolean>(false)
+
+  // 获取数据函数
+  const fetchHomeData = async () => {
+    setLoading(true)
+    try {
+      const res = await getHomeData({ loading: true })
+      setHomeData((res || {}) as StatusData)
+      console.log('首页数据', res)
+    } catch {
+      void 0
+    }
+    setLoading(false)
+  }
+
   // 初始化获取数据
   useEffect(() => {
-    ; (async () => {
-      setLoading(true)
-      try {
-        const res = await getHomeData({ loading: true })
-        setHomeData((res || {}) as StatusData)
-        console.log('首页数据', res)
-      } catch {
-        void 0
-      }
-      setLoading(false)
-    })()
+    fetchHomeData()
     return () => {
       console.log('销毁')
     }
@@ -36,13 +40,13 @@ export default function Home(): ReactElement {
   
   return (
     <>
-      <HomeContext.Provider value={{ homeData, loading }}>
+      <HomeContext.Provider value={{ homeData, loading, refresh: fetchHomeData }}>
         <div className="home-page">
           {/* 立即执行函数,符合条件再渲染页面,不符合返回null */}
           {(() => {
             const status = homeData ? (homeData.kaki ?? homeData.status) : undefined
             return !loading && typeof status === 'number' && homeData
-              ? <StatusView status={status} data={homeData} />
+              ? <StatusView status={status} data={homeData} onRefresh={fetchHomeData} />
               : null
           })()}
         </div>
