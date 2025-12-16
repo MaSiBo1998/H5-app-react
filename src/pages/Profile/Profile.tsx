@@ -12,6 +12,7 @@ import {
   RightOutline
 } from 'antd-mobile-icons'
 import { toLogOut } from '@/services/api/user'
+import { getStorage, removeStorage, StorageKeys } from '@/utils/storage'
 import '@/pages/profile/profile.modules.css'
 
 // 手机号脱敏处理
@@ -25,28 +26,21 @@ export default function Profile(): ReactElement {
   const navigate = useNavigate()
   // 获取上次登录的手机号
   const lastPhone = ((): string | null => {
-    const userPhone = localStorage.getItem('userPhone')
+    const userPhone = getStorage<string>(StorageKeys.USER_PHONE)
     if (userPhone) return userPhone
 
     try {
-      const byLoginInfo = localStorage.getItem('loginInfo')
-      if (byLoginInfo) {
-        let obj: { phone?: string } | null = null
-        try {
-          obj = JSON.parse(byLoginInfo) as { phone?: string }
-        } catch {
-          obj = null
-        }
-        if (obj && typeof obj.phone === 'string') return obj.phone
-      }
+      const byLoginInfo = getStorage<{ phone?: string }>(StorageKeys.LOGIN_INFO)
+      if (byLoginInfo && typeof byLoginInfo.phone === 'string') return byLoginInfo.phone
     } catch {
       void 0
     }
-    const lp = localStorage.getItem('lastPhone')
+    const lp = getStorage<string>(StorageKeys.LAST_PHONE)
     return lp
   })()
   // 缓存脱敏后的手机号
   const masked = useMemo(() => maskPhone(lastPhone), [lastPhone])
+
   // 退出登录
   const handleLogout = () => {
     Dialog.show({
@@ -68,9 +62,9 @@ export default function Profile(): ReactElement {
             } catch (e) {
               console.error(e)
             } finally {
-              localStorage.removeItem('loginInfo')
-              localStorage.removeItem('userPhone')
-              localStorage.removeItem('mobile')
+              removeStorage(StorageKeys.LOGIN_INFO)
+              removeStorage(StorageKeys.USER_PHONE)
+              removeStorage(StorageKeys.MOBILE)
               navigate('/login')
             }
           }

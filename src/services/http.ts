@@ -1,4 +1,5 @@
 import { Toast } from 'antd-mobile'
+import { removeStorage, getStorage, StorageKeys } from '@/utils/storage'
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
@@ -46,14 +47,8 @@ function buildHeaders(opts: RequestOptions, body: unknown): HeadersInit {
     ...opts.headers,
   }
   // 根据用户需求添加默认请求头
-  const uuid = localStorage.getItem('uuid') || ''
-  const loginInfoStr = localStorage.getItem('loginInfo')
-  let loginInfo: any = {}
-  try {
-    loginInfo = loginInfoStr ? JSON.parse(loginInfoStr) : {}
-  } catch {
-    // 忽略解析错误
-  }
+  const uuid = getStorage<string>(StorageKeys.UUID) || ''
+  const loginInfo = getStorage(StorageKeys.LOGIN_INFO) || {}
 
   const isAndroid = /Android/i.test(navigator.userAgent)
 
@@ -99,9 +94,9 @@ async function parseResponse(resp: Response): Promise<unknown> {
 function handleTokenExpired(payload: Record<string, unknown>): never {
   Toast.show({ content: typeof payload.msg === 'string' ? payload.msg : 'Token expired' })
   try {
-    localStorage.removeItem('token')
-    localStorage.removeItem('loginInfo')
-    localStorage.removeItem('userPhone')
+    removeStorage(StorageKeys.TOKEN)
+    removeStorage(StorageKeys.LOGIN_INFO)
+    removeStorage(StorageKeys.USER_PHONE)
   } catch {}
   if (window.location.pathname !== '/login') {
     window.location.href = '/login'

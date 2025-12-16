@@ -1,11 +1,14 @@
 import type { ReactElement } from "react"
 import { useState, useMemo, useEffect } from "react"
 import { Slider, Toast } from "antd-mobile"
-import { CheckCircleFill, CheckCircleOutline, BillOutline, PayCircleOutline } from "antd-mobile-icons"
+import { CheckCircleFill, CheckCircleOutline, BillOutline } from "antd-mobile-icons"
 import type { StatusData } from "../types"
 import styles from './LoanUnconfirmed.module.css'
+import { toSubmitOrder, toUploadAuthorDocument } from '@/services/api/order'
+import { collectDeviceInfo } from '@/utils/device'
+import { getStorage, StorageKeys } from '@/utils/storage'
 
-export default function LoanUnconfirmed({ data }: { data: StatusData }): ReactElement {
+export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData, onRefresh?: () => void }): ReactElement {
   
   // Data extraction logic
   const productDataList = useMemo(() => {
@@ -22,6 +25,7 @@ export default function LoanUnconfirmed({ data }: { data: StatusData }): ReactEl
 
   const [amount, setAmount] = useState(min)
   const [isAgree, setIsAgree] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (min > 0) setAmount(min)
@@ -36,19 +40,59 @@ export default function LoanUnconfirmed({ data }: { data: StatusData }): ReactEl
       return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
   }, [productData.fistic])
 
-  const handleSubmit = () => {
-    if (!isAgree) return
-    Toast.show({
-        icon: 'loading',
-        content: 'Procesando...',
-    })
-    setTimeout(() => {
-        Toast.clear()
+  const handleSubmit = async () => {
+    if (!isAgree || loading) return
+    setLoading(true)
+
+    try {
+        // 收集设备信息
+        let deviceInfo = {}
+        try {
+            deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || await collectDeviceInfo()
+        } catch (e) {
+            console.error('Device info error', e)
+        }
+        
+        // Params construction
+        const params = {
+            appName: data.atony?.[0]?.lima || '',
+            chooseAmount: amount,
+            limitDay: productData.fistic || 0,
+            fiefdom: productData.fiefdom || 0,
+            golden: productData.golden || 0,
+            gaucho: productData.gaucho || 0,
+            neophron: productData.neophron || 0,
+            deviceInfo: deviceInfo
+        }
+
+        await toSubmitOrder(params)
+
+        try {
+          await toUploadAuthorDocument({ deviceInfo })
+        } catch (uploadError) {
+          console.error('Upload author document failed', uploadError)
+        }
+
         Toast.show({
             icon: 'success',
             content: 'Solicitud enviada',
         })
-    }, 1000)
+        
+        // Refresh page to show new status
+        if (onRefresh) {
+            onRefresh()
+        } else {
+            window.location.reload()
+        }
+
+    } catch (error: any) {
+        console.error(error)
+        Toast.show({
+            content: error.message || 'Error al enviar solicitud',
+        })
+    } finally {
+        setLoading(false)
+    }
   }
 
   if (productDataList.length === 0) {

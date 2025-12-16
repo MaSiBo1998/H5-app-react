@@ -7,6 +7,7 @@ import { collectDeviceInfo } from '@/utils/device'
 import { getStepConfigInfo } from '@/services/api/apply'
 import { getConfigInfo } from '@/services/api/home'
 import TestTools from '@/components/TestTools/TestTools'
+import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 
 export default function App(): ReactElement {
   // 初始化设备信息
@@ -21,21 +22,21 @@ export default function App(): ReactElement {
 
   // 初始化配置信息
   useEffect(() => {
-    const loginInfo = localStorage.getItem('loginInfo')
+    const loginInfo = getStorage(StorageKeys.LOGIN_INFO)
     if (!loginInfo) return
 
     ;(async () => {
       // 获取认证步骤配置
       try {
         const cfg = await getStepConfigInfo({})
-        localStorage.setItem('applyStepConfig', JSON.stringify(cfg))
+        setStorage(StorageKeys.APPLY_STEP_CONFIG, cfg)
       } catch {
         void 0
       }
       // 获取通用配置
       try {
         const commonCfg = await getConfigInfo()
-        localStorage.setItem('commonConfig', JSON.stringify(commonCfg))
+        setStorage(StorageKeys.COMMON_CONFIG, commonCfg)
       } catch {
         void 0
       }

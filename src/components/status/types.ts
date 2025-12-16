@@ -4,6 +4,9 @@ export interface TermItem {
   bindwood?: number // min amount
   shammash?: number // max amount
   aweto?: number // 1: locked
+  golden?: number
+  gaucho?: number
+  neophron?: number
 }
 
 export interface LoanInfo {

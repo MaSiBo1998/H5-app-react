@@ -1,4 +1,5 @@
 import { getUserDetail } from '@/services/api/user'
+import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 
 export type ApplyStep = 'workInfo' | 'contactInfo' | 'personalInfo' | 'identityInfo' | 'faceInfo' | 'bankInfo'
 
@@ -15,10 +16,10 @@ export const stepMap: Record<string, string> = {
 // 标记步骤完成
 export const markCompleted = (step: string) => {
   try {
-    const completed = JSON.parse(localStorage.getItem('local_completed_steps') || '[]')
+    const completed = getStorage<string[]>(StorageKeys.COMPLETED_STEPS) || []
     if (!completed.includes(step)) {
       completed.push(step)
-      localStorage.setItem('local_completed_steps', JSON.stringify(completed))
+      setStorage(StorageKeys.COMPLETED_STEPS, completed)
     }
   } catch { }
 }

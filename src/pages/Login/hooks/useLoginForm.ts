@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Toast } from 'antd-mobile'
 import { toSendCode, toLoginByCode } from '@/services/api/user'
+import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 
 export const useLoginForm = () => {
   const navigate = useNavigate()
@@ -55,11 +56,10 @@ export const useLoginForm = () => {
     if (!canLogin) return
     ;(async () => {
       try {
-        const deviceInfoStr = localStorage.getItem('deviceInfo')
-        const deviceInfo = deviceInfoStr ? JSON.parse(deviceInfoStr) : undefined
+        const deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || undefined
         const res = await toLoginByCode({ mobile: `${fullPhone}`, code, inviteCode: invite || undefined, deviceInfo })
-          localStorage.setItem('loginInfo', JSON.stringify(res))
-          localStorage.setItem('userPhone', fullPhone)
+          setStorage(StorageKeys.LOGIN_INFO, res)
+          setStorage(StorageKeys.USER_PHONE, fullPhone)
           navigate('/')
       } catch {
         // ignore

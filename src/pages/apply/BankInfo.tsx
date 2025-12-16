@@ -7,6 +7,7 @@ import HeaderNav from '@/components/common/HeaderNav'
 import ApplySteps from '@/pages/apply/components/ApplySteps'
 import BankListPopup from '@/pages/apply/components/BankListPopup'
 import { getStepConfigInfo, saveBankInfo, getUserBankInfo } from '@/services/api/apply'
+import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
 
 // 银行类型接口
@@ -51,11 +52,11 @@ export default function BankInfo(): ReactElement {
 
       // 1. 获取配置信息 (银行类型)
       try {
-        let stepConfig: any[] = JSON.parse(localStorage.getItem('applyStepConfig') || '[]')
+        let stepConfig: any[] = getStorage<any[]>(StorageKeys.APPLY_STEP_CONFIG) || []
         if (stepConfig.length === 0) {
            const res = await getStepConfigInfo({}) as any
            stepConfig = res || []
-           localStorage.setItem('applyStepConfig', JSON.stringify(stepConfig))
+           setStorage(StorageKeys.APPLY_STEP_CONFIG, stepConfig)
         }
         
         // 查找 calices == 14 的配置
@@ -119,7 +120,7 @@ export default function BankInfo(): ReactElement {
     // 针对 Nequi 等自动填充手机号逻辑
     const name = type.deicide.toLowerCase()
     if (name.includes('nequi') || name.includes('daviplata')) {
-      const mobile = localStorage.getItem('mobile') || ''
+      const mobile = getStorage<string>(StorageKeys.MOBILE) || ''
       const cleanMobile = mobile.startsWith('57') ? mobile.slice(2) : mobile
       if (cleanMobile) {
         setForm(prev => ({ ...prev, bankAccount: cleanMobile }))

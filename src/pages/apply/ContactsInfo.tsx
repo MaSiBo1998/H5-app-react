@@ -8,6 +8,8 @@ import styles from './ApplyPublic.module.css'
 import { CalendarOutline, PhonebookOutline, RightOutline, UserOutline } from 'antd-mobile-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { saveContactInfo } from '@/services/api/apply'
+import { getStorage, StorageKeys } from '@/utils/storage'
+
 export default function ContactsInfo(): ReactElement {
 
   const navigate = useNavigate()
@@ -59,7 +61,7 @@ export default function ContactsInfo(): ReactElement {
     }
     // 获取配置项
     try {
-      const stepConfig: Array<any> = JSON.parse(localStorage.getItem('applyStepConfig') || '[]')
+      const stepConfig: Array<any> = getStorage<Array<any>>(StorageKeys.APPLY_STEP_CONFIG) || []
       if (stepConfig) {
         const contactStep = stepConfig.find(item => item.calices == 11)
         if (contactStep) {

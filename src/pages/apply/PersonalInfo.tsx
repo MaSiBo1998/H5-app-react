@@ -12,6 +12,7 @@ import {
   CalendarOutline
 } from 'antd-mobile-icons'
 import { savePersonalInfo, getAddressList, sendEmailCodeAPI } from '@/services/api/apply'
+import { getStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
 
 export default function PersonalInfo(): ReactElement {
@@ -71,8 +72,8 @@ export default function PersonalInfo(): ReactElement {
 
     // 加载配置
     try {
-      const stepConfig: Array<any> = JSON.parse(localStorage.getItem('applyStepConfig') || '[]')
-      const commonConfig: { peanut: Array<any> } = JSON.parse(localStorage.getItem('commonConfig') || '{}')
+      const stepConfig: Array<any> = getStorage<Array<any>>(StorageKeys.APPLY_STEP_CONFIG) || []
+      const commonConfig: { peanut: Array<any> } = getStorage<{ peanut: Array<any> }>(StorageKeys.COMMON_CONFIG) || { peanut: [] }
       if (stepConfig) {
         const extract = (code: number) => {
           const hit = stepConfig.find(item => item.calices === code)

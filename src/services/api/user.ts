@@ -1,6 +1,7 @@
 import { request } from '@/services/http'
 import { encryptByRSA, rsaPublicKey } from '@/utils/encryption.ts'
 import type { DeviceInfo } from '@/utils/device'
+import { getStorage, StorageKeys } from '@/utils/storage'
 
 // 发送验证码参数
 export interface SendCodeParams {
@@ -80,17 +81,11 @@ export interface LoginByCodeParams {
 
 // 验证码登录
 export const toLoginByCode = (data: LoginByCodeParams) => {
-  const adjustInfoStr = localStorage.getItem('adjustInfo')
-  let adjustInfo: Record<string, unknown> | null = null
-  try {
-    adjustInfo = adjustInfoStr ? JSON.parse(adjustInfoStr) : null
-  } catch {
-    adjustInfo = null
-  }
+  const adjustInfo = getStorage<Record<string, unknown>>(StorageKeys.ADJUST_INFO)
   const payloadUA = navigator.userAgent
   const fbp = getCookie('_fbp')
   const fbc = getCookie('_fbc')
-  const deviceId = localStorage.getItem('uuid') || ''
+  const deviceId = getStorage<string>(StorageKeys.UUID) || ''
   const bewail = {
     fugate: null,
     acetated: null,
@@ -106,15 +101,7 @@ export const toLoginByCode = (data: LoginByCodeParams) => {
       }),
     ),
   }
-  const deviceInfo = data.deviceInfo ?? (() => {
-    const s = localStorage.getItem('deviceInfo')
-    if (!s) return {}
-    try {
-      return JSON.parse(s)
-    } catch {
-      return {}
-    }
-  })()
+  const deviceInfo = data.deviceInfo ?? (getStorage(StorageKeys.DEVICE_INFO) || {})
   return request<{ success: boolean; token?: string; msg?: string; code?: string }>(
     '/lanner/karoo',
     {

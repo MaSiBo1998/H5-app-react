@@ -1,7 +1,14 @@
-import FingerprintJS from '@fingerprintjs/fingerprintjs'
+import { getStorage, setStorage, StorageKeys } from './storage'
 
-// 在应用启动时初始化代理
-const fpPromise = FingerprintJS.load()
+// 获取网络类型辅助函数
+const getNetworkType = (): string | null => {
+  const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+  return conn ? conn.effectiveType : null
+}
+
+// FingerprintJS promise (loaded once)
+const fpPromise = import('@fingerprintjs/fingerprintjs')
+  .then(FingerprintJS => FingerprintJS.load())
 
 export interface DeviceInfo {
   amidol: {
@@ -50,13 +57,13 @@ export interface DeviceInfo {
 
 // 获取或生成 UUID 辅助函数
 export const getUUID = async (): Promise<string> => {
-  let uuid = localStorage.getItem('uuid')
+  let uuid = getStorage<string>(StorageKeys.UUID)
   if (!uuid) {
     const fp = await fpPromise
     const result = await fp.get()
     const timestamp = Date.now()
     uuid = `${result.visitorId}-${timestamp}`
-    localStorage.setItem('uuid', uuid)
+    setStorage(StorageKeys.UUID, uuid)
   }
   return uuid
 }
@@ -94,11 +101,7 @@ const getLocation = (): Promise<{ longitude: string | null; latitude: string | n
   })
 }
 
-// 获取网络类型辅助函数
-const getNetworkType = (): string | null => {
-  const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
-  return conn ? conn.effectiveType : null
-}
+
 
 export const collectDeviceInfo = async (): Promise<DeviceInfo> => {
   const uuid = await getUUID()
@@ -180,19 +183,18 @@ export const collectDeviceInfo = async (): Promise<DeviceInfo> => {
 
   // 如果可用，保存位置到本地存储
   if (location.longitude && location.latitude) {
-    localStorage.setItem('location', JSON.stringify(location))
+    setStorage(StorageKeys.LOCATION, location)
   } else {
       // 如果本次获取失败，尝试从本地存储加载
-      const savedLoc = localStorage.getItem('location')
+      const savedLoc = getStorage<{ longitude: string, latitude: string }>(StorageKeys.LOCATION)
       if (savedLoc) {
-          const parsed = JSON.parse(savedLoc)
-          info.amidol.rivage = parsed.longitude
-          info.amidol.required = parsed.latitude
+          info.amidol.rivage = savedLoc.longitude
+          info.amidol.required = savedLoc.latitude
       }
   }
 
   // 持久化完整设备信息
-  localStorage.setItem('deviceInfo', JSON.stringify(info))
+  setStorage(StorageKeys.DEVICE_INFO, info)
   
   return info
 }

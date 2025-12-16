@@ -15,6 +15,7 @@ import HeaderNav from '@/components/common/HeaderNav'
 import ApplySteps from '@/pages/apply/components/ApplySteps'
 import { getStepConfigInfo, getAddressList, saveWorkInfo } from '@/services/api/apply'
 import { useEffect, useMemo, useState } from 'react'
+import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
 import getNowAndNextStep from './progress'
 
@@ -81,12 +82,11 @@ export default function WorkInfo(): ReactElement {
     const init = async () => {
       let cached: any = null
       try {
-        const s = localStorage.getItem('applyStepConfig')
-        cached = s ? JSON.parse(s) : null
+        cached = getStorage(StorageKeys.APPLY_STEP_CONFIG)
       } catch { }
       try {
         const data = cached ?? await getStepConfigInfo({})
-        if (!cached) localStorage.setItem('applyStepConfig', JSON.stringify(data))
+        if (!cached) setStorage(StorageKeys.APPLY_STEP_CONFIG, data)
         const workType = extractSpec(data, 1)
         const salaryRange = extractSpec(data, 2)
         const workYears = extractSpec(data, 3)
