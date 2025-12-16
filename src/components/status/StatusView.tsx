@@ -11,10 +11,10 @@ import LoanInProgress from "@/components/status/LoanInProgress/LoanInProgress"
 import LoanFailed from "@/components/status/LoanFailed/LoanFailed"
 import AppList from "@/components/status/AppList/AppList"
 
-type StatusProps = { data?: StatusData; status?: number; onRefresh?: () => void }
+type StatusProps = { data?: StatusData; status?: number; onRefresh?: (showLoading?: boolean) => void }
 
 // 状态码对应的组件映射
-const COMPONENT_MAP: Record<number, (p: { data: StatusData, onRefresh?: () => void }) => ReactElement> = {
+const COMPONENT_MAP: Record<number, (p: { data: StatusData, onRefresh?: (showLoading?: boolean) => void }) => ReactElement> = {
   100: EntryForm,
   150: AuditCountdown,
   200: AuditPending,

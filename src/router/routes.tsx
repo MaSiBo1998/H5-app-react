@@ -2,7 +2,8 @@ import { lazy } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import AppLayout from '@/layouts/AppLayout'
 import AuthGuard from './AuthGuard'
-import MyInfo from '@/pages/Profile/components/MyInfo'
+
+
 
 const Home = lazy(() => import('@/pages/Home/Home'))
 const Profile = lazy(() => import('@/pages/Profile/Profile'))
@@ -14,7 +15,9 @@ const PersonalInfo = lazy(() => import('@/pages/apply/PersonalInfo'))
 const IdInfo = lazy(() => import('@/pages/apply/IdInfo'))
 const FaceCapture = lazy(() => import('@/pages/apply/FaceCapture'))
 const BankInfo = lazy(() => import('@/pages/apply/BankInfo'))
-
+const MyInfo = lazy(() => import('@/pages/MyInfo/index'))
+const MyOrder = lazy(() => import('@/pages/MyOrder/index'))
+const StatusPage = lazy(() => import('@/pages/Status/index'))
 export const routes: RouteObject[] = [
   // 登录页
   { path: '/login', element: <Login /> },
@@ -30,8 +33,11 @@ export const routes: RouteObject[] = [
           { index: true, element: <Home /> },
           // 个人中心
           { path: '/profile', element: <Profile /> },
+
         ],
       },
+      // Status Detail Page
+      { path: '/status', element: <StatusPage /> },
       // 申请流程页面
       { path: 'work', element: <WorkInfo /> },
       { path: 'contacts', element: <ContactsInfo /> },
@@ -41,6 +47,8 @@ export const routes: RouteObject[] = [
       { path: 'bank', element: <BankInfo /> },
       // 个人信息汇总
       { path: '/my-info', element: <MyInfo /> },
+      // 我的订单
+      { path: '/my-order', element: <MyOrder /> },
     ],
   },
   // 404 页面

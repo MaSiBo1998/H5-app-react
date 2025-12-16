@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react'
 import { useMemo } from 'react'
-import { Button, Toast } from 'antd-mobile'
+import { Button, Toast, Dialog } from 'antd-mobile'
 import { useNavigate } from 'react-router-dom'
 import {
   UserOutline,
@@ -11,12 +11,14 @@ import {
   CheckCircleOutline,
   RightOutline
 } from 'antd-mobile-icons'
+import { toLogOut } from '@/services/api/user'
 import '@/pages/profile/profile.modules.css'
 
 // 手机号脱敏处理
 function maskPhone(raw: string | null): string {
   if (!raw) return 'Invitado'
-  return raw
+  // 脱敏处理
+  return raw.replace(/(\d{2})\d{6}(\d{4})/, '$1******$2')
 }
 
 export default function Profile(): ReactElement {
@@ -45,15 +47,46 @@ export default function Profile(): ReactElement {
   })()
   // 缓存脱敏后的手机号
   const masked = useMemo(() => maskPhone(lastPhone), [lastPhone])
-
-  // 跳转登录
-  const goLogin = () => navigate('/login')
+  // 退出登录
+  const handleLogout = () => {
+    Dialog.show({
+      content: '¿Estás seguro de que quieres cerrar sesión?',
+      closeOnAction: true,
+      actions: [[
+        {
+          key: 'cancel',
+          text: 'Cancelar',
+          style: { color: '#999999' }
+        },
+        {
+          key: 'confirm',
+          text: 'Confirmar',
+          style: { color: '#26a69a', fontWeight: 'bold' },
+          onClick: async () => {
+            try {
+              await toLogOut()
+            } catch (e) {
+              console.error(e)
+            } finally {
+              localStorage.removeItem('loginInfo')
+              localStorage.removeItem('userPhone')
+              localStorage.removeItem('mobile')
+              navigate('/login')
+            }
+          }
+        }
+      ]]
+    })
+  }
   
   // 菜单点击处理
   const todo = (label: string) =>{
     switch (label) {
       case 'Mi perfil':
         navigate('/my-info')
+        break
+      case 'Mi préstamo':
+        navigate('/my-order')
         break
       default:
         Toast.show({ content: `${label}: En desarrollo` })
@@ -105,9 +138,11 @@ export default function Profile(): ReactElement {
         </div>
 
         <div className="login-container">
-          <Button className="login-btn" onClick={goLogin} block>
-            INICIAR SESIÓN
-          </Button>
+          {
+            <Button className="login-btn" onClick={handleLogout} block>
+              CERRAR SESIÓN
+            </Button>
+          }
         </div>
       </div>
     </div>

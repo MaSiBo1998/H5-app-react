@@ -5,7 +5,7 @@ import styles from './AuditCountdown.module.css'
 
 interface AuditCountdownProps {
   data: StatusData
-  onRefresh?: () => void
+  onRefresh?: (showLoading?: boolean) => void
 }
 
 export default function AuditCountdown({ data, onRefresh }: AuditCountdownProps): ReactElement {
@@ -24,13 +24,13 @@ export default function AuditCountdown({ data, onRefresh }: AuditCountdownProps)
           if (prevTime <= 1) {
             // 倒计时结束，刷新
             if (timerRef.current) clearInterval(timerRef.current)
-            onRefresh?.()
+            onRefresh?.(false)
             return 0
           }
           
           // 每 5 秒刷新一次数据（参考 Vue 逻辑）
           if (prevTime % 5 === 0 && onRefresh) {
-            onRefresh()
+            onRefresh(false)
           }
 
           return prevTime - 1
@@ -56,7 +56,7 @@ export default function AuditCountdown({ data, onRefresh }: AuditCountdownProps)
         </div>
       </div>
       
-      <div className={styles.main-card}>
+      <div className={styles['main-card']}>
         <div className={styles['countdown-wrapper']}>
           <span className={styles['time-text']}>{time}</span>
           <span className={styles.unit}>s</span>

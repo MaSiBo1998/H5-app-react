@@ -14,9 +14,15 @@ type HeaderNavProps = {
   onBack?: () => void
   // 导航栏右侧内容
   right?: ReactNode
+  // 自定义样式
+  style?: React.CSSProperties
+  // 导航栏背景色
+  background?: string
+  // 文字颜色
+  color?: string
 }
 
-export default function HeaderNav({ title, back = true, backDirect = true, onBack, right }: HeaderNavProps): ReactElement {
+export default function HeaderNav({ title, back = true, backDirect = true, onBack, right, style, background, color }: HeaderNavProps): ReactElement {
   const navigate = useNavigate()
   
   // 处理返回点击事件
@@ -30,9 +36,23 @@ export default function HeaderNav({ title, back = true, backDirect = true, onBac
     if (onBack) onBack()
   }
 
+  const containerStyle: React.CSSProperties = {
+    position: 'sticky',
+    top: 0,
+    zIndex: 1000,
+    background: background || '#ffffff',
+    color: color,
+    ...style
+  }
+
   return (
-    <div style={{ position: 'sticky', top: 0, zIndex: 1000, background: '#ffffff' }}>
-      <NavBar backArrow={back ? <LeftOutline /> : null} onBack={back ? handleBack : undefined} right={right}>
+    <div style={containerStyle}>
+      <NavBar 
+        backArrow={back ? <LeftOutline color={color} /> : null} 
+        onBack={back ? handleBack : undefined} 
+        right={right}
+        style={{ '--nav-bar-height': '46px', color: color } as any}
+      >
         {title}
       </NavBar>
     </div>

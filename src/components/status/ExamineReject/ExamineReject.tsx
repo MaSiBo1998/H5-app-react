@@ -6,7 +6,7 @@ import { CloseCircleOutline, ClockCircleOutline } from "antd-mobile-icons"
 
 interface ExamineRejectProps {
   data: StatusData
-  onRefresh?: () => void
+  onRefresh?: (showLoading?: boolean) => void
 }
 
 export default function ExamineReject({ data, onRefresh }: ExamineRejectProps): ReactElement {

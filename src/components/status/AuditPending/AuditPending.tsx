@@ -14,7 +14,7 @@ interface ExtendedStatusData extends StatusData {
 
 interface AuditPendingProps {
   data: StatusData
-  onRefresh?: () => void
+  onRefresh?: (showLoading?: boolean) => void
 }
 
 export default function AuditPending({ data, onRefresh }: AuditPendingProps): ReactElement {
@@ -26,7 +26,7 @@ export default function AuditPending({ data, onRefresh }: AuditPendingProps): Re
     
     if (intervalSeconds && intervalSeconds !== -1 && onRefresh) {
       const timer = setInterval(() => {
-        onRefresh()
+        onRefresh(false)
       }, intervalSeconds * 1000)
       
       return () => clearInterval(timer)

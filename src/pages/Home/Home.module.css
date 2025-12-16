@@ -1,6 +1,72 @@
-.home-page {
-  padding: 16px;
+.home-container {
+  background-color: #f5f7fa;
+  display: flex;
+  flex-direction: column;
 }
+
+.custom-header {
+  background: linear-gradient(135deg, #004d40 0%, #00695c 100%);
+  padding: 12px 20px 80px;
+  border-bottom-left-radius: 32px;
+  border-bottom-right-radius: 32px;
+  box-shadow: 0 4px 24px rgba(0, 77, 64, 0.15);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.header-bg-pattern {
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.brand-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.contact-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.contact-text {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.home-page {
+  padding: 0 16px 24px;
+  margin-top: -60px;
+  position: relative;
+  z-index: 2;
+}
+
 .home-space {
   gap: 12px;
 }

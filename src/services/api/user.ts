@@ -34,6 +34,18 @@ export const toSendCode = (data: SendCodeParams) => {
   )
 }
 
+// 退出登录
+export const toLogOut = (data: Record<string, unknown> = {}) => {
+  return request<unknown>(
+    '/boltrope/jmb',
+    {
+      method: 'POST',
+      body: data,
+      isLoading: true,
+    },
+  )
+}
+
 // 登录
 export const toLogin = (data: LoginParams) => {
   return request<{ success: boolean; token?: string; message?: string }>(
