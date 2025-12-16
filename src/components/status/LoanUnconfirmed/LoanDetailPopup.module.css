@@ -1,0 +1,110 @@
+.dialog-popup {
+  /* This class might need to be applied to the popup body via bodyClassName or bodyStyle in the component */
+}
+
+.dialog-top {
+  padding: 16px 16px 12px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+
+.dialog-title {
+  color: #263238;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.dialog-content {
+  padding: 16px 16px 32px; /* Increased bottom padding */
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.loan-item {
+  border: 1px solid #eceff1;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: #ffffff;
+}
+
+.loan-item.expanded {
+  border-color: #26a69a; /* Teal */
+  background: #e0f2f1; /* Light Teal bg */
+  box-shadow: 0 2px 8px rgba(38, 166, 154, 0.1);
+}
+
+.loan-item:last-child {
+  margin-bottom: 0;
+}
+
+.loan-header {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.period {
+  color: #546e7a;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date {
+  color: #263238;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.arrow {
+  font-size: 14px;
+  transition: transform 0.3s ease;
+  transform: rotate(90deg);
+  color: #90a4ae;
+}
+
+.arrow.rotated {
+  transform: rotate(270deg);
+  color: #26a69a;
+}
+
+.loan-detail {
+  padding: 0 16px 16px;
+  border-top: 1px solid rgba(38, 166, 154, 0.1); /* Subtle teal border */
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.detail-label {
+  flex-shrink: 0;
+  white-space: nowrap;
+  color: #78909c;
+  font-size: 14px;
+}
+
+.detail-value {
+  flex: 1;
+  text-align: right;
+  word-wrap: break-word;
+  word-break: break-all;
+  margin-left: 10px;
+  color: #37474f;
+  font-size: 14px;
+  font-weight: 500;
+}

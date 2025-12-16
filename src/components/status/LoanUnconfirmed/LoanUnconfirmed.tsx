@@ -7,6 +7,7 @@ import styles from './LoanUnconfirmed.module.css'
 import { toSubmitOrder, toUploadAuthorDocument } from '@/services/api/order'
 import { collectDeviceInfo } from '@/utils/device'
 import { getStorage, StorageKeys } from '@/utils/storage'
+import LoanDetailPopup from './LoanDetailPopup'
 
 export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData, onRefresh?: () => void }): ReactElement {
   
@@ -26,13 +27,19 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
   const [amount, setAmount] = useState(min)
   const [isAgree, setIsAgree] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [detailVisible, setDetailVisible] = useState(false)
 
   useEffect(() => {
     if (min > 0) setAmount(min)
   }, [min])
 
   // Calculated values
-  const repayAmount = amount // Simplified
+  const repayAmount = useMemo(() => {
+    const rate = productData.seacoast || 0
+    const days = productData.fistic || 0
+    return amount + (amount * rate * days)
+  }, [amount, productData])
+
   const repayDate = useMemo(() => {
       if (!productData.fistic) return ''
       const date = new Date()
@@ -168,8 +175,25 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
                 </div>
                 <div className={styles['detail-value']}>{repayDate}</div>
             </div>
+
+            <div 
+              className={styles['detail-item']} 
+              style={{ marginTop: 16, justifyContent: 'center', cursor: 'pointer' }}
+              onClick={() => setDetailVisible(true)}
+            >
+                <div style={{ color: '#26a69a', fontSize: 14, fontWeight: 500 }}>
+                    Ver plan de pagos &gt;
+                </div>
+            </div>
         </div>
       </div>
+
+      <LoanDetailPopup
+        visible={detailVisible}
+        onClose={() => setDetailVisible(false)}
+        productData={productData}
+        amount={amount}
+      />
 
       {/* Fixed Footer */}
       <div className={styles['footer-fixed']}>

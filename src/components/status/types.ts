@@ -7,6 +7,9 @@ export interface TermItem {
   golden?: number
   gaucho?: number
   neophron?: number
+  seacoast?: number // interest rate
+  usual?: number // interest ratio
+  cornet?: number // tax ratio
 }
 
 export interface LoanInfo {
