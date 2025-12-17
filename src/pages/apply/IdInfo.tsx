@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, type ReactElement } from 'react'
 import { Card, Space, Button, Input, Picker, DatePicker, Toast, Image } from 'antd-mobile'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { markCompleted, getNextPath } from '@/pages/apply/progress'
 import HeaderNav from '@/components/common/HeaderNav'
 import ApplySteps from '@/pages/apply/components/ApplySteps'
 import {
@@ -12,6 +11,7 @@ import {
 import { idcardOcr, saveIdInfo } from '@/services/api/apply'
 import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
+import getNowAndNextStep from './progress'
 
 // --- 相机组件 ---
 interface CameraViewProps {
@@ -303,7 +303,8 @@ export default function IdInfo(): ReactElement {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isProfileEntry = searchParams.get('entry') === 'profile'
-
+//下一步骤
+const [nextPath, setNextPath] = useState('')
   // 表单状态
   const [form, setForm] = useState({
     name: '',
@@ -335,6 +336,13 @@ export default function IdInfo(): ReactElement {
 
   useEffect(() => {
     setForm(f => ({ ...f, stepTime: new Date().getTime() }))
+    try {
+      (async () => {
+        const { nextPath } = await getNowAndNextStep()
+        setNextPath(nextPath ?? '')
+      })()
+    } catch (error) {
+    }
   }, [])
 
   const handleBack = () => {
@@ -344,6 +352,7 @@ export default function IdInfo(): ReactElement {
       navigate('/')
     }
   }
+
 
   const openCamera = (type: 'front' | 'back') => {
     setCameraType(type)
@@ -475,11 +484,10 @@ export default function IdInfo(): ReactElement {
         coxswain: form.stepTime
       }
       await saveIdInfo(payload)
-      markCompleted('id')
       if (isProfileEntry) {
         navigate('/my-info')
       } else {
-        navigate(getNextPath())
+        navigate(nextPath)
       }
     } catch (e) {
       console.error(e)

@@ -1,7 +1,6 @@
 import { useState, useEffect, type ReactElement } from 'react'
 import { Card, Space, Button, Input, Picker, Cascader, Toast } from 'antd-mobile'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { markCompleted, getNextPath } from '@/pages/apply/progress'
 import HeaderNav from '@/components/common/HeaderNav'
 import ApplySteps from '@/pages/apply/components/ApplySteps'
 import {
@@ -14,6 +13,7 @@ import {
 import { savePersonalInfo, getAddressList, sendEmailCodeAPI } from '@/services/api/apply'
 import { getStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
+import getNowAndNextStep from './progress'
 
 export default function PersonalInfo(): ReactElement {
   const navigate = useNavigate()
@@ -23,7 +23,8 @@ export default function PersonalInfo(): ReactElement {
   const [loading, setLoading] = useState(false)
   const [codeLoading, setCodeLoading] = useState(false)
   const [countdown, setCountdown] = useState(0)
-
+  // 下一步骤
+  const [nextPath, setNextPath] = useState('')
   // 配置选项
   const [options, setOptions] = useState({
     education: [] as Array<{ label: string; value: string }>,
@@ -69,7 +70,13 @@ export default function PersonalInfo(): ReactElement {
   useEffect(() => {
     // 设置开始时间
     setForm(prev => ({ ...prev, stepTime: new Date().getTime() }))
-
+    try {
+      (async () => {
+        const { nextPath } = await getNowAndNextStep()
+        setNextPath(nextPath ?? '')
+      })()
+    } catch (error) {
+    }
     // 加载配置
     try {
       const stepConfig: Array<any> = getStorage<Array<any>>(StorageKeys.APPLY_STEP_CONFIG) || []
@@ -193,12 +200,10 @@ export default function PersonalInfo(): ReactElement {
       }
 
       await savePersonalInfo(payload)
-
-      markCompleted('personal')
       if (isProfileEntry) {
         navigate('/my-info')
       } else {
-        navigate(getNextPath())
+        navigate(nextPath)
       }
     } catch (e) {
       // 错误处理

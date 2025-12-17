@@ -2,13 +2,13 @@ import { type ReactElement, useState, useEffect } from 'react'
 import { Card, Button, Input, Toast, Space } from 'antd-mobile'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { RightOutline, BankcardOutline, UserOutline } from 'antd-mobile-icons'
-import { markCompleted } from '@/pages/apply/progress'
 import HeaderNav from '@/components/common/HeaderNav'
 import ApplySteps from '@/pages/apply/components/ApplySteps'
 import BankListPopup from '@/pages/apply/components/BankListPopup'
 import { getStepConfigInfo, saveBankInfo, getUserBankInfo } from '@/services/api/apply'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
+import getNowAndNextStep from './progress'
 
 // 银行类型接口
 interface BankType {
@@ -24,12 +24,14 @@ export default function BankInfo(): ReactElement {
   const [searchParams] = useSearchParams()
   // 是否从个人中心进入
   const isProfileEntry = searchParams.get('entry') === 'profile'
+  //下一步骤
+  const [nextPath, setNextPath] = useState('')
 
   const [loading, setLoading] = useState(false)
-  
+
   // 银行类型列表
   const [bankTypes, setBankTypes] = useState<BankType[]>([])
-  
+
   // 表单状态
   const [form, setForm] = useState({
     bankType: 0, // 银行卡类型
@@ -47,24 +49,29 @@ export default function BankInfo(): ReactElement {
   useEffect(() => {
     const init = async () => {
       setForm(prev => ({ ...prev, stepTime: Date.now() }))
-      
+      try {
+        const { nextPath } = await getNowAndNextStep()
+        setNextPath(nextPath ?? '')
+      } catch (error) {
+      }
+
       let configTypes: BankType[] = []
 
       // 1. 获取配置信息 (银行类型)
       try {
         let stepConfig: any[] = getStorage<any[]>(StorageKeys.APPLY_STEP_CONFIG) || []
         if (stepConfig.length === 0) {
-           const res = await getStepConfigInfo({}) as any
-           stepConfig = res || []
-           setStorage(StorageKeys.APPLY_STEP_CONFIG, stepConfig)
+          const res = await getStepConfigInfo({}) as any
+          stepConfig = res || []
+          setStorage(StorageKeys.APPLY_STEP_CONFIG, stepConfig)
         }
-        
+
         // 查找 calices == 14 的配置
         const bankConfig = stepConfig.find(item => item.calices === 14)
         if (bankConfig && bankConfig.sawback) {
           configTypes = bankConfig.sawback
           setBankTypes(configTypes)
-          
+
           // 如果没有选中的类型，设置默认值
           const defaultType = configTypes.find(t => t.wrong === 1)
           if (defaultType && !form.bankType) {
@@ -81,19 +88,19 @@ export default function BankInfo(): ReactElement {
         if (res) {
           const { scorn, frau, antidote, manned } = res
           if (scorn) {
-             // 尝试从配置中找到对应的类型以获取正确的标题
-             const matchType = configTypes.find(t => t.shoddy === scorn)
-             // 如果找不到匹配的类型（可能是旧数据），回退到默认逻辑
-             const title = matchType ? matchType.deicide : (scorn === 1 ? 'BANCO' : (frau || ''))
+            // 尝试从配置中找到对应的类型以获取正确的标题
+            const matchType = configTypes.find(t => t.shoddy === scorn)
+            // 如果找不到匹配的类型（可能是旧数据），回退到默认逻辑
+            const title = matchType ? matchType.deicide : (scorn === 1 ? 'BANCO' : (frau || ''))
 
-             setForm(prev => ({
-               ...prev,
-               bankType: scorn,
-               bankName: frau || '',
-               bankCode: manned || '',
-               bankAccount: antidote || '',
-               bankTypeTitle: title
-             }))
+            setForm(prev => ({
+              ...prev,
+              bankType: scorn,
+              bankName: frau || '',
+              bankCode: manned || '',
+              bankAccount: antidote || '',
+              bankTypeTitle: title
+            }))
           }
         }
       } catch (e) {
@@ -131,7 +138,7 @@ export default function BankInfo(): ReactElement {
   // 提交
   const handleSubmit = async () => {
     const { bankType, bankName, bankCode, bankAccount, stepTime } = form
-    
+
     // 校验
     if (!bankType) {
       Toast.show('Por favor seleccione el tipo de cuenta')
@@ -145,7 +152,7 @@ export default function BankInfo(): ReactElement {
       Toast.show('Por favor ingrese el número de cuenta')
       return
     }
-    
+
     setLoading(true)
     try {
       const payload = {
@@ -155,15 +162,13 @@ export default function BankInfo(): ReactElement {
         antidote: bankAccount,
         coxswain: stepTime,
       }
-      
+
       await saveBankInfo(payload)
-      markCompleted('bank')
-      
       setTimeout(() => {
         if (isProfileEntry) {
           navigate('/my-info')
         } else {
-          navigate('/')
+          navigate(nextPath)
         }
       }, 500)
     } catch (error: any) {
@@ -184,8 +189,8 @@ export default function BankInfo(): ReactElement {
 
   return (
     <div className={styles['page-container']}>
-      <HeaderNav 
-        title="Información bancaria" 
+      <HeaderNav
+        title="Información bancaria"
         backDirect={!isProfileEntry}
         onBack={handleBack}
       />
@@ -197,13 +202,13 @@ export default function BankInfo(): ReactElement {
         { key: 'faceInfo', label: 'Facial' },
         { key: 'bankInfo', label: 'Bancaria' }
       ]} current="bankInfo" />}
-      
+
       <Card className={styles['form-card']}>
         <div className={styles['section-header']}>
           <div className={styles['section-title']}>Información Bancaria</div>
           <div className={styles['section-subtitle']}>Cuenta para recibir el préstamo</div>
         </div>
-        
+
         <Space direction="vertical" block style={{ '--gap': '24px' }}>
           {/* 银行类型选择 */}
           <div className={styles['form-group']}>
@@ -212,7 +217,7 @@ export default function BankInfo(): ReactElement {
               {bankTypes.map(item => {
                 const isActive = form.bankTypeTitle === item.deicide
                 return (
-                  <div 
+                  <div
                     key={item.shoddy}
                     onClick={() => handleTypeSelect(item)}
                     style={{
@@ -230,13 +235,13 @@ export default function BankInfo(): ReactElement {
                   >
                     {isActive && (
                       <div style={{ position: 'absolute', top: 4, right: 4, color: '#26a69a' }}>
-                         <CheckIcon />
+                        <CheckIcon />
                       </div>
                     )}
                     {item.adapted && (
-                      <img 
-                        src={item.adapted} 
-                        alt={item.deicide} 
+                      <img
+                        src={item.adapted}
+                        alt={item.deicide}
                         style={{ width: 40, height: 40, marginBottom: 8, objectFit: 'contain' }}
                       />
                     )}
@@ -258,8 +263,8 @@ export default function BankInfo(): ReactElement {
           {form.bankType === 1 && (
             <div className={styles['form-group']}>
               <label className={styles['form-label']}>Nombre del banco</label>
-              <div 
-                className={styles['input-wrapper']} 
+              <div
+                className={styles['input-wrapper']}
                 onClick={() => setBankPickerVisible(true)}
               >
                 <BankcardOutline className={styles['input-icon']} />
@@ -299,15 +304,15 @@ export default function BankInfo(): ReactElement {
               />
             </div>
           </div>
-          
+
           <div style={{ height: 40 }}></div>
         </Space>
       </Card>
 
       <div className={styles['submit-bar']}>
-        <Button 
+        <Button
           className={styles['submit-btn']}
-          block 
+          block
           onClick={handleSubmit}
           loading={loading}
           disabled={loading}
@@ -323,7 +328,7 @@ export default function BankInfo(): ReactElement {
 function CheckIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 24L20 34L38 16" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M10 24L20 34L38 16" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }

@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect, type ReactElement } from 'react'
 import { Card, Button, Toast } from 'antd-mobile'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { markCompleted, getNextPath } from '@/pages/apply/progress'
 import HeaderNav from '@/components/common/HeaderNav'
 import ApplySteps from '@/pages/apply/components/ApplySteps'
 import { CameraOutline } from 'antd-mobile-icons'
 import { saveFaceInfo } from '@/services/api/apply'
 import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
+import getNowAndNextStep from './progress'
 
 export default function FaceCapture(): ReactElement {
   const navigate = useNavigate()
@@ -18,7 +18,7 @@ export default function FaceCapture(): ReactElement {
   // 视频和画布引用
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  
+
   // 媒体流状态
   const [stream, setStream] = useState<MediaStream | null>(null)
   // 捕获的图片地址
@@ -31,10 +31,19 @@ export default function FaceCapture(): ReactElement {
   const [isCameraActive, setIsCameraActive] = useState(false)
   // 错误状态
   const [isError, setIsError] = useState(false)
-  
+  //下一步骤
+  const [nextPath, setNextPath] = useState('')
+
   // 初始化
   useEffect(() => {
     setStepTime(new Date().getTime())
+    try {
+      (async () => {
+        const { nextPath } = await getNowAndNextStep()
+        setNextPath(nextPath ?? '')
+      })()
+    } catch (error) {
+    }
     return () => {
       stopCamera()
     }
@@ -92,32 +101,32 @@ export default function FaceCapture(): ReactElement {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current
       const canvas = canvasRef.current
-      
+
       // Calculate crop to make it square/centered
       const size = Math.min(video.videoWidth, video.videoHeight)
       const x = (video.videoWidth - size) / 2
       const y = (video.videoHeight - size) / 2
-      
+
       canvas.width = size
       canvas.height = size
-      
+
       const ctx = canvas.getContext('2d')
       if (ctx) {
         // Mirror the image horizontally for selfie feel
         ctx.translate(size, 0)
         ctx.scale(-1, 1)
-        
+
         ctx.drawImage(video, x, y, size, size, 0, 0, size, size)
-        
+
         // 获取原始图片
         const rawDataUrl = canvas.toDataURL('image/jpeg', 1.0)
-        
+
         // 使用标准压缩 (Max 1024, Q 0.7)
         const compressedDataUrl = await compressImage(rawDataUrl)
-        
+
         setImgSrc(compressedDataUrl)
         stopCamera()
-        
+
         // Direct submit
         await submitFace(compressedDataUrl)
       }
@@ -137,14 +146,12 @@ export default function FaceCapture(): ReactElement {
         haslet: 1,
         coxswain: stepTime
       }
-      
+
       await saveFaceInfo(payload)
-      
-      markCompleted('face')
       if (isProfileEntry) {
         navigate('/my-info')
       } else {
-        navigate(getNextPath())
+        navigate(nextPath)
       }
     } catch (e) {
       console.error(e)
@@ -164,18 +171,18 @@ export default function FaceCapture(): ReactElement {
   // 点击圆圈处理
   const handleCircleClick = () => {
     if (loading) return
-    
+
     if (isError) {
-        handleRetake()
-        return
+      handleRetake()
+      return
     }
 
     if (imgSrc) {
-        return
+      return
     } else if (isCameraActive) {
-        handleCapture()
+      handleCapture()
     } else {
-        startCamera()
+      startCamera()
     }
   }
 
@@ -198,21 +205,21 @@ export default function FaceCapture(): ReactElement {
           current="face"
         />
       )}
-      
-      <Card className={styles['form-card']} style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        paddingTop: 40, 
+
+      <Card className={styles['form-card']} style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        paddingTop: 40,
         paddingBottom: 56,
         border: 'none',
         background: 'transparent',
-        boxShadow: 'none' 
+        boxShadow: 'none'
       }}>
-        <div style={{ 
-          fontSize: 24, 
-          fontWeight: 800, 
-          marginBottom: 12, 
+        <div style={{
+          fontSize: 24,
+          fontWeight: 800,
+          marginBottom: 12,
           background: 'linear-gradient(135deg, #26a69a 0%, #00897b 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
@@ -226,52 +233,52 @@ export default function FaceCapture(): ReactElement {
 
         {/* Camera/Image Container */}
         <div style={{ position: 'relative', width: 280, height: 280, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            
-            {/* Advanced Ring Decoration */}
-            {(isCameraActive || imgSrc) && (
-                <div className={styles['advanced-ring']} />
+
+          {/* Advanced Ring Decoration */}
+          {(isCameraActive || imgSrc) && (
+            <div className={styles['advanced-ring']} />
+          )}
+
+          <div
+            onClick={handleCircleClick}
+            style={{
+              position: 'relative',
+              width: 260,
+              height: 260,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: isError ? '4px solid #ff4d4f' : (isCameraActive ? 'none' : '1px dashed #cfd8dc'),
+              background: isCameraActive ? '#000' : '#f8f9fa',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10,
+              transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: isError ? '0 10px 40px rgba(255, 77, 79, 0.2)' : (isCameraActive ? '0 20px 60px rgba(0,0,0,0.3)' : 'none')
+            }}
+          >
+            {/* State 1: Idle (Guide) */}
+            {!isCameraActive && !imgSrc && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#78909c' }}>
+                <div style={{
+                  width: 96, height: 96, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #26a69a 0%, #00897b 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginBottom: 16,
+                  boxShadow: '0 12px 32px rgba(38, 166, 154, 0.3)',
+                  border: 'none',
+                  transition: 'transform 0.3s ease'
+                }}>
+                  <CameraOutline fontSize={48} color='#fff' />
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#00897b', letterSpacing: '0.5px' }}>Iniciar Cámara</div>
+              </div>
             )}
 
-            <div 
-                onClick={handleCircleClick}
-                style={{ 
-                  position: 'relative', 
-                  width: 260, 
-                  height: 260, 
-                  borderRadius: '50%', 
-                  overflow: 'hidden',
-                  border: isError ? '4px solid #ff4d4f' : (isCameraActive ? 'none' : '1px dashed #cfd8dc'),
-                  background: isCameraActive ? '#000' : '#f8f9fa',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 10,
-                  transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: isError ? '0 10px 40px rgba(255, 77, 79, 0.2)' : (isCameraActive ? '0 20px 60px rgba(0,0,0,0.3)' : 'none')
-                }}
-              >
-              {/* State 1: Idle (Guide) */}
-              {!isCameraActive && !imgSrc && (
-                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#78909c' }}>
-                    <div style={{ 
-                        width: 96, height: 96, borderRadius: '50%', 
-                        background: 'linear-gradient(135deg, #26a69a 0%, #00897b 100%)', 
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        marginBottom: 16,
-                        boxShadow: '0 12px 32px rgba(38, 166, 154, 0.3)',
-                        border: 'none',
-                        transition: 'transform 0.3s ease'
-                    }}>
-                        <CameraOutline fontSize={48} color='#fff' />
-                    </div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: '#00897b', letterSpacing: '0.5px' }}>Iniciar Cámara</div>
-                 </div>
-              )}
-
-              {/* State 2: Camera Active (Video) */}
-              {isCameraActive && !imgSrc && (
-                <>
+            {/* State 2: Camera Active (Video) */}
+            {isCameraActive && !imgSrc && (
+              <>
                 <video
                   ref={videoRef}
                   autoPlay
@@ -284,54 +291,54 @@ export default function FaceCapture(): ReactElement {
                     transform: 'scaleX(-1)' // Mirror effect
                   }}
                 />
-                
-                {/* Clean View - No Overlays inside image area */}
-                </>
-              )}
 
-              {/* State 3: Captured (Image) */}
-              {imgSrc && (
-                <img 
-                  src={imgSrc} 
-                  alt="Selfie" 
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover'
-                  }} 
-                />
-              )}
-            </div>
+                {/* Clean View - No Overlays inside image area */}
+              </>
+            )}
+
+            {/* State 3: Captured (Image) */}
+            {imgSrc && (
+              <img
+                src={imgSrc}
+                alt="Selfie"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
+            )}
+          </div>
         </div>
 
         <canvas ref={canvasRef} style={{ display: 'none' }} />
 
         {isError && (
-            <div style={{ marginTop: 24, textAlign: 'center', color: '#ff4d4f', fontWeight: 600 }}>
-                Verificación fallida, por favor intente nuevamente
-            </div>
+          <div style={{ marginTop: 24, textAlign: 'center', color: '#ff4d4f', fontWeight: 600 }}>
+            Verificación fallida, por favor intente nuevamente
+          </div>
         )}
       </Card>
 
       <div className={styles['submit-bar']}>
-        <Button 
-            color='primary' 
-            block 
-            className={styles['submit-btn']}
-            disabled={loading}
-            onClick={() => {
-                if (isError) {
-                    handleRetake()
-                } else if (imgSrc) {
-                    // Do nothing while processing
-                } else if (isCameraActive) {
-                    handleCapture()
-                } else {
-                    handleCircleClick()
-                }
-            }}
+        <Button
+          color='primary'
+          block
+          className={styles['submit-btn']}
+          disabled={loading}
+          onClick={() => {
+            if (isError) {
+              handleRetake()
+            } else if (imgSrc) {
+              // Do nothing while processing
+            } else if (isCameraActive) {
+              handleCapture()
+            } else {
+              handleCircleClick()
+            }
+          }}
         >
-            {loading ? 'Procesando...' : (isError ? 'Reintentar' : (isCameraActive ? 'Capturar' : 'Iniciar Cámara'))}
+          {loading ? 'Procesando...' : (isError ? 'Reintentar' : (isCameraActive ? 'Capturar' : 'Iniciar Cámara'))}
         </Button>
       </div>
     </div>

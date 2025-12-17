@@ -1,6 +1,4 @@
 import { getUserDetail } from '@/services/api/user'
-import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
-
 export type ApplyStep = 'workInfo' | 'contactInfo' | 'personalInfo' | 'identityInfo' | 'faceInfo' | 'bankInfo'
 
 // 步骤路由映射
@@ -12,30 +10,6 @@ export const stepMap: Record<string, string> = {
   faceInfo: '/face-capture',
   bankInfo: '/bank'
 }
-
-// 标记步骤完成
-export const markCompleted = (step: string) => {
-  try {
-    const completed = getStorage<string[]>(StorageKeys.COMPLETED_STEPS) || []
-    if (!completed.includes(step)) {
-      completed.push(step)
-      setStorage(StorageKeys.COMPLETED_STEPS, completed)
-    }
-  } catch { }
-}
-
-// 获取下一步路由
-export const getNextPath = (currentStep?: string) => {
-  if (currentStep) {
-    const keys = Object.keys(stepMap)
-    const idx = keys.indexOf(currentStep)
-    if (idx !== -1 && idx < keys.length - 1) {
-      return stepMap[keys[idx + 1]]
-    }
-  }
-  return '/'
-}
-
 // 获取当前和下一步骤
 export default async function getNowAndNextStep() { 
   const routeMap = {
