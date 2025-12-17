@@ -11,11 +11,12 @@ interface IdCardOrFaceRejectProps {
 
 export default function IdCardOrFaceReject({ data, onRefresh }: IdCardOrFaceRejectProps): ReactElement {
   const status = data.atony?.[0]?.valour?.scuzzy?.medibank ?? data.atony?.[0]?.scuzzy?.medibank
+  const orderId = data.atony?.[0]?.gain
   const navigate = useNavigate()
   const handleEdit = () => {
     // Logic for "Volver a subir"
     console.log("Re-upload ID/Face")
-    navigate('/id?entry=homeEdit')
+    navigate(`/id?entry=homeEdit&orderId=${orderId || ''}`)
   }
 
   return (

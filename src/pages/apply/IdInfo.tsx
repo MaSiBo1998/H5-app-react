@@ -304,6 +304,7 @@ export default function IdInfo(): ReactElement {
   const [searchParams] = useSearchParams()
   // 入口参数 homeEdit首页修改, profile个人中心进件
   const entryParams = searchParams.get('entry')
+  const orderId = searchParams.get('orderId')
   //下一步骤
   const [nextPath, setNextPath] = useState('')
   // 表单状态
@@ -472,7 +473,7 @@ export default function IdInfo(): ReactElement {
         finalBack = backImg
       }
 
-      const payload = {
+      let payload: any = {
         elysium: finalFront,
         politico: finalBack,
         costa: form.name,
@@ -485,6 +486,7 @@ export default function IdInfo(): ReactElement {
         coxswain: form.stepTime
       }
       if (entryParams == 'homeEdit') {
+        payload.gain = orderId
         await updateIdInfo(payload)
       } else {
         await saveIdInfo(payload)
