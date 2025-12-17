@@ -35,7 +35,7 @@ export default async function getNowAndNextStep() {
           const path = routeMap[item.creditPage as keyof typeof routeMap]
           if (path) {
             if (!nowPath) {
-              nowPath = path
+              nowPath = path ? path : '/'
             } else {
               nextPath = path
               break

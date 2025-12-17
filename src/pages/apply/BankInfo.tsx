@@ -199,7 +199,6 @@ export default function BankInfo(): ReactElement {
         { key: 'contactInfo', label: 'Contactos' },
         { key: 'personalInfo', label: 'Personal' },
         { key: 'identityInfo', label: 'Identidad' },
-        { key: 'faceInfo', label: 'Facial' },
         { key: 'bankInfo', label: 'Bancaria' }
       ]} current="bankInfo" />}
 
@@ -297,7 +296,15 @@ export default function BankInfo(): ReactElement {
               <Input
                 placeholder={form.bankType === 1 ? 'Número de cuenta' : 'Número de celular'}
                 value={form.bankAccount}
-                onChange={val => setForm(prev => ({ ...prev, bankAccount: val }))}
+                onChange={v => {
+                  let val = v.replace(/\D/g, '')
+                  if(form.bankType === 1 && val.length > 20) {
+                    val = val.slice(0, 20)
+                  }else if(form.bankType === 2 && val.length > 10) {
+                    val = val.slice(0, 10)
+                  }
+                  setForm(prev => ({ ...prev, bankAccount: val }))
+                }}
                 style={{ '--font-size': '16px', flex: 1 }}
                 clearable
                 type="number"

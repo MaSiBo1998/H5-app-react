@@ -8,7 +8,7 @@ import {
   CameraOutline,
   CheckCircleFill
 } from 'antd-mobile-icons'
-import { idcardOcr, saveIdInfo } from '@/services/api/apply'
+import { idcardOcr, saveIdInfo, updateIdInfo } from '@/services/api/apply'
 import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
 import getNowAndNextStep from './progress'
@@ -191,7 +191,7 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
             padding: '8px 16px',
             borderRadius: '16px',
           }}>
-             <div style={{
+            <div style={{
               color: '#26a69a',
               fontSize: '14px',
               fontWeight: 600,
@@ -239,27 +239,27 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
         background: '#fff',
         zIndex: 30,
         display: 'flex',
-        flexDirection: isNativeLandscape 
-          ? 'column-reverse' 
+        flexDirection: isNativeLandscape
+          ? 'column-reverse'
           : (rotation === -90 ? 'row' : 'row-reverse'),
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
         {/* 插槽 1：取消按钮（根据旋转情况位于上/左/右） */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div onClick={onClose} style={{ 
-              color: '#333', 
-              transform: `rotate(${rotation}deg)`, 
-              fontSize: '14px',
-              fontWeight: 500,
-              padding: '10px',
-              transition: 'transform 0.3s ease',
-              cursor: 'pointer',
+          <div onClick={onClose} style={{
+            color: '#333',
+            transform: `rotate(${rotation}deg)`,
+            fontSize: '14px',
+            fontWeight: 500,
+            padding: '10px',
+            transition: 'transform 0.3s ease',
+            cursor: 'pointer',
           }}>
             CANCELAR
           </div>
         </div>
-        
+
         {/* 插槽 2：快门按钮（居中） */}
         <div
           className={styles['shutter-anim']}
@@ -291,7 +291,7 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
             <CameraOutline fontSize={28} color='#fff' style={{ transform: `rotate(${rotation}deg)`, transition: 'transform 0.3s ease' }} />
           </div>
         </div>
-        
+
         {/* 插槽 3：用于平衡布局并确保快门居中的占位符 */}
         <div style={{ flex: 1 }}></div>
       </div>
@@ -302,9 +302,10 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
 export default function IdInfo(): ReactElement {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const isProfileEntry = searchParams.get('entry') === 'profile'
-//下一步骤
-const [nextPath, setNextPath] = useState('')
+  // 入口参数 homeEdit首页修改, profile个人中心进件
+  const entryParams = searchParams.get('entry')
+  //下一步骤
+  const [nextPath, setNextPath] = useState('')
   // 表单状态
   const [form, setForm] = useState({
     name: '',
@@ -346,7 +347,7 @@ const [nextPath, setNextPath] = useState('')
   }, [])
 
   const handleBack = () => {
-    if (isProfileEntry) {
+    if (entryParams == '') {
       navigate('/my-info')
     } else {
       navigate('/')
@@ -483,9 +484,16 @@ const [nextPath, setNextPath] = useState('')
         kyushu: 1, // 相机
         coxswain: form.stepTime
       }
-      await saveIdInfo(payload)
-      if (isProfileEntry) {
+      if (entryParams == 'homeEdit') {
+        await updateIdInfo(payload)
+      } else {
+        await saveIdInfo(payload)
+      }
+
+      if (entryParams == 'profile') {
         navigate('/my-info')
+      } else if (entryParams == 'homeEdit') {
+        navigate('/')
       } else {
         navigate(nextPath)
       }
@@ -510,14 +518,14 @@ const [nextPath, setNextPath] = useState('')
         backDirect={false}
         onBack={handleBack}
       />
-      {!isProfileEntry && (
+      {!entryParams && (
         <ApplySteps
           steps={[
             { key: 'work', label: 'Trabajo' },
             { key: 'contacts', label: 'Contactos' },
             { key: 'personal', label: 'Datos personales' },
             { key: 'id', label: 'Identificación' },
-            { key: 'face', label: 'Selfie' },
+            { key: 'bankInfo', label: 'Bancaria' }
           ]}
           current="id"
         />

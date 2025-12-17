@@ -199,8 +199,8 @@ export default function FaceCapture(): ReactElement {
             { key: 'work', label: 'Trabajo' },
             { key: 'contacts', label: 'Contactos' },
             { key: 'personal', label: 'Datos personales' },
-            { key: 'id', label: 'Identificación' },
             { key: 'face', label: 'Selfie' },
+            { key: 'bankInfo', label: 'Bancaria' }
           ]}
           current="face"
         />
