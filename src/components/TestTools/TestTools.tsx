@@ -20,9 +20,9 @@ export default function TestTools({ onRefresh }: TestToolsProps): ReactElement |
   const checkTestEnv = () => {
     try {
       const host = window.location.host
-      const isDev = import.meta.env.DEV || 
-                    host.includes('localhost') || 
-                    host.includes('127.0.0.1')
+      const isDev = import.meta.env.DEV ||
+        host.includes('localhost') ||
+        host.includes('127.0.0.1')
       setShowTools(isDev)
     } catch (e) {
       console.error('Check test env failed:', e)
@@ -55,7 +55,7 @@ export default function TestTools({ onRefresh }: TestToolsProps): ReactElement |
     }
   }
 
-  const callRiskCallback = async (creditResult: number, refuseId: string | number = '') => {
+  const callRiskCallback = async (creditResult: number, refuseId: string | number = '', refuseStage: string | number = '') => {
     if (!applyNum) {
       Toast.show({ content: '请先输入申请号' })
       return
@@ -68,7 +68,7 @@ export default function TestTools({ onRefresh }: TestToolsProps): ReactElement |
         applyNum: applyNum,
         creditResult: creditResult.toString(),
         refuseId: refuseId,
-        refuseStage: '',
+        refuseStage: refuseStage.toString(),
         needManualReview: '0',
         msg: '',
       }
@@ -82,7 +82,7 @@ export default function TestTools({ onRefresh }: TestToolsProps): ReactElement |
       })
 
       const resData = await response.json()
-      
+
       Toast.clear()
       Toast.show({
         content: creditResult === 2 ? '审核通过成功' : '审核拒绝成功',
@@ -272,10 +272,10 @@ export default function TestTools({ onRefresh }: TestToolsProps): ReactElement |
               </button>
             </div>
             <div className={styles['btn-group']} style={{ marginTop: '8px' }}>
-              <button className={`${styles['test-btn']} ${styles.danger}`} onClick={() => callRiskCallback(1, 40100)}>
+              <button className={`${styles['test-btn']} ${styles.danger}`} onClick={() => callRiskCallback(1, 40100, 5)}>
                 身份证不符
               </button>
-              <button className={`${styles['test-btn']} ${styles.danger}`} onClick={() => callRiskCallback(1, 40200)}>
+              <button className={`${styles['test-btn']} ${styles.danger}`} onClick={() => callRiskCallback(1, 40200, 5)}>
                 自拍不符
               </button>
             </div>

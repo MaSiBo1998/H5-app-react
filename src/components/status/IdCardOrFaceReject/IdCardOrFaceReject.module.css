@@ -48,6 +48,28 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+}
+
+.error-badge {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  background: #fff;
+  border-radius: 50%;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.header-id {
+  background: linear-gradient(135deg, #c62828 0%, #d32f2f 100%);
+}
+
+.header-face {
+  background: linear-gradient(135deg, #d84315 0%, #f4511e 100%);
 }
 
 .header-title {

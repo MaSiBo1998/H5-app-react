@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import HeaderNav from '@/components/common/HeaderNav'
 import ApplySteps from '@/pages/apply/components/ApplySteps'
 import { CameraOutline } from 'antd-mobile-icons'
-import { saveFaceInfo } from '@/services/api/apply'
+import { saveFaceInfo, updateFaceInfo } from '@/services/api/apply'
 import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
 import getNowAndNextStep from './progress'
@@ -12,8 +12,11 @@ import getNowAndNextStep from './progress'
 export default function FaceCapture(): ReactElement {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  // 入口参数 homeEdit首页修改, profile个人中心进件
+  const entryParams = searchParams.get('entry')
+  const orderId = searchParams.get('orderId')
   // 是否从个人中心进入
-  const isProfileEntry = searchParams.get('entry') === 'profile'
+  const isProfileEntry = entryParams === 'profile'
 
   // 视频和画布引用
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -89,8 +92,10 @@ export default function FaceCapture(): ReactElement {
   // 返回处理
   const handleBack = () => {
     stopCamera()
-    if (isProfileEntry) {
+    if (entryParams == 'profile') {
       navigate('/my-info')
+    } else if (entryParams == 'homeEdit') {
+      navigate('/')
     } else {
       navigate('/')
     }
@@ -141,15 +146,23 @@ export default function FaceCapture(): ReactElement {
       // 移除 base64 前缀
       const cleanBase64 = base64Str.split(',')[1]
 
-      const payload = {
+      const payload: any = {
         moil: cleanBase64,
-        haslet: 1,
+        // haslet:entryParams == 'homeEdit'?5: 1,
         coxswain: stepTime
       }
 
-      await saveFaceInfo(payload)
-      if (isProfileEntry) {
+      if (entryParams == 'homeEdit') {
+        payload.gain = orderId
+        await updateFaceInfo(payload)
+      } else {
+        await saveFaceInfo(payload)
+      }
+
+      if (entryParams == 'profile') {
         navigate('/my-info')
+      } else if (entryParams == 'homeEdit') {
+        navigate('/')
       } else {
         navigate(nextPath)
       }
@@ -193,7 +206,7 @@ export default function FaceCapture(): ReactElement {
         backDirect={false}
         onBack={handleBack}
       />
-      {!isProfileEntry && (
+      {!entryParams && (
         <ApplySteps
           steps={[
             { key: 'work', label: 'Trabajo' },
