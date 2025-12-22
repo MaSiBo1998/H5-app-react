@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react'
 import { Popup, IndexBar, List, Loading, NavBar } from 'antd-mobile'
 import { getBankList } from '@/services/api/apply'
 
-interface BankItem {
+export interface BankItem {
   name: string
   code: string
 }
 
-interface Props {
+ interface Props {
   visible: boolean
   onClose: () => void
   onSelect: (bank: BankItem) => void

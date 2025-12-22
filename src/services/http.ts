@@ -92,7 +92,7 @@ async function parseResponse(resp: Response): Promise<unknown> {
 
 // 处理 Token 过期
 function handleTokenExpired(payload: Record<string, unknown>): never {
-  Toast.show({ content: typeof payload.msg === 'string' ? payload.msg : 'Token expired' })
+  Toast.show({ content: typeof payload.msg === 'string' ? payload.msg : 'Token 已过期' })
   try {
     removeStorage(StorageKeys.TOKEN)
     removeStorage(StorageKeys.LOGIN_INFO)
@@ -101,7 +101,7 @@ function handleTokenExpired(payload: Record<string, unknown>): never {
   if (window.location.pathname !== '/login') {
     window.location.href = '/login'
   }
-  throw new HttpError('Token expired', 401, 'R6566S', payload)
+  throw new HttpError('Token 已过期', 401, 'R6566S', payload)
 }
 
 // 核心请求函数

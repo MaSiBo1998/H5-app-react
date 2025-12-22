@@ -35,7 +35,8 @@ export default function AuditPending({ data, onRefresh }: AuditPendingProps): Re
 
   const handleRefresh = () => {
     if (onRefresh) {
-      onRefresh()
+      console.log('刷新')
+      onRefresh(true)
     }
   }
 

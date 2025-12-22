@@ -47,7 +47,7 @@ export default function Home(): ReactElement {
     <>
       <HomeContext.Provider value={{ homeData, loading, refresh: fetchHomeData }}>
         <PullToRefresh
-          onRefresh={async () => { await fetchHomeData(false) }}
+          onRefresh={async () => { await fetchHomeData(true) }}
           pullingText="Desliza para actualizar"
           canReleaseText="Suelta para actualizar"
           refreshingText="Cargando..."

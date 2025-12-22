@@ -2,6 +2,7 @@ import { lazy } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import AppLayout from '@/layouts/AppLayout'
 import AuthGuard from './AuthGuard'
+import Help from '@/pages/help'
 
 
 
@@ -15,8 +16,8 @@ const PersonalInfo = lazy(() => import('@/pages/apply/PersonalInfo'))
 const IdInfo = lazy(() => import('@/pages/apply/IdInfo'))
 const FaceCapture = lazy(() => import('@/pages/apply/FaceCapture'))
 const BankInfo = lazy(() => import('@/pages/apply/BankInfo'))
-const MyInfo = lazy(() => import('@/pages/MyInfo/index'))
-const MyOrder = lazy(() => import('@/pages/MyOrder/index'))
+const MyInfo = lazy(() => import('@/pages/myInfo/index'))
+const MyOrder = lazy(() => import('@/pages/myOrder/index'))
 const StatusPage = lazy(() => import('@/pages/status/index'))
 export const routes: RouteObject[] = [
   // 登录页
@@ -45,6 +46,8 @@ export const routes: RouteObject[] = [
       { path: 'id', element: <IdInfo /> },
       { path: 'face-capture', element: <FaceCapture /> },
       { path: 'bank', element: <BankInfo /> },
+      // 帮助中心
+      { path: '/help', element: <Help /> },
       // 个人信息汇总
       { path: '/my-info', element: <MyInfo /> },
       // 我的订单

@@ -1,28 +1,28 @@
 export interface TermItem {
-  fistic?: number // days
-  fiefdom?: number // payments count
-  bindwood?: number // min amount
-  shammash?: number // max amount
-  aweto?: number // 1: locked
+  fistic?: number // 天数
+  fiefdom?: number // 还款期数
+  bindwood?: number // 最小金额
+  shammash?: number // 最大金额
+  aweto?: number // 1: 锁定
   golden?: number
   gaucho?: number
   neophron?: number
-  seacoast?: number // interest rate
-  usual?: number // interest ratio
-  cornet?: number // tax ratio
+  seacoast?: number // 利率
+  usual?: number // 利率比例
+  cornet?: number // 税率
 }
 
 export interface LoanInfo {
-  laterite?: number // amount
-  fistic?: number // days
-  antidote?: string // account
+  laterite?: number // 金额
+  fistic?: number // 天数
+  antidote?: string // 账户
 }
 
 export interface Scuzzy {
-  medibank?: number // status code?
-  essonite?: string // date?
+  medibank?: number // 状态码?
+  essonite?: string // 日期?
   yell?: LoanInfo
-  frog?: number // countdown time (seconds)
+  frog?: number // 倒计时时间 (秒)
 }
 
 export interface Valour {
@@ -43,48 +43,48 @@ export interface StatusItem {
   rainworm?: number
   // 扩展数据
   valour?: Valour
-  // 扩展数据 (direct on item sometimes?)
+  // 扩展数据 (有时直接在 item 上)
   scuzzy?: Scuzzy
-  // 期限列表 (direct on item sometimes?)
+  // 期限列表 (有时直接在 item 上)
   duodenal?: TermItem[]
   // 订单号?
   gain?: string
   // 状态/类型
-  aweto?: number // 0: enabled, 1: disabled
-  keyway?: number // 300: repayment/overdue
-  galabia?: number // 0: in payment, 1: overdue
-  gridding?: string // icon url
-  zoogamy?: number // days (duration)
-  judaical?: number // repayment amount
+  aweto?: number // 0: 启用, 1: 禁用
+  keyway?: number // 300: 还款/逾期
+  galabia?: number // 0: 支付中, 1: 逾期
+  gridding?: string // 图标链接
+  zoogamy?: number // 天数 (持续时间)
+  judaical?: number // 还款金额
   tailfan?: Tailfan
 }
 
 export interface SpadoItem {
-  leonora?: number // status? 300
-  galabia?: number // overdue? 1
-  overdo?: string // time ago
-  surfing?: number // amount
-  laterite?: number // amount detail
-  larder?: number // commission
-  masseuse?: number // interest
-  encash?: number // tax/IVA
-  movies?: string // repayment date
-  sicken?: number // penalty
-  judaical?: number // total amount?
+  leonora?: number // 状态? 300
+  galabia?: number // 逾期? 1
+  overdo?: string // 多久以前
+  surfing?: number // 金额
+  laterite?: number // 金额详情
+  larder?: number // 佣金/服务费
+  masseuse?: number // 利息
+  encash?: number // 税费/增值税
+  movies?: string // 还款日期
+  sicken?: number // 罚金
+  judaical?: number // 总金额?
 }
 
 export interface PaymentMethod {
-  airpost?: string // icon
-  affluent?: string // name
-  suit?: string // desc
-  sermon?: string // payment method code (e.g. PAGSMILE)
-  osmose?: string // bank code or similar
+  airpost?: string // 图标
+  affluent?: string // 名称
+  suit?: string // 描述
+  sermon?: string // 支付方式代码 (例如 PAGSMILE)
+  osmose?: string // 银行代码或类似
 }
 
 export interface Tailfan {
-  bengalee?: number // amount
-  fistic?: number // days
-  galabia?: number // overdue status
+  bengalee?: number // 金额
+  fistic?: number // 天数
+  galabia?: number // 逾期状态
   spado?: SpadoItem[]
   berserk?: PaymentMethod[]
 }

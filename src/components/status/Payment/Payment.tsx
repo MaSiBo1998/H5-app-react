@@ -1,14 +1,17 @@
 import type { ReactElement } from 'react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { RightOutline, BillOutline, ExclamationCircleFill, CheckCircleFill } from 'antd-mobile-icons'
 import styles from './Payment.module.css'
 import type { StatusData, PaymentMethod, SpadoItem } from '../types'
 import LoanDetailPopup from './LoanDetailPopup'
 import { toPayMoney, type PayMoneyParams } from '../../../services/api/payment'
-
+import BankListPopup from '@/pages/apply/components/BankListPopup'
+import type { BankItem } from '@/pages/apply/components/BankListPopup'
+import { useNavigate } from 'react-router-dom'
 export default function Payment({ data }: { data?: any }): ReactElement {
+  const navigate = useNavigate()
   const [detailVisible, setDetailVisible] = useState(false)
-  
+
   // 安全地提取数据
   // 首贷: data.atony[0].tailfan
   // 复贷: data.tailfan
@@ -16,50 +19,66 @@ export default function Payment({ data }: { data?: any }): ReactElement {
   const isOverdue = tailfan?.galabia === 1
   const days = tailfan?.fistic || 0
   const totalAmount = tailfan?.bengalee || 0
-  
+  // 选择银行弹框
+  const [bankVisible, setBankVisible] = useState(false)
+  // 银行code
+  const bankCodeRef = useRef('')
+  // 支付方式
+  const [paymentMethod, setPaymentMethod] = useState<any>('')
   // 如果有第一期分期，计算服务费
   const firstItem = tailfan?.spado?.[0]
-  const serviceFee = firstItem 
+  const serviceFee = firstItem
     ? (firstItem.larder || 0) + (firstItem.masseuse || 0) + (firstItem.encash || 0)
     : 0
+  // 选中银行
+  const handleBankSelect = (bankItem: BankItem) => {
+    console.log('Selected bank:', bankItem)
 
-  const handlePaymentMethodClick = async (method: PaymentMethod) => {
+    setBankVisible(false)
+    bankCodeRef.current = bankItem.code
+    toPaymentSubmit()
+  }
+  const handlePaymentMethodClick = (item: PaymentMethod) => {
     // 处理支付方式选择
-    console.log('Selected payment method:', method)
+    console.log('Selected payment method:', item)
+    setPaymentMethod(item.sermon)
 
-    if (method.sermon === 'PAGSMILE_TRANSFIYA') {
+    if (item.sermon === 'PAGSMILE_TRANSFIYA') {
       // TODO: 如果存在路由，跳转到帮助页面
       console.warn('Navigation to payment help not implemented')
+      navigate('/help')
       return
     }
 
-    if (method.sermon === 'PAGSMILE' && !method.osmose) {
-       // TODO: 如果需要，跳转到银行列表
-       console.warn('Navigation to bank list not implemented')
-       return
+    if (item.sermon === 'PAGSMILE' && !bankCodeRef.current) {
+      // TODO: 如果需要，跳转到银行列表
+      setBankVisible(true)
+      console.warn('Navigation to bank list not implemented')
+      return
     }
-    
+    toPaymentSubmit()
+  }
+  const toPaymentSubmit = async () => {
     try {
-        const appName = data?.atony?.[0]?.lima || data?.lima || ''
-        // 查找 leonora === 300 的项 (待处理/填充)
-        const targetItem = tailfan?.spado?.find((item: SpadoItem) => item.leonora === 300)
-        
-        const params: PayMoneyParams = {
-            appName,
-            payName: method.sermon || '',
-            money: Number(targetItem?.judaical || 0),
-            bankCode: method.sermon === 'PAGSMILE' ? method.osmose : null
-        }
-        
-        console.log('Payment params:', params)
-        const res = await toPayMoney(params)
-        console.log('Payment response:', res)
-        
-        if (res && res.otology) {
-            window.location.href = res.otology
-        }
+      const appName = data?.atony?.[0]?.lima || data?.lima || ''
+      // 查找 leonora === 300 的项 (待处理/填充)
+      const targetItem = tailfan?.spado?.find((item: SpadoItem) => item.leonora === 300)
+      const params: PayMoneyParams = {
+        appName,
+        payName: paymentMethod,
+        money: Number(targetItem?.judaical || 0),
+        bankCode: paymentMethod === 'PAGSMILE' ? bankCodeRef.current : null
+      }
+
+      console.log('Payment params:', params)
+      const res = await toPayMoney(params)
+      console.log('Payment response:', res)
+
+      if (res && res.otology) {
+        window.location.href = res.otology
+      }
     } catch (error) {
-        console.error('Payment failed:', error)
+      console.error('Payment failed:', error)
     }
   }
 
@@ -122,11 +141,11 @@ export default function Payment({ data }: { data?: any }): ReactElement {
           {(tailfan?.spado || []).map((item: SpadoItem, index: number) => {
             const isItemOverdue = item.galabia === 1
             const isItemPadding = item.leonora === 300
-            
+
             let boxClass = styles['already-box']
             let colorClass = styles['already-color']
             let iconColor = '#78909c'
-            
+
             if (isItemOverdue) {
               boxClass = styles['over-box']
               colorClass = styles['over-color']
@@ -162,8 +181,8 @@ export default function Payment({ data }: { data?: any }): ReactElement {
           <div className={styles['general-title']}>Elegir un método de pago</div>
           <div className={styles['payment-list-card']}>
             {(tailfan?.berserk || []).map((item: PaymentMethod, index: number) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className={styles['payment-method-item']}
                 onClick={() => handlePaymentMethodClick(item)}
               >
@@ -181,10 +200,15 @@ export default function Payment({ data }: { data?: any }): ReactElement {
         </div>
       </div>
 
-      <LoanDetailPopup 
-        visible={detailVisible} 
-        onClose={() => setDetailVisible(false)} 
+      <LoanDetailPopup
+        visible={detailVisible}
+        onClose={() => setDetailVisible(false)}
         items={tailfan?.spado}
+      />
+      <BankListPopup
+        visible={bankVisible}
+        onClose={() => setBankVisible(false)}
+        onSelect={handleBankSelect}
       />
     </div>
   )
