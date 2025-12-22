@@ -9,7 +9,6 @@ import LoanInProgress from '@/components/status/LoanInProgress/LoanInProgress'
 import LoanFailed from '@/components/status/LoanFailed/LoanFailed'
 import Payment from '@/components/status/Payment/Payment'
 import LoanUnconfirmed from '@/components/status/LoanUnconfirmed/LoanUnconfirmed'
-import NewLoanRisk from '@/components/status/NewLoanRisk/NewLoanRisk'
 import AuditPending from '@/components/status/AuditPending/AuditPending'
 import ExamineReject from '@/components/status/ExamineReject/ExamineReject'
 import AuditCountdown from '@/components/status/AuditCountdown/AuditCountdown'
@@ -17,11 +16,7 @@ import AuditCountdown from '@/components/status/AuditCountdown/AuditCountdown'
 export default function StatusPage(): ReactElement {
   const [searchParams] = useSearchParams()
   const appName = searchParams.get('appName')
-  const navigate = useNavigate()
-
   const [data, setData] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
-
   const [navStyle, setNavStyle] = useState({
     background: 'transparent',
     color: '#ffffff',
@@ -60,7 +55,6 @@ export default function StatusPage(): ReactElement {
     } catch (error) {
       console.error(error)
     } finally {
-      setLoading(false)
     }
   }
 
