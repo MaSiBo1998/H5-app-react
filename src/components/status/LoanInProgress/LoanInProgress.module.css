@@ -1,7 +1,6 @@
 .container {
-  padding: 20px 12px;
+  padding: 20px 6px;
   /* background: #f5f7fa; removed for seamless header */
-  min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   box-sizing: border-box;
   display: flex;

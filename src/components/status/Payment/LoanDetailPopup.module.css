@@ -1,0 +1,111 @@
+.popup-content {
+  background: #ffffff;
+  border-radius: 24px 24px 0 0;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 24px;
+  text-align: center;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 18px;
+  font-weight: 600;
+  color: #263238;
+}
+
+.scroll-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.loan-item {
+  border: 1px solid #eceff1;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.loan-item.expanded {
+  border-color: #26a69a; /* Teal */
+  background: #e0f2f1;
+}
+
+.loan-item.padding-box {
+  background: #f1f8e9;
+}
+
+.loan-item.over-box {
+  background: #ffebee;
+  border-color: #ffcdd2;
+}
+
+.loan-item.already-box {
+  background: #f5f5f5;
+}
+
+.item-header {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.date {
+  font-size: 14px;
+  color: #546e7a;
+  font-weight: 500;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.amount {
+  font-size: 16px;
+  font-weight: 600;
+  color: #263238;
+}
+
+.arrow {
+  font-size: 16px;
+  color: #90a4ae;
+  transition: transform 0.3s ease;
+}
+
+.arrow.rotated {
+  transform: rotate(90deg);
+}
+
+.item-detail {
+  padding: 0 16px 16px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.label {
+  color: #78909c;
+}
+
+.value {
+  color: #37474f;
+  font-weight: 500;
+  text-align: right;
+}
+
+.over-color .label,
+.over-color .value {
+  color: #d32f2f !important;
+}

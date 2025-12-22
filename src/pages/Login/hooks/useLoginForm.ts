@@ -68,7 +68,7 @@ export const useLoginForm = () => {
   }
 
   return {
-    // state
+    // 状态
     phoneRest,
     setPhoneRest,
     code,
@@ -79,10 +79,10 @@ export const useLoginForm = () => {
     setTimeLeft,
     accepted,
     setAccepted,
-    // derived
+    // 派生状态
     canSend,
     canLogin,
-    // actions
+    // 操作
     handleSend,
     handleLogin,
   }

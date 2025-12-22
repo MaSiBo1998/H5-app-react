@@ -1,0 +1,265 @@
+.container {
+  padding: 20px 12px;
+  /* background: #f5f7fa; */
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+.content-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header Card */
+.header-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.date-money {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.money, .date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.money-text, .date-text {
+  font-size: 14px;
+  color: #90a4ae;
+  margin-bottom: 8px;
+}
+
+.money-value, .date-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #263238;
+}
+
+.out-text-color {
+  color: #ff5252 !important;
+}
+
+.service-fee {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid #eceff1;
+}
+
+.service-fee-text {
+  font-size: 14px;
+  color: #546e7a;
+}
+
+.service-fee-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #263238;
+}
+
+/* Tips */
+.tips {
+  margin-top: 16px;
+}
+
+.tips-box {
+  background: #e0f2f1;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 13px;
+  color: #00695c;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tips-box.out-text-color {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.tips-img {
+  width: 20px;
+  height: 20px;
+}
+
+/* Payment Plan Card */
+.payment-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.payment-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.payment-card-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.payment-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #263238;
+}
+
+.payment-card-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.payment-date {
+  font-size: 13px;
+  color: #00897b;
+}
+
+.arrow-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.payment-intall-box {
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment-intall-box:last-child {
+  margin-bottom: 0;
+}
+
+/* Status Styles */
+.padding-box {
+  background: #f1f8e9; /* Light Green */
+}
+
+.over-box {
+  background: #ffebee; /* Light Red */
+}
+
+.already-box {
+  background: #f5f5f5; /* Grey */
+}
+
+.payment-intall-box-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.payment-intall-box-img {
+  width: 20px;
+  height: 20px;
+}
+
+.payment-intall-box-right {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.padding-color {
+  color: #33691e;
+}
+
+.over-color {
+  color: #c62828;
+}
+
+.already-color {
+  color: #78909c;
+}
+
+/* Payment Methods */
+.general-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #263238;
+  margin: 8px 0 16px;
+  padding-left: 4px;
+}
+
+.payment-list-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 8px 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.payment-method-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid #f5f5f5;
+  transition: background-color 0.2s;
+}
+
+.payment-method-item:last-child {
+  border-bottom: none;
+}
+
+.payment-method-item:active {
+  background-color: #f9fafb;
+}
+
+.method-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.method-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.method-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.method-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #263238;
+  margin-bottom: 4px;
+}
+
+.method-desc {
+  font-size: 12px;
+  color: #90a4ae;
+}

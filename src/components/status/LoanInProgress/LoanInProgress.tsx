@@ -4,8 +4,8 @@ import styles from './LoanInProgress.module.css'
 import { ClockCircleOutline } from "antd-mobile-icons"
 
 export default function LoanInProgress({ data }: { data: StatusData }): ReactElement {
-  // Vue: appProductData.scuzzy.yell
-  // data.atony[0].scuzzy.yell
+  // Vue对应逻辑: appProductData.scuzzy.yell
+  // 数据源: data.atony[0].scuzzy.yell
   const loanInfo = data.atony?.[0]?.scuzzy?.yell
   
   const amount = loanInfo?.laterite

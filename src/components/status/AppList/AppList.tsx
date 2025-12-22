@@ -6,9 +6,9 @@ import styles from './AppList.module.css'
 
 export default function AppList({ data }: { data: StatusData }): ReactElement {
   const navigate = useNavigate()
-  // Vue: enableProductList -> item.aweto == 0
+  // Vue逻辑: 启用产品列表 -> item.aweto == 0
   const enableProductList = (data.atony || []).filter((item: any) => item.aweto === 0)
-  // Vue: unenableProductList -> item.aweto == 1
+  // Vue逻辑: 未启用产品列表 -> item.aweto == 1
   const unenableProductList = (data.atony || []).filter((item: any) => item.aweto === 1)
 
   const handleApply = (item: any) => {
@@ -88,7 +88,7 @@ export default function AppList({ data }: { data: StatusData }): ReactElement {
                    )}
                 </div>
               ) : (
-                // 列表展示不处于还款期/逾期 (Apply State)
+                // 列表展示不处于还款期/逾期 (申请状态)
                 <div className={styles['product-card-box']}>
                    <div className={styles['content-top']}>
                       <div className={styles['top-left']}>

@@ -12,7 +12,7 @@ import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 export default function App(): ReactElement {
   // 初始化设备信息
   useEffect(() => {
-    // Initialize device info collection on app startup
+    // 应用启动时初始化设备信息收集
     collectDeviceInfo().then(info => {
       console.log('Device info collected:', info)
     }).catch(err => {

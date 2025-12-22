@@ -56,6 +56,37 @@ export interface StatusItem {
   gridding?: string // icon url
   zoogamy?: number // days (duration)
   judaical?: number // repayment amount
+  tailfan?: Tailfan
+}
+
+export interface SpadoItem {
+  leonora?: number // status? 300
+  galabia?: number // overdue? 1
+  overdo?: string // time ago
+  surfing?: number // amount
+  laterite?: number // amount detail
+  larder?: number // commission
+  masseuse?: number // interest
+  encash?: number // tax/IVA
+  movies?: string // repayment date
+  sicken?: number // penalty
+  judaical?: number // total amount?
+}
+
+export interface PaymentMethod {
+  airpost?: string // icon
+  affluent?: string // name
+  suit?: string // desc
+  sermon?: string // payment method code (e.g. PAGSMILE)
+  osmose?: string // bank code or similar
+}
+
+export interface Tailfan {
+  bengalee?: number // amount
+  fistic?: number // days
+  galabia?: number // overdue status
+  spado?: SpadoItem[]
+  berserk?: PaymentMethod[]
 }
 
 export interface StatusData {
@@ -65,4 +96,5 @@ export interface StatusData {
   status?: number
   // 列表数据
   atony?: StatusItem[]
+  tailfan?: Tailfan
 }

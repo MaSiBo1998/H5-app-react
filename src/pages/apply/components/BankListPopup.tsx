@@ -29,8 +29,8 @@ export default function BankListPopup({ visible, onClose, onSelect }: Props) {
     setLoading(true)
     try {
       const res = await getBankList({}) as any
-      // Handle the response structure: { booky: [...] }
-      // Or if getBankList returns the decoded object directly
+      // 处理响应结构: { booky: [...] }
+      // 或者如果 getBankList 直接返回解码后的对象
       let rawList: any[] = []
       if (res && Array.isArray(res.booky)) {
         rawList = res.booky
@@ -43,19 +43,19 @@ export default function BankListPopup({ visible, onClose, onSelect }: Props) {
       const map: Record<string, BankItem[]> = {}
       
       rawList.forEach((item: any) => {
-        // Vue: uses 'saturday' for key (index letter)
+        // Vue: 使用 'saturday' 作为键（索引字母）
         const key = item.saturday || '#'
         if (!map[key]) map[key] = []
         map[key].push({
-          name: item.frau, // Vue: frau is name
-          code: item.manned // Vue: manned is code
+          name: item.frau, // Vue: frau 是名称
+          code: item.manned // Vue: manned 是代码
         })
       })
 
-      // Sort keys
+      // 排序键
       const keys = Object.keys(map).sort()
       
-      // Move 'Banco Popular' to top if it exists
+      // 如果 'Banco Popular' 存在，将其移至顶部
       if (keys.includes('Banco Popular')) {
         const idx = keys.indexOf('Banco Popular')
         keys.splice(idx, 1)

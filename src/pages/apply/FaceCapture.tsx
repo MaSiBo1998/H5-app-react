@@ -63,7 +63,7 @@ export default function FaceCapture(): ReactElement {
   // 启动摄像头
   const startCamera = async () => {
     try {
-      setIsCameraActive(true) // Render video element first
+      setIsCameraActive(true) // 先渲染视频元素
       const s = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: 'user',
@@ -107,7 +107,7 @@ export default function FaceCapture(): ReactElement {
       const video = videoRef.current
       const canvas = canvasRef.current
 
-      // Calculate crop to make it square/centered
+      // 计算裁剪区域以使其正方形/居中
       const size = Math.min(video.videoWidth, video.videoHeight)
       const x = (video.videoWidth - size) / 2
       const y = (video.videoHeight - size) / 2
@@ -117,7 +117,7 @@ export default function FaceCapture(): ReactElement {
 
       const ctx = canvas.getContext('2d')
       if (ctx) {
-        // Mirror the image horizontally for selfie feel
+        // 水平镜像图像以获得自拍感
         ctx.translate(size, 0)
         ctx.scale(-1, 1)
 
@@ -126,13 +126,13 @@ export default function FaceCapture(): ReactElement {
         // 获取原始图片
         const rawDataUrl = canvas.toDataURL('image/jpeg', 1.0)
 
-        // 使用标准压缩 (Max 1024, Q 0.7)
+        // 使用标准压缩 (最大 1024, 质量 0.7)
         const compressedDataUrl = await compressImage(rawDataUrl)
 
         setImgSrc(compressedDataUrl)
         stopCamera()
 
-        // Direct submit
+        // 直接提交
         await submitFace(compressedDataUrl)
       }
     }
@@ -247,7 +247,7 @@ export default function FaceCapture(): ReactElement {
         {/* Camera/Image Container */}
         <div style={{ position: 'relative', width: 280, height: 280, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 
-          {/* Advanced Ring Decoration */}
+          {/* 高级环形装饰 */}
           {(isCameraActive || imgSrc) && (
             <div className={styles['advanced-ring']} />
           )}
@@ -271,7 +271,7 @@ export default function FaceCapture(): ReactElement {
               boxShadow: isError ? '0 10px 40px rgba(255, 77, 79, 0.2)' : (isCameraActive ? '0 20px 60px rgba(0,0,0,0.3)' : 'none')
             }}
           >
-            {/* State 1: Idle (Guide) */}
+            {/* 状态 1: 空闲 (引导) */}
             {!isCameraActive && !imgSrc && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#78909c' }}>
                 <div style={{
@@ -289,7 +289,7 @@ export default function FaceCapture(): ReactElement {
               </div>
             )}
 
-            {/* State 2: Camera Active (Video) */}
+            {/* 状态 2: 相机激活 (视频) */}
             {isCameraActive && !imgSrc && (
               <>
                 <video
@@ -301,24 +301,24 @@ export default function FaceCapture(): ReactElement {
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
-                    transform: 'scaleX(-1)' // Mirror effect
+                    transform: 'scaleX(-1)' // 镜像效果
                   }}
                 />
 
-                {/* Clean View - No Overlays inside image area */}
+                {/* 干净视图 - 图像区域内无覆盖层 */}
               </>
             )}
 
-            {/* State 3: Captured (Image) */}
+            {/* 状态 3: 已捕获 (图片) */}
             {imgSrc && (
               <img
                 src={imgSrc}
                 alt="Selfie"
                 style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover'
-                }}
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
               />
             )}
           </div>
@@ -343,7 +343,7 @@ export default function FaceCapture(): ReactElement {
             if (isError) {
               handleRetake()
             } else if (imgSrc) {
-              // Do nothing while processing
+              // 处理中不做任何操作
             } else if (isCameraActive) {
               handleCapture()
             } else {

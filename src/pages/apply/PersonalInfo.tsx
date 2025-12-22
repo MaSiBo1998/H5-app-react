@@ -186,17 +186,17 @@ export default function PersonalInfo(): ReactElement {
     setLoading(true)
     try {
       const payload = {
-        baotou: form.educationValue, // Education
-        trna: form.postalCode, // Postal Code
-        izzard: form.emailAccount, // Email
-        fenagle: form.emailCode, // Email Code
-        whetter: form.maritalValue, // Marital
-        hieratic: form.childrenValue, // Children
-        follicle: form.residenceTypeValue, // Residence Type
-        anadem: form.residenceAddress, // Residence Address
-        vile: form.residenceAddressDetail, // Address Detail
-        roundeye: form.loanUse, // Loan Use
-        coxswain: form.stepTime, // Start Time
+        baotou: form.educationValue, // 学历
+        trna: form.postalCode, // 邮编
+        izzard: form.emailAccount, // 邮箱
+        fenagle: form.emailCode, // 邮箱验证码
+        whetter: form.maritalValue, // 婚姻状况
+        hieratic: form.childrenValue, // 子女数量
+        follicle: form.residenceTypeValue, // 居住类型
+        anadem: form.residenceAddress, // 居住地址
+        vile: form.residenceAddressDetail, // 详细地址
+        roundeye: form.loanUse, // 贷款用途
+        coxswain: form.stepTime, // 开始时间
       }
 
       await savePersonalInfo(payload)
@@ -335,7 +335,7 @@ export default function PersonalInfo(): ReactElement {
                   }
                 }}
                 onBlur={() => {
-                  // Delay closing to allow click on suffix
+                  // 延迟关闭以允许点击后缀
                   setTimeout(() => setVisibles(prev => ({ ...prev, emailSuffix: false })), 200)
                 }}
                 placeholder="Ingresa tu correo electrónico"

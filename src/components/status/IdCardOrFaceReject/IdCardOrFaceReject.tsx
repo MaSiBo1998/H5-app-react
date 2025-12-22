@@ -17,7 +17,7 @@ export default function IdCardOrFaceReject({ data, onRefresh }: IdCardOrFaceReje
   const isIdReject = status === 310
   
   const handleEdit = () => {
-    // Logic for "Volver a subir"
+    // "重新上传"的逻辑
     console.log("Re-upload ID/Face",status)
     if(status === 310) {
       navigate(`/id?entry=homeEdit&orderId=${orderId || ''}`)

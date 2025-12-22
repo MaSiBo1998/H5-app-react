@@ -272,7 +272,7 @@ export default function BankInfo(): ReactElement {
                 </div>
                 <RightOutline color="#cccccc" />
               </div>
-              <BankListPopup
+              <BankListPopup 
                 visible={bankPickerVisible}
                 onClose={() => setBankPickerVisible(false)}
                 onSelect={(bank) => {

@@ -9,10 +9,10 @@ interface AuditCountdownProps {
 }
 
 export default function AuditCountdown({ data, onRefresh }: AuditCountdownProps): ReactElement {
-  // 从 data 中获取倒计时时间，Vue 中是 appProductData.scuzzy.frog
-  // data.atony[0].scuzzy.frog
+  // 从 data 中获取倒计时时间，Vue对应逻辑: appProductData.scuzzy.frog
+  // 数据源: data.atony[0].scuzzy.frog
   const initialTime = (data.atony?.[0]?.scuzzy as any)?.frog ?? 0
-  const [time, setTime] = useState(initialTime > 0 ? initialTime : 60) // 默认 60s 防止 0
+  const [time, setTime] = useState(initialTime > 0 ? initialTime : 60) // 默认 60秒 防止为0
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 

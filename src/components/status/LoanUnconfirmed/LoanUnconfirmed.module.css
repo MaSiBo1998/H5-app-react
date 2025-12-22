@@ -1,10 +1,9 @@
 .container {
-  padding: 20px 12px;
+  padding: 20px 6px 0;
   /* background: #f5f7fa; */
-  min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   box-sizing: border-box;
-  padding-bottom: 100px; /* Space for fixed footer */
+
 }
 
 .header-card {
@@ -186,6 +185,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.with-tabbar {
+  bottom: 50px;
 }
 
 .submit-btn {

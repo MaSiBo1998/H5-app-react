@@ -10,8 +10,8 @@ interface LoanFailedProps {
 
 export default function LoanFailed({ data, onRefresh }: LoanFailedProps): ReactElement {
   const handleEdit = () => {
-    // Logic for "Modificar cuenta bancaria"
-    // Usually jumps to bank binding page
+    // "修改银行账户"的逻辑
+    // 通常跳转到银行绑定页面
     console.log("Edit bank info")
   }
 

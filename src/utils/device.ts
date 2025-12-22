@@ -6,7 +6,7 @@ const getNetworkType = (): string | null => {
   return conn ? conn.effectiveType : null
 }
 
-// FingerprintJS promise (loaded once)
+// FingerprintJS promise (加载一次)
 const fpPromise = import('@fingerprintjs/fingerprintjs')
   .then(FingerprintJS => FingerprintJS.load())
 
@@ -164,7 +164,7 @@ export const collectDeviceInfo = async (): Promise<DeviceInfo> => {
       eighty: navigator.hardwareConcurrency || null,
     },
     decree: {
-      charka: null, // Web API 限制
+      charka: (navigator as any).deviceMemory ? (navigator as any).deviceMemory.toString() : null, // 内存
       nineveh: null, // Web API 限制
       korai: null, // Web API 限制
     },

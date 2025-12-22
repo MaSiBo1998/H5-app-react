@@ -276,7 +276,7 @@ export default function WorkInfo(): ReactElement {
               </div>
             )}
 
-            {/* 单周新 */}
+            {/* 单周 */}
             {showWeekly && (
               <div className={styles['form-group']}>
                 <label className={styles['form-label']}>Día de la semana</label>
@@ -290,7 +290,7 @@ export default function WorkInfo(): ReactElement {
               </div>
             )}
 
-            {/* 双周新 */}
+            {/* 双周 */}
             {showBiweekly && (<>
 
               <div className={styles['form-group']} style={{ flex: 1 }}>

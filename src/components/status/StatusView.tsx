@@ -21,13 +21,6 @@ const COMPONENT_MAP: Record<number, (p: { data: StatusData, onRefresh?: (showLoa
   300: ExamineReject,
   310: IdCardOrFaceReject,
   320: IdCardOrFaceReject,
-  // 330: AuditRejectedReapply, // Vue didn't explicitly handle 330 in HomeMain template? 
-  // Wait, Vue template comments say: 330 :账号注销后重新进件审核拒绝
-  // But Vue template only has:
-  // <ExamineReject v-if="homeData.kaki == 300"></ExamineReject>
-  // <IdCardOrFaceReject v-if="homeData.kaki == 310 || homeData.kaki == 320"></IdCardOrFaceReject>
-  // It doesn't seem to render anything for 330 explicitly in the main list, or maybe it falls into ExamineReject?
-  // Let's stick to what Vue template shows.
   370: EntryForm, // 370 uses newLoanToStep in Vue
   400: LoanUnconfirmed,
   500: LoanInProgress,

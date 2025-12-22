@@ -78,28 +78,28 @@ export default function LoanDetailPopup({
       // Calculate amounts per period
       const principalPerPeriod = principalTotal / periods
       
-      // Interest: (Principal * Rate * Days) / Periods ?
-      // Vue logic: (obj.shammash * obj.seacoast * obj.fistic) / obj.fiefdom
-      const interestPerPeriod = (amount * seacoast * totalDays) / periods
-      
-      const serviceFeePerPeriod = beirut / periods
-      const taxPerPeriod = gaucho / periods
-      
-      // Repayment: Principal + Interest + Service + Tax ?
-      // Vue logic: (obj.shammash + obj.shammash * obj.seacoast * obj.fistic) / obj.fiefdom
-      // It seems Vue logic didn't add serviceFee or Tax to 'repayment' field, 
-      // but 'repayment' usually means Total Due.
-      // Let's check Vue again:
-      // repayment: (obj.shammash + obj.shammash * obj.seacoast * obj.fistic) / obj.fiefdom
-      // It only includes Principal + Interest. 
-      // But displayed details have Service Fee?
-      // Vue template shows: Principal, Interest, Date. 
-      // Wait, Vue template has: "Incluyendo principal", "Interés", "Fecha de reembolso".
-      // It does NOT show Service Fee or Tax in the expanded details in the template provided!
-      // But processLoanToArray calculated them.
-      // I will follow the Template: Principal + Interest.
-      
-      const repaymentPerPeriod = principalPerPeriod + interestPerPeriod
+      // 利息: (本金 * 利率 * 天数) / 期数
+    // Vue 逻辑: (obj.shammash * obj.seacoast * obj.fistic) / obj.fiefdom
+    const interestPerPeriod = (amount * seacoast * totalDays) / periods
+    
+    const serviceFeePerPeriod = beirut / periods
+    const taxPerPeriod = gaucho / periods
+    
+    // 还款额: 本金 + 利息
+    // Vue 逻辑: (obj.shammash + obj.shammash * obj.seacoast * obj.fistic) / obj.fiefdom
+    // 似乎 Vue 逻辑没有将服务费或税费加到 'repayment' 字段，
+    // 但 'repayment' 通常意味着应还总额。
+    // 再次检查 Vue：
+    // repayment: (obj.shammash + obj.shammash * obj.seacoast * obj.fistic) / obj.fiefdom
+    // 它只包含本金 + 利息。
+    // 但是显示的详情有服务费？
+    // Vue 模板显示：本金，利息，日期。
+    // 等等，Vue 模板有："Incluyendo principal", "Interés", "Fecha de reembolso"。
+    // 它在提供的模板展开详情中并没有显示服务费或税费！
+    // 但是 processLoanToArray 计算了它们。
+    // 我将遵循模板：本金 + 利息。
+    
+    const repaymentPerPeriod = principalPerPeriod + interestPerPeriod
 
       result.push({
         period: i,

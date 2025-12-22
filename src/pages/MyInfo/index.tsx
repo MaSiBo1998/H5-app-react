@@ -188,7 +188,7 @@ export default function MyInfo(): ReactElement {
                 
                 {renderItem(
                     "Verificación de identidad", 
-                    <UserOutline />, // Using UserOutline as generic ID icon if specific one not available
+                    <UserOutline />, // 如果没有特定图标，使用 UserOutline 作为通用 ID 图标
                     isIdVerificationComplete, 
                     idVerificationPath,
                     !isIdComplete ? 'Sube tu ID' : 'Sube tu Selfie'

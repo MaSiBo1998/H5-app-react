@@ -139,7 +139,7 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
           muted
         />
 
-        {/* Frame Container */}
+        {/* 框架容器 */}
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -152,14 +152,14 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
           zIndex: 10,
           transition: 'all 0.3s ease'
         }}>
-          {/* Inner Dashed Border */}
+          {/* 内部虚线边框 */}
           <div style={{
             position: 'absolute', inset: 0,
             border: '2px dashed rgba(38, 166, 154, 0.5)',
             borderRadius: '12px',
             overflow: 'hidden' // 将扫描线裁剪在边框内
           }}>
-            {/* Scan Line */}
+            {/* 扫描线 */}
             <div className={styles['scan-line']}></div>
           </div>
 

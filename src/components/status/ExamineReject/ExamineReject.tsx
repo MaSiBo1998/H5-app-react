@@ -15,6 +15,7 @@ export default function ExamineReject({ data, onRefresh }: ExamineRejectProps): 
   const status = data.atony?.[0]?.valour?.scuzzy?.medibank ?? data.atony?.[0]?.scuzzy?.medibank ?? 1
   
   // Date for RejectAllowAgain
+  // 再次申请的日期
   const date = data.atony?.[0]?.valour?.scuzzy?.essonite ?? data.atony?.[0]?.scuzzy?.essonite
 
   if (status === 0) {
@@ -63,7 +64,7 @@ export default function ExamineReject({ data, onRefresh }: ExamineRejectProps): 
     )
   }
 
-  // Default: status 1 (OriginalReject)
+  // 默认: 状态 1 (原始拒绝)
   return (
     <div className={styles.container}>
       <div className={styles['header-card']}>

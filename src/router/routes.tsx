@@ -17,7 +17,7 @@ const FaceCapture = lazy(() => import('@/pages/apply/FaceCapture'))
 const BankInfo = lazy(() => import('@/pages/apply/BankInfo'))
 const MyInfo = lazy(() => import('@/pages/MyInfo/index'))
 const MyOrder = lazy(() => import('@/pages/MyOrder/index'))
-const StatusPage = lazy(() => import('@/pages/Status/index'))
+const StatusPage = lazy(() => import('@/pages/status/index'))
 export const routes: RouteObject[] = [
   // 登录页
   { path: '/login', element: <Login /> },
@@ -36,7 +36,7 @@ export const routes: RouteObject[] = [
 
         ],
       },
-      // Status Detail Page
+      // 状态详情页
       { path: '/status', element: <StatusPage /> },
       // 申请流程页面
       { path: 'work', element: <WorkInfo /> },

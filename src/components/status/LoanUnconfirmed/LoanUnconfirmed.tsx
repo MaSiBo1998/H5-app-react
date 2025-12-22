@@ -8,10 +8,14 @@ import { toSubmitOrder, toUploadAuthorDocument } from '@/services/api/order'
 import { collectDeviceInfo } from '@/utils/device'
 import { getStorage, StorageKeys } from '@/utils/storage'
 import LoanDetailPopup from './LoanDetailPopup'
+import { useLocation } from "react-router-dom"
 
 export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData, onRefresh?: () => void }): ReactElement {
+  const location = useLocation()
+  console.log('LoanUnconfirmed', location)
+  const isFirstLoan = !location.pathname.includes('/status')
   
-  // Data extraction logic
+  // 数据提取逻辑
   const productDataList = useMemo(() => {
     return data?.atony?.[0]?.valour?.duodenal ?? data?.atony?.[0]?.duodenal ?? []
   }, [data])
@@ -33,7 +37,7 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
     if (min > 0) setAmount(min)
   }, [min])
 
-  // Calculated values
+  // 计算值
   const repayAmount = useMemo(() => {
     const rate = productData.seacoast || 0
     const days = productData.fistic || 0
@@ -60,7 +64,7 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
             console.error('Device info error', e)
         }
         
-        // Params construction
+        // 参数构建
         const params = {
             appName: data.atony?.[0]?.lima || '',
             chooseAmount: amount,
@@ -85,7 +89,7 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
             content: 'Solicitud enviada',
         })
         
-        // Refresh page to show new status
+        // 刷新页面以显示新状态
         if (onRefresh) {
             onRefresh()
         } else {
@@ -108,7 +112,7 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
 
   return (
     <div className={styles.container}>
-      {/* Header Card */}
+      {/* 头部卡片 */}
       <div className={styles['header-card']}>
         <div className={styles['header-bg-pattern']}></div>
         <div className={styles['header-content']}>
@@ -116,10 +120,10 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
         </div>
       </div>
       
-      {/* Main Card */}
+      {/* 主卡片 */}
       <div className={styles['main-card']}>
         
-        {/* Amount Section */}
+        {/* 金额选择区域 */}
         <div className={styles['section-label']}>Importe del préstamo($COP)</div>
         
         <div className={styles['amount-display-wrapper']}>
@@ -143,7 +147,7 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
             </div>
         )}
 
-        {/* Term Section */}
+        {/* 期限选择区域 */}
         <div className={styles['section-label']} style={{ marginTop: 32 }}>Duración</div>
         <div className={styles['term-options']}>
             {productDataList.map((item: any, index: number) => (
@@ -158,7 +162,7 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
             ))}
         </div>
 
-        {/* Details List */}
+        {/* 详情列表 */}
         <div className={styles['detail-list']}>
             <div className={styles['detail-item']}>
                 <div className={styles['detail-label']}>Monto de Préstamo</div>
@@ -195,8 +199,8 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
         amount={amount}
       />
 
-      {/* Fixed Footer */}
-      <div className={styles['footer-fixed']}>
+      {/* 底部固定栏 */}
+      <div className={`${styles['footer-fixed']} ${isFirstLoan ? styles['with-tabbar'] : ''}`}>
         <button 
             className={styles['submit-btn']}
             disabled={!isAgree}

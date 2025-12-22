@@ -1,28 +1,7 @@
 import { request } from '@/services/http'
+import { decodeNautch } from '@/utils/encryption'
 
 type Data = Record<string, unknown> | FormData
-
-// 解码响应数据
-function decodeNautch<T>(resp: unknown): T {
-  const obj = resp as Record<string, unknown>
-  const val = obj && typeof obj === 'object' ? (obj as any).nautch : undefined
-  if (typeof val === 'string') {
-    let decoded = ''
-    try {
-      decoded = decodeURIComponent(atob(val).split('')
-        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join(''))
-    } catch {
-      decoded = val
-    }
-    try {
-      return JSON.parse(decoded) as T
-    } catch {
-      return decoded as unknown as T
-    }
-  }
-  return resp as T
-}
 
 // 获取步骤配置信息
 export const getStepConfigInfo = <T = unknown>(data: Data) =>

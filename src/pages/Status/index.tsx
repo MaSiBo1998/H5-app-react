@@ -4,7 +4,7 @@ import { getProductDetail } from '@/services/api/product'
 import HeaderNav from '@/components/common/HeaderNav'
 import { PullToRefresh } from 'antd-mobile'
 
-// Import components
+// 导入组件
 import LoanInProgress from '@/components/status/LoanInProgress/LoanInProgress'
 import LoanFailed from '@/components/status/LoanFailed/LoanFailed'
 import Payment from '@/components/status/Payment/Payment'
@@ -124,13 +124,13 @@ export default function StatusPage(): ReactElement {
 
   return (
     <div style={{ background: '#f5f7fa', position: 'relative' }}>
-       {/* Top Gradient Backdrop */}
+       {/* 顶部渐变背景 */}
        <div style={{
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
-          height: '280px', // Covers header + top part of cards
+          height: '280px', // 覆盖头部和卡片顶部
           background: 'linear-gradient(135deg, #004d40 0%, #00695c 100%)',
           zIndex: 0,
           borderBottomLeftRadius: 32,
