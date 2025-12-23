@@ -102,7 +102,7 @@ export const toLoginByCode = (data: LoginByCodeParams) => {
     ),
   }
   const deviceInfo = data.deviceInfo ?? (getStorage(StorageKeys.DEVICE_INFO) || {})
-  return request<{ success: boolean; token?: string; msg?: string; code?: string }>(
+  return request<{ success: boolean; token?: string; msg?: string; code?: string; fining?: number }>(
     '/lanner/karoo',
     {
       method: 'POST',
@@ -115,6 +115,29 @@ export const toLoginByCode = (data: LoginByCodeParams) => {
       },
       isLoading: true,
       withAuth: false,
+    },
+  )
+}
+
+// 设置密码参数
+export interface SetPasswordParams {
+  loginPwd: string
+  loginPwdTwo: string
+}
+
+// 设置密码
+export const toSetPassword = (data: SetPasswordParams) => {
+  const mobile = getStorage<string>(StorageKeys.USER_PHONE) || ''
+  return request<unknown>(
+    '/egotism/durzi/lesbian/boxwood',
+    {
+      method: 'POST',
+      body: {
+        romish: encryptByRSA(mobile, rsaPublicKey),
+        buddhist: data.loginPwd,
+        apices: data.loginPwdTwo,
+      },
+      isLoading: true,
     },
   )
 }

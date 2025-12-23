@@ -3,6 +3,7 @@ import type { RouteObject } from 'react-router-dom'
 import AppLayout from '@/layouts/AppLayout'
 import AuthGuard from './AuthGuard'
 import Help from '@/pages/help'
+import SetPassword from '@/pages/SetPassword'
 
 
 
@@ -39,6 +40,8 @@ export const routes: RouteObject[] = [
       },
       // 状态详情页
       { path: '/status', element: <StatusPage /> },
+      // 设置密码页
+      { path: '/set-password', element: <SetPassword /> },
       // 申请流程页面
       { path: 'work', element: <WorkInfo /> },
       { path: 'contacts', element: <ContactsInfo /> },

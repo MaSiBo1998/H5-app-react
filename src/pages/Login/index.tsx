@@ -1,36 +1,82 @@
-import { Button, Space, Input, Checkbox } from 'antd-mobile'
+import { useEffect, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button, Space, Input, Checkbox, Toast } from 'antd-mobile'
 import { QuestionCircleOutline } from 'antd-mobile-icons'
+import { toSendCode, toLoginByCode } from '@/services/api/user'
+import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './Login.module.css'
-import PhoneInput from './components/PhoneInput'
-import { useLoginForm } from './hooks/useLoginForm'
 
+/**
+ * 登录页面主组件
+ */
 export default function Login(): ReactElement {
-  // 登录表单逻辑 Hook
-  const {
-    // 手机号（不含前缀）
-    phoneRest,
-    setPhoneRest,
-    // 验证码
-    code,
-    setCode,
-    // 邀请码
-    invite,
-    setInvite,
-    // 倒计时
-    timeLeft,
-    // 协议同意状态
-    accepted,
-    setAccepted,
-    // 是否可发送验证码
-    canSend,
-    // 是否可登录
-    canLogin,
-    // 发送验证码处理
-    handleSend,
-    // 登录处理
-    handleLogin,
-  } = useLoginForm()
+  const navigate = useNavigate()
+  // 手机号（不含前缀）
+  const [phoneRest, setPhoneRest] = useState('')
+  // 验证码
+  const [code, setCode] = useState('')
+  // 邀请码
+  const [invite, setInvite] = useState('')
+  // 倒计时
+  const [timeLeft, setTimeLeft] = useState(0)
+  // 协议同意状态
+  const [accepted, setAccepted] = useState(true)
+
+  // 完整手机号（带前缀）
+  const fullPhone = useMemo(() => `57${phoneRest}`, [phoneRest])
+  // 是否可发送验证码
+  const canSend = phoneRest.length === 10 && timeLeft === 0
+  // 是否可登录
+  const canLogin = phoneRest.length === 10 && code.length === 4 && accepted
+
+  // 倒计时逻辑
+  useEffect(() => {
+    if (timeLeft === 0) return
+    const id: number = window.setInterval(() => {
+      setTimeLeft((t) => (t > 1 ? t - 1 : 0))
+    }, 1000)
+    return () => window.clearInterval(id)
+  }, [timeLeft])
+
+  // 发送验证码
+  const handleSend = () => {
+    if (!canSend) return
+    ;(async () => {
+      try {
+        const res = await toSendCode({ mobile: fullPhone, loginType: 1, smsType: 2 })
+        const ttl = res?.ttl ?? 60
+        setTimeLeft(ttl)
+        Toast.show({
+          content: 'Código enviado con éxito',
+          position: 'center',
+        })
+      } catch {
+        setTimeLeft(60)
+      }
+    })()
+  }
+
+  // 登录处理
+  const handleLogin = () => {
+    if (!canLogin) return
+    ;(async () => {
+      try {
+        const deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || undefined
+        const res = await toLoginByCode({ mobile: `${fullPhone}`, code, inviteCode: invite || undefined, deviceInfo })
+        setStorage(StorageKeys.LOGIN_INFO, res)
+        setStorage(StorageKeys.USER_PHONE, fullPhone)
+        // fining为0时跳转设置密码页面
+        if (res.fining === 0) {
+          navigate('/set-password')
+        } else {
+          navigate('/')
+        }
+      } catch {
+        // ignore
+      }
+    })()
+  }
 
   return (
     <div className={styles['login-page']}>
@@ -43,7 +89,31 @@ export default function Login(): ReactElement {
 
         <Space direction="vertical" block style={{ gap: 0 }}>
           {/* 手机号输入组件 */}
-          <PhoneInput value={phoneRest} onChange={setPhoneRest} />
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>Número de celular</label>
+            <div className={styles['input-wrapper']}>
+              {/* 手机号前缀部分 */}
+              <div className={styles['phone-prefix']}>
+                <div className={styles['prefix-flag']}>🇨🇴</div>
+                <span className={styles['prefix-code']}>+57</span>
+              </div>
+              {/* 手机号输入框 */}
+              <Input
+                value={phoneRest}
+                onChange={(v) => {
+                  // 仅允许输入数字
+                  const digits = v.replace(/\D/g, '')
+                  // 限制长度为10位
+                  setPhoneRest(digits.slice(0, 10))
+                }}
+                maxLength={10}
+                placeholder="300 123 4567"
+                clearable
+                type="tel"
+                style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 16 }}
+              />
+            </div>
+          </div>
 
           {/* 验证码输入 */}
           <div className={styles['form-group']}>
