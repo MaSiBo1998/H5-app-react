@@ -5,7 +5,7 @@ import { PayCircleOutline, CheckCircleOutline, ClockCircleOutline } from "antd-m
 import { useNavigate } from "react-router-dom"
 import type { StatusData, StatusItem } from "../types"
 import styles from './EntryForm.module.css'
-import getNowAndNextStep from "@/pages/apply/progress"
+import getNowAndNextStep from "@/pages/Apply/progress"
 
 export default function EntryForm({ data }: { data: StatusData }): ReactElement {
   const navigate = useNavigate()

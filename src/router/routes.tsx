@@ -2,7 +2,7 @@ import { lazy } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import AppLayout from '@/layouts/AppLayout'
 import AuthGuard from './AuthGuard'
-import Help from '@/pages/help'
+import Help from '@/pages/Help'
 import SetPassword from '@/pages/SetPassword'
 
 
@@ -11,15 +11,15 @@ const Home = lazy(() => import('@/pages/Home/Home'))
 const Profile = lazy(() => import('@/pages/Profile/Profile'))
 const Login = lazy(() => import('@/pages/Login/index'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
-const WorkInfo = lazy(() => import('@/pages/apply/WorkInfo'))
-const ContactsInfo = lazy(() => import('@/pages/apply/ContactsInfo'))
-const PersonalInfo = lazy(() => import('@/pages/apply/PersonalInfo'))
-const IdInfo = lazy(() => import('@/pages/apply/IdInfo'))
-const FaceCapture = lazy(() => import('@/pages/apply/FaceCapture'))
-const BankInfo = lazy(() => import('@/pages/apply/BankInfo'))
-const MyInfo = lazy(() => import('@/pages/myInfo/index'))
-const MyOrder = lazy(() => import('@/pages/myOrder/index'))
-const StatusPage = lazy(() => import('@/pages/status/index'))
+const WorkInfo = lazy(() => import('@/pages/Apply/WorkInfo'))
+const ContactsInfo = lazy(() => import('@/pages/Apply/ContactsInfo'))
+const PersonalInfo = lazy(() => import('@/pages/Apply/PersonalInfo'))
+const IdInfo = lazy(() => import('@/pages/Apply/IdInfo'))
+const FaceCapture = lazy(() => import('@/pages/Apply/FaceCapture'))
+const BankInfo = lazy(() => import('@/pages/Apply/BankInfo'))
+const MyInfo = lazy(() => import('@/pages/MyInfo/index'))
+const MyOrder = lazy(() => import('@/pages/MyOrder/index'))
+const StatusPage = lazy(() => import('@/pages/Status/index'))
 export const routes: RouteObject[] = [
   // 登录页
   { path: '/login', element: <Login /> },

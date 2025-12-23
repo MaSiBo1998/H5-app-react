@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, type ReactElement } from 'react'
 import { Card, Space, Button, Input, Picker, DatePicker, Toast, Image } from 'antd-mobile'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import HeaderNav from '@/components/common/HeaderNav'
-import ApplySteps from '@/pages/apply/components/ApplySteps'
+import ApplySteps from '@/pages/Apply/components/ApplySteps'
 import {
   RightOutline,
   CameraOutline,

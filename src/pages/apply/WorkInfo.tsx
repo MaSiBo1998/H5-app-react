@@ -12,7 +12,7 @@ import {
 } from 'antd-mobile-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import HeaderNav from '@/components/common/HeaderNav'
-import ApplySteps from '@/pages/apply/components/ApplySteps'
+import ApplySteps from '@/pages/Apply/components/ApplySteps'
 import { getStepConfigInfo, getAddressList, saveWorkInfo } from '@/services/api/apply'
 import { useEffect, useMemo, useState } from 'react'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'

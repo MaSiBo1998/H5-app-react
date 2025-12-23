@@ -5,8 +5,8 @@ import styles from './Payment.module.css'
 import type { StatusData, PaymentMethod, SpadoItem } from '../types'
 import LoanDetailPopup from './LoanDetailPopup'
 import { toPayMoney, type PayMoneyParams } from '../../../services/api/payment'
-import BankListPopup from '@/pages/apply/components/BankListPopup'
-import type { BankItem } from '@/pages/apply/components/BankListPopup'
+import BankListPopup from '@/pages/Apply/components/BankListPopup'
+import type { BankItem } from '@/pages/Apply/components/BankListPopup'
 import { useNavigate } from 'react-router-dom'
 export default function Payment({ data }: { data?: any }): ReactElement {
   const navigate = useNavigate()
