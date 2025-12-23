@@ -2,6 +2,8 @@
   inset: 0;
   background: linear-gradient(135deg, #e0f7fa 0%, #ffffff 50%, #e8f5e9 100%);
   padding: 20px 24px;
+  min-height: 100vh;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -55,3 +57,11 @@
 .login-btn:disabled { background: #eceff1 !important; box-shadow: none; color: #b0bec5 !important; }
 .footer-links { display: flex; justify-content: center; margin-top: 24px; gap: 24px; }
 .footer-link { font-size: 13px; color: #78909c; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+.password-login-link {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #26a69a;
+  cursor: pointer;
+  text-align: right;
+  font-weight: 500;
+}

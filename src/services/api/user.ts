@@ -169,6 +169,73 @@ export const checkCode = (data: CheckCodeParams) => {
   )
 }
 
+// 检查是否可以使用密码登录参数
+export interface CheckPasswordLoginParams {
+  mobile: string
+}
+
+// 检查是否可以使用密码登录
+export const checkPasswordLogin = (data: CheckPasswordLoginParams) => {
+  return request<{ fining: number }>(
+    '/climax/deskwork/embezzle',
+    {
+      method: 'POST',
+      body: {
+        romish: encryptByRSA(data.mobile, rsaPublicKey),
+      },
+      isLoading: true,
+      withAuth: false,
+    },
+  )
+}
+
+// 密码登录参数
+export interface LoginByPasswordParams {
+  mobile: string
+  loginPwd: string
+  deviceInfo?: DeviceInfo | Record<string, unknown>
+}
+
+// 密码登录
+export const loginByPassword = (data: LoginByPasswordParams) => {
+  const adjustInfo = getStorage<Record<string, unknown>>(StorageKeys.ADJUST_INFO)
+  const payloadUA = navigator.userAgent
+  const fbp = getCookie('_fbp')
+  const fbc = getCookie('_fbc')
+  const deviceId = getStorage<string>(StorageKeys.UUID) || ''
+  const bewail = {
+    fugate: null,
+    acetated: null,
+    bourne: btoa(
+      JSON.stringify({
+        userAgent: payloadUA,
+        adjustId:
+          adjustInfo && typeof adjustInfo === 'object' ? (adjustInfo as any).adid || null : null,
+        info: adjustInfo,
+        fbp,
+        fbc,
+        deviceId,
+      }),
+    ),
+  }
+  const deviceInfo = data.deviceInfo ?? (getStorage(StorageKeys.DEVICE_INFO) || {})
+  
+  return request<{ success: boolean; token?: string; msg?: string; code?: string }>(
+    '/brief/window/ganges/puris',
+    {
+      method: 'POST',
+      body: {
+        romish: encryptByRSA(data.mobile, rsaPublicKey),
+        buddhist: data.loginPwd,
+        blastous: btoa(JSON.stringify(deviceInfo)),
+        bewail,
+      },
+      isLoading: true,
+      withAuth: false,
+    },
+  )
+}
+
 // 用户详情
 export interface UserDetail {
   champak?: number | null

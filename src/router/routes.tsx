@@ -21,10 +21,13 @@ const MyInfo = lazy(() => import('@/pages/MyInfo/index'))
 const MyOrder = lazy(() => import('@/pages/MyOrder/index'))
 const StatusPage = lazy(() => import('@/pages/Status/index'))
 const CheckMobile = lazy(() => import('@/pages/CheckMobile'))
+const PasswordLogin = lazy(() => import('@/pages/PasswordLogin/index'))
 
 export const routes: RouteObject[] = [
   // 登录页
   { path: '/login', element: <Login /> },
+  // 密码登录页
+  { path: '/password-login', element: <PasswordLogin /> },
   {
     // 路由守卫
     element: <AuthGuard />,

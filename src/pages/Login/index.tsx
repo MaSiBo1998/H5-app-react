@@ -3,7 +3,7 @@ import type { ReactElement } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, Space, Input, Checkbox, Toast } from 'antd-mobile'
 import { QuestionCircleOutline } from 'antd-mobile-icons'
-import { toSendCode, toLoginByCode } from '@/services/api/user'
+import { toSendCode, toLoginByCode, checkPasswordLogin } from '@/services/api/user'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './Login.module.css'
 
@@ -78,6 +78,23 @@ export default function Login(): ReactElement {
     })()
   }
 
+  // 密码登录检查
+  const handlePasswordLoginCheck = async () => {
+    if (phoneRest.length !== 10) return
+    try {
+      // 先保存手机号，方便后续页面使用
+      setStorage(StorageKeys.USER_PHONE, fullPhone)
+      const res = await checkPasswordLogin({ mobile: fullPhone })
+      if (res.fining === 1) {
+        navigate('/password-login')
+      } else {
+        Toast.show({ content: 'No se puede iniciar sesión con contraseña', position: 'center' })
+      }
+    } catch (error) {
+      // ignore
+    }
+  }
+
   return (
     <div className={styles['login-page']}>
       <div className={styles['login-card']}>
@@ -113,6 +130,14 @@ export default function Login(): ReactElement {
                 style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 16 }}
               />
             </div>
+            {phoneRest.length === 10 && (
+              <div 
+                className={styles['password-login-link']}
+                onClick={handlePasswordLoginCheck}
+              >
+                Iniciar sesión con contraseña
+              </div>
+            )}
           </div>
 
           {/* 验证码输入 */}
