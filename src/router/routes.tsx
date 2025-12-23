@@ -20,6 +20,8 @@ const BankInfo = lazy(() => import('@/pages/Apply/BankInfo'))
 const MyInfo = lazy(() => import('@/pages/MyInfo/index'))
 const MyOrder = lazy(() => import('@/pages/MyOrder/index'))
 const StatusPage = lazy(() => import('@/pages/Status/index'))
+const CheckMobile = lazy(() => import('@/pages/CheckMobile'))
+
 export const routes: RouteObject[] = [
   // 登录页
   { path: '/login', element: <Login /> },
@@ -42,6 +44,8 @@ export const routes: RouteObject[] = [
       { path: '/status', element: <StatusPage /> },
       // 设置密码页
       { path: '/set-password', element: <SetPassword /> },
+      // 验证手机号页
+      { path: '/check-mobile', element: <CheckMobile /> },
       // 申请流程页面
       { path: 'work', element: <WorkInfo /> },
       { path: 'contacts', element: <ContactsInfo /> },

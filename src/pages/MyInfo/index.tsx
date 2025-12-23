@@ -95,10 +95,11 @@ export default function MyInfo(): ReactElement {
         icon: ReactElement, 
         isComplete: boolean, 
         path: string,
-        description?: string
+        description?: string,
+        customOnClick?: () => void
     ) => (
         <div 
-            onClick={() => handleNavigate(path, isComplete)}
+            onClick={customOnClick ? customOnClick : () => handleNavigate(path, isComplete)}
             style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -107,8 +108,8 @@ export default function MyInfo(): ReactElement {
                 borderRadius: '12px',
                 marginBottom: '12px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                cursor: isComplete ? 'default' : 'pointer',
-                opacity: isComplete ? 0.8 : 1
+                cursor: (isComplete && !customOnClick) ? 'default' : 'pointer',
+                opacity: (isComplete && !customOnClick) ? 0.8 : 1
             }}
         >
             <div style={{ 
@@ -141,7 +142,7 @@ export default function MyInfo(): ReactElement {
                     {isComplete ? 'Completado' : (description || 'Pendiente')}
                 </div>
             </div>
-            {!isComplete && (
+            {(!isComplete || customOnClick) && (
                 <RightOutline style={{ color: '#cfd8dc', fontSize: '18px' }} />
             )}
         </div>
@@ -198,7 +199,15 @@ export default function MyInfo(): ReactElement {
                     "Cuenta bancaria", 
                     <BankcardOutline />, 
                     status.bankInfo, 
-                    '/bank'
+                    '/bank',
+                    undefined,
+                    () => {
+                        if (status.bankInfo) {
+                            navigate('/check-mobile?type=editbank');
+                        } else {
+                            navigate('/bank?entry=profile');
+                        }
+                    }
                 )}
             </div>
         </div>

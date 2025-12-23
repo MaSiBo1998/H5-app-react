@@ -189,7 +189,7 @@ export default function Login(): ReactElement {
 
           {/* 底部链接 */}
           <div className={styles['footer-links']}>
-            <a href="#" className={styles['footer-link']}>¿Olvidaste tu contraseña?</a>
+            <span className={styles['footer-link']} onClick={() => navigate('/check-mobile?type=loginEdit')}>¿Olvidaste tu contraseña?</span>
             <a href="#" className={styles['footer-link']}>
               <QuestionCircleOutline /> Ayuda
             </a>

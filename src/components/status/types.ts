@@ -91,7 +91,8 @@ export interface Tailfan {
 
 export interface StatusData {
   // 状态码
-  kaki?: number
+  kaki?: number,
+  fining?: number,
   // 状态
   status?: number
   // 列表数据

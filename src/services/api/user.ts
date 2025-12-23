@@ -142,6 +142,33 @@ export const toSetPassword = (data: SetPasswordParams) => {
   )
 }
 
+// 校验验证码参数
+export interface CheckCodeParams {
+  mobile: string
+  code: string
+  checkType: number
+  codeType: number
+  bayadere?: string
+}
+
+// 校验验证码
+export const checkCode = (data: CheckCodeParams) => {
+  return request<unknown>(
+    '/diorite/hideout/demisemi',
+    {
+      method: 'POST',
+      body: {
+        romish: encryptByRSA(data.mobile, rsaPublicKey),
+        odds: data.code,
+        egypt: data.checkType,
+        diarist: data.codeType,
+        bayadere: data.bayadere,
+      },
+      isLoading: true,
+    },
+  )
+}
+
 // 用户详情
 export interface UserDetail {
   champak?: number | null
@@ -150,5 +177,5 @@ export interface UserDetail {
 
 // 获取用户详情
 export const getUserDetail = () => {
-  return request<UserDetail>('/troffer/audit/frow', { method: 'GET' })
+  return request<UserDetail>('/troffer/audit/frow', { method: 'POST' })
 }

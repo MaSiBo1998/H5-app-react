@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useMemo } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Input, Button, Toast } from 'antd-mobile'
 import { EyeInvisibleOutline, EyeOutline } from 'antd-mobile-icons'
 import { toSetPassword } from '@/services/api/user'
+import HeaderNav from '@/components/common/HeaderNav'
 import styles from './SetPassword.module.css'
 
 /**
@@ -11,11 +12,40 @@ import styles from './SetPassword.module.css'
  */
 export default function SetPassword() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const typeParam = searchParams.get('type')
+
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  const config = useMemo(() => {
+    switch (typeParam) {
+      case 'loginEdit':
+        return {
+          title: 'Iniciar sesión',
+          showSkip: false,
+          successPath: '/login',
+          onBack: () => navigate('/login')
+        }
+      case 'userEditPass':
+        return {
+          title: 'Cambiar contraseña',
+          showSkip: false,
+          successPath: '/profile',
+          onBack: () => navigate('/profile')
+        }
+      default:
+        return {
+          title: 'Establecer contraseña',
+          showSkip: true,
+          successPath: '/',
+          onBack: () => navigate('/')
+        }
+    }
+  }, [typeParam, navigate])
 
   // 密码输入过滤：只允许字母和数字
   const handlePasswordChange = (val: string, setFn: (val: string) => void) => {
@@ -46,7 +76,7 @@ export default function SetPassword() {
     try {
       await toSetPassword({ loginPwd: password, loginPwdTwo: confirmPassword })
       Toast.show({ content: 'Configuración exitosa' })
-      navigate('/')
+      navigate(config.successPath)
     } catch (error) {
       // Error handled by request interceptor usually, or ignore
     } finally {
@@ -54,63 +84,76 @@ export default function SetPassword() {
     }
   }
 
+  const renderRight = () => {
+    if (!config.showSkip) return null
+    return (
+      <div className={styles['skip-btn']} onClick={handleSkip}>
+        Omitir
+      </div>
+    )
+  }
+
   return (
     <div className={styles['set-password-page']}>
-      <div className={styles['top-bar']}>
-        <div className={styles['skip-btn']} onClick={handleSkip}>
-          Omitir
+      <HeaderNav 
+        title={config.title} 
+        onBack={config.onBack} 
+        backDirect={false}
+        right={renderRight()}
+        background="transparent"
+      />
+
+      <div className={styles['content']}>
+        <div className={styles['title-section']}>
+          <div className={styles['title']}>¡Bienvenidos!</div>
+          <div className={styles['subtitle']}>Por favor, establezca su contraseña de inicio de sesión</div>
         </div>
-      </div>
 
-      <div className={styles['title-section']}>
-        <div className={styles['title']}>¡Bienvenidos!</div>
-        <div className={styles['subtitle']}>Por favor, establezca su contraseña de inicio de sesión</div>
-      </div>
-
-      <div className={styles['form-container']}>
-        <div className={styles['input-item']}>
-          <Input
-            value={password}
-            onChange={(val) => handlePasswordChange(val, setPassword)}
-            placeholder="Por favor, introduzca su contraseña"
-            type={showPassword ? 'text' : 'password'}
-            maxLength={16}
-            style={{ flex: 1, '--font-size': '16px' }}
-          />
-          <div 
-            className={styles['eye-icon']}
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? <EyeOutline /> : <EyeInvisibleOutline />}
+        <div className={styles['form-container']}>
+          <div className={styles['input-item']}>
+            <Input
+              value={password}
+              onChange={(val) => handlePasswordChange(val, setPassword)}
+              placeholder="Por favor, introduzca su contraseña"
+              type={showPassword ? 'text' : 'password'}
+              maxLength={16}
+              style={{ flex: 1, '--font-size': '16px' }}
+            />
+            <div 
+              className={styles['eye-icon']}
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOutline /> : <EyeInvisibleOutline />}
+            </div>
           </div>
-        </div>
 
-        <div className={styles['input-item']}>
-          <Input
-            value={confirmPassword}
-            onChange={(val) => handlePasswordChange(val, setConfirmPassword)}
-            placeholder="Vuelva a introducir la contraseña"
-            type={showConfirmPassword ? 'text' : 'password'}
-            maxLength={16}
-            style={{ flex: 1, '--font-size': '16px' }}
-          />
-          <div 
-            className={styles['eye-icon']}
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-          >
-            {showConfirmPassword ? <EyeOutline /> : <EyeInvisibleOutline />}
+          <div className={styles['input-item']}>
+            <Input
+              value={confirmPassword}
+              onChange={(val) => handlePasswordChange(val, setConfirmPassword)}
+              placeholder="Vuelva a introducir la contraseña"
+              type={showConfirmPassword ? 'text' : 'password'}
+              maxLength={16}
+              style={{ flex: 1, '--font-size': '16px' }}
+            />
+            <div 
+              className={styles['eye-icon']}
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? <EyeOutline /> : <EyeInvisibleOutline />}
+            </div>
           </div>
-        </div>
 
-        <Button
-          block
-          className={styles['submit-btn']}
-          disabled={!canSubmit || loading}
-          loading={loading}
-          onClick={handleSubmit}
-        >
-          Confirmar
-        </Button>
+          <Button
+            block
+            className={styles['submit-btn']}
+            disabled={!canSubmit || loading}
+            loading={loading}
+            onClick={handleSubmit}
+          >
+            Confirmar
+          </Button>
+        </div>
       </div>
     </div>
   )

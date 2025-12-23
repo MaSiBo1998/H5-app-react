@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button, Toast, Dialog } from 'antd-mobile'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -11,9 +11,11 @@ import {
   CheckCircleOutline,
   RightOutline
 } from 'antd-mobile-icons'
-import { toLogOut } from '@/services/api/user'
+import { toLogOut, type UserDetail} from '@/services/api/user'
 import { getStorage, removeStorage, StorageKeys } from '@/utils/storage'
 import '@/pages/profile/profile.modules.css'
+import { getHomeData } from '@/services/api/home'
+import type { StatusData } from '@/components/status/types'
 
 // 手机号脱敏处理
 function maskPhone(raw: string | null): string {
@@ -23,6 +25,21 @@ function maskPhone(raw: string | null): string {
 }
 
 export default function Profile(): ReactElement {
+  const [homeInfo, setHomeInfo] = useState<StatusData>()
+  // 获取个人信息
+  useEffect(() =>{
+    (async () => {
+      try {
+        const res = await getHomeData()
+        if (res) {
+          console.log(res)
+          setHomeInfo(res)
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    })()
+  },[])
   const navigate = useNavigate()
   // 获取上次登录的手机号
   const lastPhone = ((): string | null => {
@@ -73,6 +90,8 @@ export default function Profile(): ReactElement {
     })
   }
   
+  const fining = homeInfo?.fining ?? 0
+
   // 菜单点击处理
   const todo = (label: string) =>{
     switch (label) {
@@ -81,6 +100,16 @@ export default function Profile(): ReactElement {
         break
       case 'Mi préstamo':
         navigate('/my-order')
+        break
+      case 'Cambiar contraseña':
+        if (fining === 1) {
+          navigate('/check-mobile?type=userEditPass')
+        } else {
+          navigate('/set-password')
+        }
+        break
+      case 'Establecer contraseña':
+        navigate('/set-password')
         break
       default:
         Toast.show({ content: `${label}: En desarrollo` })
@@ -94,7 +123,11 @@ export default function Profile(): ReactElement {
     { label: 'Cupones', icon: <AppOutline />, action: () => todo('Cupones') },
     { label: 'Mi préstamo', icon: <PayCircleOutline />, action: () => todo('Mi préstamo') },
     { label: 'Protocolo de privacidad', icon: <CheckCircleOutline />, action: () => todo('Protocolo de privacidad') },
-    { label: 'Cambiar contraseña', icon: <UserOutline />, action: () => todo('Cambiar contraseña') },
+    { 
+      label: fining === 0 ? 'Establecer contraseña' : 'Cambiar contraseña', 
+      icon: <UserOutline />, 
+      action: () => todo(fining === 0 ? 'Establecer contraseña' : 'Cambiar contraseña') 
+    },
     // { label: 'Sobre nosotros', icon: <QuestionCircleOutline />, action: () => todo('Sobre nosotros') },
     // { label: 'Actualización', icon: <ClockCircleOutline />, action: () => todo('Actualización') },
   ]
