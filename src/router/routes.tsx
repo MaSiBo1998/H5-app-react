@@ -45,10 +45,8 @@ export const routes: RouteObject[] = [
       },
       // 状态详情页
       { path: '/status', element: <StatusPage /> },
-      // 设置密码页
-      { path: '/set-password', element: <SetPassword /> },
-      // 验证手机号页
-      { path: '/check-mobile', element: <CheckMobile /> },
+      
+
       // 申请流程页面
       { path: 'work', element: <WorkInfo /> },
       { path: 'contacts', element: <ContactsInfo /> },
@@ -64,6 +62,10 @@ export const routes: RouteObject[] = [
       { path: '/my-order', element: <MyOrder /> },
     ],
   },
+  // 验证手机号页
+  { path: '/check-mobile', element: <CheckMobile /> },
+  // 设置密码页
+      { path: '/set-password', element: <SetPassword /> },
   // 404 页面
   { path: '*', element: <NotFound /> },
 ]

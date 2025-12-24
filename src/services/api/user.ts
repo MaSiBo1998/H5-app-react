@@ -25,6 +25,7 @@ export const toSendCode = (data: SendCodeParams) => {
       method: 'POST',
       body: {
         romish: encryptByRSA(data.mobile, rsaPublicKey),
+        // 1：注册登录验证码，2：修改登录密码 3.修改银行卡 4.忘记密码 5.邀请好友 7.修改手机号码
         egypt: data.loginType,
         diarist: data.smsType,
         bayadere: data.bayadere,
@@ -160,6 +161,7 @@ export const checkCode = (data: CheckCodeParams) => {
       body: {
         romish: encryptByRSA(data.mobile, rsaPublicKey),
         odds: data.code,
+        //短信类型，1：注册登录验证码，2：修改登录密码 3.修改银行卡 4.忘记密码 5.邀请好友 7.修改手机号码
         egypt: data.checkType,
         diarist: data.codeType,
         bayadere: data.bayadere,
@@ -240,6 +242,10 @@ export const loginByPassword = (data: LoginByPasswordParams) => {
 export interface UserDetail {
   champak?: number | null
   pentoxid?: Array<{ creditPage: string; leonora: number }> | []
+  painty?: {
+    dermoid?: number // 1: 允许修改银行卡
+    shriek?: number // 1: 修改银行卡需要验证码
+  }
 }
 
 // 获取用户详情

@@ -6,7 +6,7 @@ import { getHomeData } from '@/services/api/home'
 import StatusView from '@/components/status/StatusView'
 import type { StatusData } from '@/components/status/types'
 // 上下文对象
-export const HomeContext = createContext<{ homeData: any, loading: boolean, refresh: () => void }>({ homeData: {}, loading: false, refresh: () => { } })
+export const HomeContext = createContext<{ homeData: StatusData, loading: boolean, refresh: () => void }>({ homeData: {}, loading: false, refresh: () => { } })
 // 封装自定义 Hook（简化子组件调用）
 export function useHomeContext() {
   return useContext(HomeContext)
@@ -45,7 +45,7 @@ export default function Home(): ReactElement {
   
   return (
     <>
-      <HomeContext.Provider value={{ homeData, loading, refresh: fetchHomeData }}>
+      <HomeContext.Provider value={{ homeData: homeData || {}, refresh: fetchHomeData, loading }}>
         <PullToRefresh
           onRefresh={async () => { await fetchHomeData(true) }}
           pullingText="Desliza para actualizar"

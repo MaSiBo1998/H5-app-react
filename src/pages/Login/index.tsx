@@ -95,6 +95,16 @@ export default function Login(): ReactElement {
     }
   }
 
+  // 忘记密码跳转
+  const handleForgetPassword = () => {
+    // 无论是否有手机号，都跳转到验证页面
+    // 如果有输入的手机号，先保存一下，方便 CheckMobile 页面自动填充
+    if (phoneRest.length === 10) {
+      setStorage(StorageKeys.USER_PHONE, fullPhone)
+    }
+    navigate('/check-mobile?type=loginEdit')
+  }
+
   return (
     <div className={styles['login-page']}>
       <div className={styles['login-card']}>
@@ -214,7 +224,7 @@ export default function Login(): ReactElement {
 
           {/* 底部链接 */}
           <div className={styles['footer-links']}>
-            <span className={styles['footer-link']} onClick={() => navigate('/check-mobile?type=loginEdit')}>¿Olvidaste tu contraseña?</span>
+            <span className={styles['footer-link']} onClick={handleForgetPassword}>¿Olvidaste tu contraseña?</span>
             <a href="#" className={styles['footer-link']}>
               <QuestionCircleOutline /> Ayuda
             </a>

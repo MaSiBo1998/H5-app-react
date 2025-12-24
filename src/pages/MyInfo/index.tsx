@@ -40,6 +40,12 @@ export default function MyInfo(): ReactElement {
         bankInfo: false
     });
 
+    // 银行卡编辑配置
+    const [bankConfig, setBankConfig] = useState({
+        canEdit: false,
+        needVerify: false
+    });
+
     // 获取用户详情及步骤状态
     useEffect(() => {
         const fetchStatus = async () => {
@@ -52,6 +58,14 @@ export default function MyInfo(): ReactElement {
                 const res = await getUserDetail();
                 Toast.clear();
                 if (res) {
+                    // 设置银行卡配置
+                    if (res.painty) {
+                        setBankConfig({
+                            canEdit: res.painty.dermoid === 1,
+                            needVerify: res.painty.shriek === 1
+                        });
+                    }
+
                     // champak === 1 表示全部完成
                     if (res.champak === 1) {
                          setStatus({
@@ -202,10 +216,26 @@ export default function MyInfo(): ReactElement {
                     '/bank',
                     undefined,
                     () => {
-                        if (status.bankInfo) {
+                        // 如果银行卡未完成，直接跳转
+                        if (!status.bankInfo) {
+                            navigate('/bank?entry=profile');
+                            return;
+                        }
+                        
+                        // 如果已完成但不允许修改，则不跳转
+                        if (!bankConfig.canEdit) {
+                            return;
+                        }
+
+                        // 如果需要验证码，跳转验证页面
+                        if (bankConfig.needVerify) {
                             navigate('/check-mobile?type=editbank');
                         } else {
-                            navigate('/bank?entry=profile');
+                            // 不需要验证码，直接跳转银行卡页面（带上编辑标识，虽然这里entry=profile可能已经够了，
+                            // 但为了逻辑清晰，或者后端可能需要区分，保持原样或参考vue逻辑。
+                            // vue是 /pages/steps/bank?type=userCenterEdit
+                            // 这里我们用 entry=profile 应该能复用逻辑，或者加个参数
+                            navigate('/bank?entry=profile&mode=edit');
                         }
                     }
                 )}

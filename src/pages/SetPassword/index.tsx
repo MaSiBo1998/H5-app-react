@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Input, Button, Toast } from 'antd-mobile'
 import { EyeInvisibleOutline, EyeOutline } from 'antd-mobile-icons'
-import { toSetPassword } from '@/services/api/user'
+import { toSetPassword, loginByPassword } from '@/services/api/user'
+import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import HeaderNav from '@/components/common/HeaderNav'
 import styles from './SetPassword.module.css'
 
@@ -27,7 +28,7 @@ export default function SetPassword() {
         return {
           title: 'Iniciar sesión',
           showSkip: false,
-          successPath: '/login',
+          successPath: '/',
           onBack: () => navigate('/login')
         }
       case 'userEditPass':
@@ -75,6 +76,23 @@ export default function SetPassword() {
     setLoading(true)
     try {
       await toSetPassword({ loginPwd: password, loginPwdTwo: confirmPassword })
+      
+      // 如果是忘记密码流程，设置成功后自动登录
+      if (typeParam === 'loginEdit') {
+        const mobile = getStorage<string>(StorageKeys.USER_PHONE)
+        if (mobile) {
+          const deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || undefined
+          const loginRes = await loginByPassword({ 
+            mobile, 
+            loginPwd: password, 
+            deviceInfo 
+          })
+          if (loginRes.success) {
+            setStorage(StorageKeys.LOGIN_INFO, loginRes)
+          }
+        }
+      }
+
       Toast.show({ content: 'Configuración exitosa' })
       navigate(config.successPath)
     } catch (error) {

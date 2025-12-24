@@ -55,8 +55,11 @@ export default function CheckMobile() {
     if (storedMobile) {
       setMobile(storedMobile)
       handleSendCode(storedMobile, 1, config.loginType) // 默认发送短信
+    } else {
+      Toast.show({ content: 'No se encontró el número de móvil' })
+      navigate('/login', { replace: true })
     }
-  }, [config.loginType])
+  }, [config.loginType, navigate])
 
   // 倒计时逻辑
   useEffect(() => {
@@ -78,7 +81,19 @@ export default function CheckMobile() {
 
   const maskedMobile = useMemo(() => {
     if (!mobile) return ''
-    return mobile.replace(/(\d{2})\d{6}(\d{4})/, '$1********$2')
+    // 如果是12位且以57开头，去掉前缀显示（因为UI已有前缀）
+    let displayMobile = mobile
+    if (mobile.length === 12 && mobile.startsWith('57')) {
+      displayMobile = mobile.slice(2)
+    }
+    // 对10位号码进行脱敏: 前3后4，中间星号
+    // 例如: 300****567
+    if (displayMobile.length === 10) {
+      return displayMobile.replace(/(\d{3})\d{4}(\d{3})/, '$1****$2')
+    }
+    // Fallback for original regex if length matches 12 (though we stripped it)
+    // Or just return as is if not 10
+    return displayMobile.replace(/(\d{2})\d{6}(\d{4})/, '$1********$2')
   }, [mobile])
 
   const handleSendCode = async (phone: string, smsTypeVal: number, loginTypeVal: number) => {
@@ -140,29 +155,45 @@ export default function CheckMobile() {
         </div>
 
         <div className={styles['form-container']}>
-          <div className={styles['input-item']}>
-            <Input 
-              value={maskedMobile} 
-              disabled 
-              style={{ '--font-size': '16px', color: '#142948' }} 
-            />
+          <div className={styles['form-group']}>
+            <div className={styles['input-wrapper']}>
+              <div className={styles['phone-prefix']}>
+                <span className={styles['prefix-flag']}>🇨🇴</span>
+                <span className={styles['prefix-code']}>+57</span>
+              </div>
+              <Input 
+                value={maskedMobile} 
+                disabled 
+                style={{ flex: 1, border: 'none', background: 'transparent', fontSize: '16px', '--color': '#37474f', opacity: 1 }} 
+              />
+            </div>
           </div>
 
-          <div className={styles['input-item']}>
-            <Input
-              value={code}
-              onChange={setCode}
-              placeholder="Código de verificación"
-              type="number"
-              maxLength={4}
-              style={{ flex: 1, '--font-size': '16px' }}
-            />
-            <div 
-              className={styles['send-btn']} 
-              onClick={onSendClick}
-              style={{ color: timeLeft > 0 ? '#a5d948' : '#a5d948' }}
-            >
-              {timeLeft > 0 ? `${timeLeft}s` : 'Obtenga'}
+          <div className={styles['form-group']}>
+            <div className={styles['verification-wrapper']}>
+              <div className={`${styles['input-wrapper']} ${styles['verification-input']}`}>
+                <Input
+                  value={code}
+                  onChange={(val) => {
+                    let codeVal = val.replace(/\D/g, '')
+                    if (codeVal.length > 4) {
+                      codeVal = codeVal.slice(0, 4)
+                    }
+                    setCode(codeVal)
+                  }}
+                  placeholder="Código de verificación"
+                  type="number"
+                  maxLength={4}
+                  style={{ flex: 1, border: 'none', background: 'transparent', fontSize: '16px', '--placeholder-color': '#b0bec5' }}
+                />
+              </div>
+              <button 
+                className={styles['verification-btn']} 
+                onClick={onSendClick}
+                disabled={timeLeft > 0}
+              >
+                {timeLeft > 0 ? `${timeLeft}s` : 'Obtenga'}
+              </button>
             </div>
           </div>
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Input, Button, Toast } from 'antd-mobile'
@@ -20,8 +20,13 @@ export default function PasswordLogin(): ReactElement {
   
   // 获取存储的手机号
   const mobile = getStorage<string>(StorageKeys.USER_PHONE) || ''
-  // 实际上这里应该用上一页传递的手机号，但 Login 页通常会存入 USER_PHONE
-  // 如果是从 Login 页跳过来，Login 页应该先存一下
+  
+  useEffect(() => {
+    if (!mobile) {
+      Toast.show({ content: 'Por favor, ingrese su número de teléfono primero' })
+      navigate('/login', { replace: true })
+    }
+  }, [mobile, navigate])
 
   const handlePasswordChange = (val: string) => {
     const filtered = val.replace(/[^a-zA-Z0-9]/g, '')
