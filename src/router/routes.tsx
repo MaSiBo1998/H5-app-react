@@ -19,6 +19,7 @@ const FaceCapture = lazy(() => import('@/pages/Apply/FaceCapture'))
 const BankInfo = lazy(() => import('@/pages/Apply/BankInfo'))
 const MyInfo = lazy(() => import('@/pages/MyInfo/index'))
 const MyOrder = lazy(() => import('@/pages/MyOrder/index'))
+const MyOrderDetail = lazy(() => import('@/pages/MyOrder/Detail/index'))
 const StatusPage = lazy(() => import('@/pages/Status/index'))
 const CheckMobile = lazy(() => import('@/pages/CheckMobile'))
 const PasswordLogin = lazy(() => import('@/pages/PasswordLogin/index'))
@@ -60,6 +61,8 @@ export const routes: RouteObject[] = [
       { path: '/my-info', element: <MyInfo /> },
       // 我的订单
       { path: '/my-order', element: <MyOrder /> },
+      // 订单详情
+      { path: '/my-order/detail', element: <MyOrderDetail /> },
     ],
   },
   // 验证手机号页

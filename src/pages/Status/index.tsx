@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactElement } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactElement } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { getProductDetail } from '@/services/api/product'
 import HeaderNav from '@/components/common/HeaderNav'
@@ -12,7 +12,11 @@ import LoanUnconfirmed from '@/components/status/LoanUnconfirmed/LoanUnconfirmed
 import AuditPending from '@/components/status/AuditPending/AuditPending'
 import ExamineReject from '@/components/status/ExamineReject/ExamineReject'
 import AuditCountdown from '@/components/status/AuditCountdown/AuditCountdown'
-
+import type { StatusData } from '@/components/status/types'
+const StatusContext = createContext<{ homeData: StatusData, refresh: (showLoading?: boolean) => void } | null>(null)
+export function useStatusContext() {
+  return useContext(StatusContext)
+}
 export default function StatusPage(): ReactElement {
   const [searchParams] = useSearchParams()
   const appName = searchParams.get('appName')
@@ -119,35 +123,39 @@ export default function StatusPage(): ReactElement {
   }
 
   return (
-    <div style={{ background: '#f5f7fa', position: 'relative' }}>
-      {/* 顶部渐变背景 */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '280px', // 覆盖头部和卡片顶部
-        background: 'linear-gradient(135deg, #004d40 0%, #00695c 100%)',
-        zIndex: 0,
-        borderBottomLeftRadius: 32,
-        borderBottomRightRadius: 32,
-      }}></div>
+    <>
+      <StatusContext.Provider value={{ homeData: data || {}, refresh: fetchData }}>
+        <div style={{ background: '#f5f7fa', position: 'relative' }}>
+          {/* 顶部渐变背景 */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '280px', // 覆盖头部和卡片顶部
+            background: 'linear-gradient(135deg, #004d40 0%, #00695c 100%)',
+            zIndex: 0,
+            borderBottomLeftRadius: 32,
+            borderBottomRightRadius: 32,
+          }}></div>
 
-      <HeaderNav
-        title={data?.lima || 'Detalle'}
-        background={navStyle.background}
-        color={navStyle.color}
-        style={{ zIndex: 10, boxShadow: navStyle.boxShadow, transition: 'all 0.3s ease' }}
-      />
+          <HeaderNav
+            title={data?.lima || 'Detalle'}
+            background={navStyle.background}
+            color={navStyle.color}
+            style={{ zIndex: 10, boxShadow: navStyle.boxShadow, transition: 'all 0.3s ease' }}
+          />
 
-      <PullToRefresh onRefresh={() => fetchData(true)} pullingText="Desliza para actualizar"
-        canReleaseText="Suelta para actualizar"
-        refreshingText="Cargando..."
-        completeText="Actualizado">
-        <div style={{ minHeight: 'calc(100vh - 46px)', position: 'relative', zIndex: 1 }}>
-          {renderContent()}
+          <PullToRefresh onRefresh={() => fetchData(true)} pullingText="Desliza para actualizar"
+            canReleaseText="Suelta para actualizar"
+            refreshingText="Cargando..."
+            completeText="Actualizado">
+            <div style={{ minHeight: 'calc(100vh - 46px)', position: 'relative', zIndex: 1 }}>
+              {renderContent()}
+            </div>
+          </PullToRefresh>
         </div>
-      </PullToRefresh>
-    </div>
+      </StatusContext.Provider>
+    </>
   )
 }

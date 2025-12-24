@@ -6,7 +6,7 @@ import { getHomeData } from '@/services/api/home'
 import StatusView from '@/components/status/StatusView'
 import type { StatusData } from '@/components/status/types'
 // 上下文对象
-export const HomeContext = createContext<{ homeData: StatusData, loading: boolean, refresh: () => void }>({ homeData: {}, loading: false, refresh: () => { } })
+export const HomeContext = createContext<{ homeData: StatusData, refresh: (showLoading?: boolean) => void } | null>(null)
 // 封装自定义 Hook（简化子组件调用）
 export function useHomeContext() {
   return useContext(HomeContext)
@@ -42,10 +42,10 @@ export default function Home(): ReactElement {
   const handleContact = () => {
     window.location.href = 'tel:'
   }
-  
+
   return (
     <>
-      <HomeContext.Provider value={{ homeData: homeData || {}, refresh: fetchHomeData, loading }}>
+      <HomeContext.Provider value={{ homeData: homeData || {}, refresh: fetchHomeData }}>
         <PullToRefresh
           onRefresh={async () => { await fetchHomeData(true) }}
           pullingText="Desliza para actualizar"
@@ -62,7 +62,7 @@ export default function Home(): ReactElement {
                 <div className={styles['brand-name']}>
                   CrediPrisa
                 </div>
-                
+
                 <div onClick={handleContact} className={styles['contact-btn']}>
                   <PhoneFill fontSize={16} />
                   <span className={styles['contact-text']}>Ayuda</span>

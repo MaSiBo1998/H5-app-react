@@ -17,10 +17,10 @@ export default function PasswordLogin(): ReactElement {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  
+
   // 获取存储的手机号
   const mobile = getStorage<string>(StorageKeys.USER_PHONE) || ''
-  
+
   useEffect(() => {
     if (!mobile) {
       Toast.show({ content: 'Por favor, ingrese su número de teléfono primero' })
@@ -41,13 +41,9 @@ export default function PasswordLogin(): ReactElement {
     try {
       const deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || undefined
       const res = await loginByPassword({ mobile, loginPwd: password, deviceInfo })
-      
-      if (res.success) {
-        setStorage(StorageKeys.LOGIN_INFO, res)
-        navigate('/')
-      } else {
-        Toast.show({ content: res.msg || 'Error de inicio de sesión' })
-      }
+      setStorage(StorageKeys.LOGIN_INFO, res)
+      navigate('/')
+
     } catch (error) {
       // Error handling usually in interceptor
     } finally {
@@ -57,9 +53,9 @@ export default function PasswordLogin(): ReactElement {
 
   return (
     <div className={styles['password-login-page']}>
-      <HeaderNav 
+      <HeaderNav
         title="Inicio de sesión con contraseña"
-        onBack={() => navigate('/login')} 
+        onBack={() => navigate('/login')}
         background="transparent"
       />
 
@@ -78,7 +74,7 @@ export default function PasswordLogin(): ReactElement {
               maxLength={16}
               style={{ flex: 1, '--font-size': '16px' }}
             />
-            <div 
+            <div
               className={styles['eye-icon']}
               onClick={() => setShowPassword(!showPassword)}
             >
@@ -86,7 +82,7 @@ export default function PasswordLogin(): ReactElement {
             </div>
           </div>
 
-          <div 
+          <div
             className={styles['forget-password']}
             onClick={() => navigate('/check-mobile?type=loginEdit')}
           >
@@ -103,7 +99,7 @@ export default function PasswordLogin(): ReactElement {
             Siguiente
           </Button>
 
-          <div 
+          <div
             className={styles['to-code']}
             onClick={() => navigate('/login')}
           >

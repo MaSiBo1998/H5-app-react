@@ -55,9 +55,9 @@ export default function SetPassword() {
   }
 
   // 验证逻辑
-  const canSubmit = password.length >= 6 && password.length <= 16 && 
-                    confirmPassword.length >= 6 && confirmPassword.length <= 16 &&
-                    password === confirmPassword
+  const canSubmit = password.length >= 6 && password.length <= 16 &&
+    confirmPassword.length >= 6 && confirmPassword.length <= 16 &&
+    password === confirmPassword
 
   const handleSkip = () => {
     navigate('/')
@@ -76,16 +76,16 @@ export default function SetPassword() {
     setLoading(true)
     try {
       await toSetPassword({ loginPwd: password, loginPwdTwo: confirmPassword })
-      
+
       // 如果是忘记密码流程，设置成功后自动登录
       if (typeParam === 'loginEdit') {
         const mobile = getStorage<string>(StorageKeys.USER_PHONE)
         if (mobile) {
           const deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || undefined
-          const loginRes = await loginByPassword({ 
-            mobile, 
-            loginPwd: password, 
-            deviceInfo 
+          const loginRes = await loginByPassword({
+            mobile,
+            loginPwd: password,
+            deviceInfo
           })
           if (loginRes.success) {
             setStorage(StorageKeys.LOGIN_INFO, loginRes)
@@ -113,9 +113,9 @@ export default function SetPassword() {
 
   return (
     <div className={styles['set-password-page']}>
-      <HeaderNav 
-        title={config.title} 
-        onBack={config.onBack} 
+      <HeaderNav
+        title={config.title}
+        onBack={config.onBack}
         backDirect={false}
         right={renderRight()}
         background="transparent"
@@ -137,7 +137,7 @@ export default function SetPassword() {
               maxLength={16}
               style={{ flex: 1, '--font-size': '16px' }}
             />
-            <div 
+            <div
               className={styles['eye-icon']}
               onClick={() => setShowPassword(!showPassword)}
             >
@@ -154,7 +154,7 @@ export default function SetPassword() {
               maxLength={16}
               style={{ flex: 1, '--font-size': '16px' }}
             />
-            <div 
+            <div
               className={styles['eye-icon']}
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             >

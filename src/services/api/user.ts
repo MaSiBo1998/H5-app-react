@@ -223,7 +223,7 @@ export const loginByPassword = (data: LoginByPasswordParams) => {
   const deviceInfo = data.deviceInfo ?? (getStorage(StorageKeys.DEVICE_INFO) || {})
   
   return request<{ success: boolean; token?: string; msg?: string; code?: string }>(
-    '/brief/window/ganges/puris',
+    '/brief/window/ganges/purist',
     {
       method: 'POST',
       body: {

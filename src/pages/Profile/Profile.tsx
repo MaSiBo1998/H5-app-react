@@ -109,7 +109,7 @@ export default function Profile(): ReactElement {
         }
         break
       case 'Establecer contraseña':
-        navigate('/set-password')
+        navigate('/set-password?type=userEditPass')
         break
       default:
         Toast.show({ content: `${label}: En desarrollo` })
