@@ -9,6 +9,7 @@ import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
 import getNowAndNextStep from './progress'
 
+
 export default function FaceCapture(): ReactElement {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -44,7 +45,7 @@ export default function FaceCapture(): ReactElement {
       (async () => {
         const { nextPath } = await getNowAndNextStep()
         setNextPath(nextPath ?? '')
-      })()
+      })()  
     } catch (error) {
     }
     return () => {
