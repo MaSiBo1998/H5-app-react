@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactElement } from 'react'
+import React, { useState, useEffect, type ReactElement } from 'react'
 import { Toast } from 'antd-mobile'
 import styles from './TestTools.module.css'
 
@@ -73,15 +73,13 @@ export default function TestTools({ onRefresh }: TestToolsProps): ReactElement |
         msg: '',
       }
 
-      const response = await fetch('https://api-co1.zeropointch.net/server-external/testRiskResultCallback', {
+      await fetch('https://api-co1.zeropointch.net/server-external/testRiskResultCallback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       })
-
-      const resData = await response.json()
 
       Toast.clear()
       Toast.show({

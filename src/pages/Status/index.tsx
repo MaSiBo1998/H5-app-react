@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactElement } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { getProductDetail } from '@/services/api/product'
 import HeaderNav from '@/components/common/HeaderNav'
 import { PullToRefresh } from 'antd-mobile'

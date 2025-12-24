@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Popup } from 'antd-mobile'
 import { RightOutline } from 'antd-mobile-icons'
 import styles from './LoanDetailPopup.module.css'
@@ -63,9 +63,7 @@ export default function LoanDetailPopup({
     // Rate and Fee extraction (Default to 0 if missing)
     // Assuming productData has these fields from backend as in Vue example
     const seacoast = productData.seacoast || 0 // Interest Rate
-    const beirut = productData.beirut || 0 // Service Fee
-    const gaucho = productData.gaucho || 0 // Tax
-    
+  
     // Principal (using user selected amount)
     const principalTotal = amount
 
@@ -81,9 +79,6 @@ export default function LoanDetailPopup({
       // 利息: (本金 * 利率 * 天数) / 期数
     // Vue 逻辑: (obj.shammash * obj.seacoast * obj.fistic) / obj.fiefdom
     const interestPerPeriod = (amount * seacoast * totalDays) / periods
-    
-    const serviceFeePerPeriod = beirut / periods
-    const taxPerPeriod = gaucho / periods
     
     // 还款额: 本金 + 利息
     // Vue 逻辑: (obj.shammash + obj.shammash * obj.seacoast * obj.fistic) / obj.fiefdom

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Input, Button, Toast } from 'antd-mobile'
 import { toSendCode, checkCode } from '@/services/api/user'

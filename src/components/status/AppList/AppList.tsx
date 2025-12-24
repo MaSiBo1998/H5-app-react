@@ -3,13 +3,8 @@ import { useNavigate } from "react-router-dom"
 import { InformationCircleOutline } from "antd-mobile-icons"
 import type { StatusData } from "../types"
 import styles from './AppList.module.css'
-import { useHomeContext } from "@/pages/Home/Home"
-import { useStatusContext } from "@/pages/Status"
 export default function AppList({ data }: { data: StatusData }): ReactElement {
-  const homeCtx = useHomeContext()
-  const statusCtx = useStatusContext()
   // 优先使用存在的 Context
-  const { homeData, refresh } = homeCtx || statusCtx || { homeData: {}, refresh: () => { } }
   const navigate = useNavigate()
   // 启用产品列表 -> item.aweto == 0
   const enableProductList = (data.atony || []).filter((item: any) => item.aweto === 0)

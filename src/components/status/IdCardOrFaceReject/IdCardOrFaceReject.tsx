@@ -9,7 +9,7 @@ interface IdCardOrFaceRejectProps {
   onRefresh?: () => void
 }
 
-export default function IdCardOrFaceReject({ data, onRefresh }: IdCardOrFaceRejectProps): ReactElement {
+export default function IdCardOrFaceReject({ data }: IdCardOrFaceRejectProps): ReactElement {
   const status = data.kaki
   const orderId = data.atony?.[0]?.gain
   const navigate = useNavigate()

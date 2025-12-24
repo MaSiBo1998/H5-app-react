@@ -11,7 +11,7 @@ import {
   CheckCircleOutline,
   RightOutline
 } from 'antd-mobile-icons'
-import { toLogOut, type UserDetail} from '@/services/api/user'
+import { toLogOut} from '@/services/api/user'
 import { getStorage, removeStorage, StorageKeys } from '@/utils/storage'
 import '@/pages/profile/profile.modules.css'
 import { getHomeData } from '@/services/api/home'

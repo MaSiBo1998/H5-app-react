@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactElement } from 'react'
 import { PullToRefresh } from 'antd-mobile'
-import { PhoneFill, SetOutline } from 'antd-mobile-icons'
+import { PhoneFill } from 'antd-mobile-icons'
 import styles from '@/pages/Home/Home.module.css'
 import { getHomeData } from '@/services/api/home'
 import StatusView from '@/components/status/StatusView'

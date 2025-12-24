@@ -16,9 +16,6 @@ export default function FaceCapture(): ReactElement {
   // 入口参数 homeEdit首页修改, profile个人中心进件
   const entryParams = searchParams.get('entry')
   const orderId = searchParams.get('orderId')
-  // 是否从个人中心进入
-  const isProfileEntry = entryParams === 'profile'
-
   // 视频和画布引用
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
