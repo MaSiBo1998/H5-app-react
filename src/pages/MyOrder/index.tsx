@@ -50,7 +50,7 @@ export default function MyOrder(): ReactElement {
   };
 
   const toLoanPage = (item: any) => {
-    navigate(`/my-order/detail?appName=${encodeURIComponent(item.lima)}&loanNumber=${encodeURIComponent(item.gain)}`);
+    navigate(`/my-order/detail`,{state:{appName: item.lima, loanNumber:item.gain}});
   };
 
   const toHome = () => {

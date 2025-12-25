@@ -1,18 +1,19 @@
 import HeaderNav from "@/components/common/HeaderNav";
 import { Toast, SpinLoading } from "antd-mobile";
 import { useEffect, useState, type ReactElement } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getMyOrderDetail } from '@/services/api/myOrder';
 import styles from './Detail.module.css';
 
 export default function OrderDetail(): ReactElement {
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const state = location.state || {};
+  const { appName = '', loanNumber = '' } = state;
+  
   const navigate = useNavigate();
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(true);
 
-  const appName = searchParams.get('appName') || '';
-  const loanNumber = searchParams.get('loanNumber') || '';
 
   useEffect(() => {
     fetchData();
@@ -40,7 +41,7 @@ export default function OrderDetail(): ReactElement {
   };
 
   const goBack = () => {
-    navigate('/my-order');
+    navigate(-1);
   };
 
   if (loading) {
