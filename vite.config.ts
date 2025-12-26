@@ -34,12 +34,30 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'react-vendor';
+            // 拆分 react-router 相关库
+            if (id.includes('react-router-dom') || id.includes('react-router') || id.includes('@remix-run')) {
+              return 'react-router';
             }
-            if (id.includes('antd-mobile') || id.includes('antd-mobile-icons')) {
+            // 拆分 react-dom
+            if (id.includes('react-dom') || id.includes('scheduler')) {
+              return 'react-dom';
+            }
+            // 拆分 react 核心
+            if (id.includes('/react/') || id.includes('/react.js')) {
+              return 'react';
+            }
+            // 拆分 UI 库
+            if (id.includes('antd-mobile-icons')) {
+              return 'antd-mobile-icons';
+            }
+            if (id.includes('antd-mobile')) {
               return 'antd-mobile';
             }
+            // 拆分 UI 库依赖
+            if (id.includes('@use-gesture') || id.includes('@react-spring')) {
+              return 'antd-mobile-deps';
+            }
+            // 拆分工具库
             if (id.includes('@fingerprintjs') || id.includes('jsencrypt')) {
               return 'utils';
             }
