@@ -3,14 +3,30 @@ import path from 'node:path'
 import react from '@vitejs/plugin-react'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 import postCssPxToRem from 'postcss-pxtorem'
+import viteCompression from 'vite-plugin-compression'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    basicSsl(),
-  ],
-  css: {
+export default defineConfig(({ mode }) => {
+  const isProd = mode === 'production'
+  
+  return {
+    plugins: [
+      react(),
+      basicSsl(),
+      // Gzip 压缩
+      viteCompression({
+        verbose: true,
+        disable: false,
+        threshold: 10240,
+        algorithm: 'gzip',
+        ext: '.gz',
+      }),
+    ],
+    esbuild: {
+      // 生产环境移除 console 和 debugger
+      drop: isProd ? ['console', 'debugger'] : [],
+    } as any,
+    css: {
     postcss: {
       plugins: [
         postCssPxToRem({
@@ -30,6 +46,7 @@ export default defineConfig({
     host: true,
   },
   build: {
+    sourcemap: false, // 禁用 SourceMap，防止源码泄露
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -67,5 +84,6 @@ export default defineConfig({
         }
       }
     }
+  }
   }
 })

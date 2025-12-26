@@ -25,6 +25,8 @@ export interface RequestOptions {
   timeoutMs?: number
   withAuth?: boolean
   isLoading?: boolean
+  // 重试次数，默认 0
+  retries?: number
 }
 
 // 将参数对象转换为查询字符串
@@ -108,10 +110,12 @@ function handleTokenExpired(payload: Record<string, unknown>): never {
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const base = import.meta.env.VITE_API_BASE_URL || ''
   const url = `${base}${path}${toQuery(options.params)}`
-  const controller = new AbortController()
-  const timeout = options.timeoutMs ?? 15000
-  const timeoutId = window.setTimeout(() => controller.abort(), timeout)
   
+  // 默认超时 15s
+  const timeout = options.timeoutMs ?? 15000
+  // 默认重试次数
+  const retries = options.retries ?? 0
+
   const body = options.method === 'POST'
     ? (
         options.body === undefined || options.body === null
@@ -130,57 +134,81 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     Toast.show({ icon: 'loading', content: 'Cargando...', duration: 0, maskClickable: false })
   }
 
-  try {
-    const resp = await fetch(url, {
-      method: options.method || 'GET',
-      headers: buildHeaders(options, body),
-      body,
-      signal: controller.signal,
-      credentials: 'include',
-    })
-    window.clearTimeout(timeoutId)
-    if (loading) {
-      Toast.clear()
-    }
-    if (!resp.ok) {
-      const data = await parseResponse(resp)
-      const isObj = typeof data === 'object' && data !== null
-      const maybeRecord = isObj ? (data as Record<string, unknown>) : undefined
-      const message = maybeRecord && typeof maybeRecord.msg === 'string' ? maybeRecord.msg : maybeRecord && typeof maybeRecord.message === 'string' ? (maybeRecord.message as string) : resp.statusText
-      const code = maybeRecord && typeof maybeRecord.code === 'string' ? maybeRecord.code : undefined
-      errorShown = true
-      Toast.show({ content: message || `HTTP ${resp.status}`, duration: 2000 })
-      throw new HttpError(message || 'Request failed', resp.status, code, data)
-    }
-    const raw = await parseResponse(resp)
-    const isObj = typeof raw === 'object' && raw !== null
-    if (isObj) {
-      const record = raw as Record<string, unknown>
-      const code = record.code as string | undefined
-      if (code) {
-        const msg = record.msg as string | undefined
-        if (code === 'D2540J') {
-          const inner = record.data as unknown as T
-          return inner
-        }
-        if (code === 'R6566S') {
-          handleTokenExpired(record)
-        }
-        console.log('code', code, msg)
-        errorShown = true
-        Toast.show({ content: msg || 'Error', duration: 2000 })
-        throw new HttpError(msg || 'Business error', 460, code, raw)
+  // 执行请求的内部函数
+  const doFetch = async (attempt: number): Promise<T> => {
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => controller.abort(), timeout)
+
+    try {
+      const resp = await fetch(url, {
+        method: options.method || 'GET',
+        headers: buildHeaders(options, body),
+        body,
+        signal: controller.signal,
+        credentials: 'include',
+      })
+      window.clearTimeout(timeoutId)
+      
+      if (loading) {
+        Toast.clear()
       }
+
+      if (!resp.ok) {
+        // HTTP 错误通常不重试，除非是 5xx
+        const data = await parseResponse(resp)
+        const isObj = typeof data === 'object' && data !== null
+        const maybeRecord = isObj ? (data as Record<string, unknown>) : undefined
+        const message = maybeRecord && typeof maybeRecord.msg === 'string' ? maybeRecord.msg : maybeRecord && typeof maybeRecord.message === 'string' ? (maybeRecord.message as string) : resp.statusText
+        const code = maybeRecord && typeof maybeRecord.code === 'string' ? maybeRecord.code : undefined
+        errorShown = true
+        Toast.show({ content: message || `HTTP ${resp.status}`, duration: 2000 })
+        throw new HttpError(message || 'Request failed', resp.status, code, data)
+      }
+
+      const raw = await parseResponse(resp)
+      const isObj = typeof raw === 'object' && raw !== null
+      if (isObj) {
+        const record = raw as Record<string, unknown>
+        const code = record.code as string | undefined
+        if (code) {
+          const msg = record.msg as string | undefined
+          if (code === 'D2540J') {
+            const inner = record.data as unknown as T
+            return inner
+          }
+          if (code === 'R6566S') {
+            handleTokenExpired(record)
+          }
+          console.log('code', code, msg)
+          errorShown = true
+          Toast.show({ content: msg || 'Error', duration: 2000 })
+          throw new HttpError(msg || 'Business error', 460, code, raw)
+        }
+      }
+      return raw as T
+    } catch (err) {
+      window.clearTimeout(timeoutId)
+      const name = (err as { name?: string }).name
+      const isTimeout = name === 'AbortError'
+      
+      // 如果还有重试机会，且是超时或网络错误
+      if (attempt < retries && (isTimeout || name === 'TypeError')) { // TypeError 通常是网络错误
+        console.warn(`Request failed, retrying (${attempt + 1}/${retries})...`)
+        // 简单的指数退避
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)))
+        return doFetch(attempt + 1)
+      }
+
+      if (loading && !errorShown) {
+        Toast.clear()
+      }
+      
+      if (isTimeout) throw new HttpError('Tiempo de espera agotado, por favor inténtelo de nuevo.', 408) // 本地化提示
+      throw err as unknown
     }
-    return raw as T
-  } catch (err) {
-    if (loading && !errorShown) {
-      Toast.clear()
-    }
-    const name = (err as { name?: string }).name
-    if (name === 'AbortError') throw new HttpError('Request timeout', 408)
-    throw err as unknown
   }
+
+  return doFetch(0)
 }
 
 export const http = {
