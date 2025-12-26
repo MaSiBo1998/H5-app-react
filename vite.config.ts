@@ -29,4 +29,25 @@ export default defineConfig({
   server: {
     host: true,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('antd-mobile') || id.includes('antd-mobile-icons')) {
+              return 'antd-mobile';
+            }
+            if (id.includes('@fingerprintjs') || id.includes('jsencrypt')) {
+              return 'utils';
+            }
+            // 其他 node_modules 模块打包到 vendor
+            return 'vendor';
+          }
+        }
+      }
+    }
+  }
 })
