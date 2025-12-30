@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button, Space, Input, Checkbox, Toast } from 'antd-mobile'
-import { QuestionCircleOutline } from 'antd-mobile-icons'
 import { toSendCode, toLoginByCode, checkPasswordLogin } from '@/services/api/user'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './Login.module.css'
@@ -102,16 +101,6 @@ export default function Login(): ReactElement {
     } catch (error) {
       // ignore
     }
-  }
-
-  // 忘记密码跳转
-  const handleForgetPassword = () => {
-    // 无论是否有手机号，都跳转到验证页面
-    // 如果有输入的手机号，先保存一下，方便 CheckMobile 页面自动填充
-    if (phoneRest.length === 10) {
-      setStorage(StorageKeys.USER_PHONE, fullPhone)
-    }
-    navigate('/check-mobile?type=loginEdit')
   }
 
   return (
