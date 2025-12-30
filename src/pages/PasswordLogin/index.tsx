@@ -69,7 +69,7 @@ export default function PasswordLogin(): ReactElement {
             <Input
               value={password}
               onChange={handlePasswordChange}
-              placeholder="Ingresar la contraseña"
+              placeholder="Contraseña de 6-16 dígitos"
               type={showPassword ? 'text' : 'password'}
               maxLength={16}
               style={{ flex: 1, '--font-size': '16px' }}
@@ -101,7 +101,7 @@ export default function PasswordLogin(): ReactElement {
 
           <div
             className={styles['to-code']}
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/login',{state:{mobile:mobile}})}
           >
             Código de verificación
           </div>

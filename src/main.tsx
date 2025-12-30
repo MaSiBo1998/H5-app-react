@@ -6,7 +6,8 @@ import App from '@/App'
 
 // 移动端适配脚本
 function setRem() {
-  const baseSize = 37.5 // 375设计稿基准
+  // 调整基准大小以整体缩小字体和元素 (原 37.5 -> 34)
+  const baseSize = 34 
   const scale = document.documentElement.clientWidth / 375
   // 限制最大宽度，避免PC端字体过大
   const safeScale = Math.min(scale, 2) 

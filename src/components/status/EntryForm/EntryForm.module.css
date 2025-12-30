@@ -244,6 +244,7 @@
   right: 0;
   background: #ffffff;
   padding: 12px 20px 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom)); /* 适配底部安全区 */
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
   z-index: 100;
 }

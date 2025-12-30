@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Button, Space, Input, Checkbox, Toast } from 'antd-mobile'
 import { QuestionCircleOutline } from 'antd-mobile-icons'
 import { toSendCode, toLoginByCode, checkPasswordLogin } from '@/services/api/user'
@@ -12,6 +12,8 @@ import styles from './Login.module.css'
  */
 export default function Login(): ReactElement {
   const navigate = useNavigate()
+  // 从登录页跳转过来的手机号
+  const mobile = useLocation().state?.mobile
   // 手机号（不含前缀）
   const [phoneRest, setPhoneRest] = useState('')
   // 验证码
@@ -29,7 +31,14 @@ export default function Login(): ReactElement {
   const canSend = phoneRest.length === 10 && timeLeft === 0
   // 是否可登录
   const canLogin = phoneRest.length === 10 && code.length === 4 && accepted
-
+  // 密码登录携带的手机号
+  useEffect(() => {
+    if (mobile) {
+      setPhoneRest(mobile.slice(2))
+    } else {
+      setPhoneRest('')
+    }
+  }, [mobile])
   // 倒计时逻辑
   useEffect(() => {
     if (timeLeft === 0) return
@@ -42,40 +51,40 @@ export default function Login(): ReactElement {
   // 发送验证码
   const handleSend = () => {
     if (!canSend) return
-    ;(async () => {
-      try {
-        const res = await toSendCode({ mobile: fullPhone, loginType: 1, smsType: 2 })
-        const ttl = res?.ttl ?? 60
-        setTimeLeft(ttl)
-        Toast.show({
-          content: 'Código enviado con éxito',
-          position: 'center',
-        })
-      } catch {
-        setTimeLeft(60)
-      }
-    })()
+      ; (async () => {
+        try {
+          const res = await toSendCode({ mobile: fullPhone, loginType: 1, smsType: 2 })
+          const ttl = res?.ttl ?? 60
+          setTimeLeft(ttl)
+          Toast.show({
+            content: 'Código enviado con éxito',
+            position: 'center',
+          })
+        } catch {
+          setTimeLeft(60)
+        }
+      })()
   }
 
   // 登录处理
   const handleLogin = () => {
     if (!canLogin) return
-    ;(async () => {
-      try {
-        const deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || undefined
-        const res = await toLoginByCode({ mobile: `${fullPhone}`, code, inviteCode: invite || undefined, deviceInfo })
-        setStorage(StorageKeys.LOGIN_INFO, res)
-        setStorage(StorageKeys.USER_PHONE, fullPhone)
-        // fining为0时跳转设置密码页面
-        if (res.fining === 0) {
-          navigate('/set-password')
-        } else {
-          navigate('/')
+      ; (async () => {
+        try {
+          const deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || undefined
+          const res = await toLoginByCode({ mobile: `${fullPhone}`, code, inviteCode: invite || undefined, deviceInfo })
+          setStorage(StorageKeys.LOGIN_INFO, res)
+          setStorage(StorageKeys.USER_PHONE, fullPhone)
+          // fining为0时跳转设置密码页面
+          if (res.fining === 0) {
+            navigate('/set-password')
+          } else {
+            navigate('/')
+          }
+        } catch {
+          // ignore
         }
-      } catch {
-        // ignore
-      }
-    })()
+      })()
   }
 
   // 密码登录检查
@@ -141,7 +150,7 @@ export default function Login(): ReactElement {
               />
             </div>
             {phoneRest.length === 10 && (
-              <div 
+              <div
                 className={styles['password-login-link']}
                 onClick={handlePasswordLoginCheck}
               >
@@ -205,8 +214,8 @@ export default function Login(): ReactElement {
               />
               <div className={styles['agreement-text']}>
                 He leído y acepto los
-                <a href="#" className={styles['agreement-link']}>Términos</a> y
-                <a href="#" className={styles['agreement-link']}>Política de Privacidad</a>
+                <a href="" onClick={() => navigate('/term')} className={styles['agreement-link']}>Términos</a> y
+                <a href="" onClick={() => navigate('/privacy')} className={styles['agreement-link']}>Política de Privacidad</a>
               </div>
             </div>
           </div>
@@ -221,14 +230,6 @@ export default function Login(): ReactElement {
           >
             Ingresar
           </Button>
-
-          {/* 底部链接 */}
-          <div className={styles['footer-links']}>
-            <span className={styles['footer-link']} onClick={handleForgetPassword}>¿Olvidaste tu contraseña?</span>
-            <a href="#" className={styles['footer-link']}>
-              <QuestionCircleOutline /> Ayuda
-            </a>
-          </div>
         </Space>
       </div>
     </div>

@@ -7,6 +7,7 @@
 .custom-header {
   background: linear-gradient(135deg, #004d40 0%, #00695c 100%);
   padding: 12px 20px 80px;
+  padding-top: calc(12px + env(safe-area-inset-top)); /* 适配顶部刘海屏 */
   border-bottom-left-radius: 32px;
   border-bottom-right-radius: 32px;
   box-shadow: 0 4px 24px rgba(0, 77, 64, 0.15);

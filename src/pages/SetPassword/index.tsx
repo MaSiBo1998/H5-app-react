@@ -28,12 +28,14 @@ export default function SetPassword() {
         return {
           title: 'Iniciar sesión',
           showSkip: false,
+          showBack: false,
           successPath: '/',
           onBack: () => navigate('/login')
         }
       case 'userEditPass':
         return {
           title: 'Cambiar contraseña',
+          showBack: true,
           showSkip: false,
           successPath: '/profile',
           onBack: () => navigate('/profile')
@@ -41,6 +43,7 @@ export default function SetPassword() {
       default:
         return {
           title: 'Establecer contraseña',
+          showBack: true,
           showSkip: true,
           successPath: '/',
           onBack: () => navigate('/')
@@ -114,6 +117,7 @@ export default function SetPassword() {
   return (
     <div className={styles['set-password-page']}>
       <HeaderNav
+        back={config.showBack}
         title={config.title}
         onBack={config.onBack}
         backDirect={false}
@@ -153,6 +157,9 @@ export default function SetPassword() {
               type={showConfirmPassword ? 'text' : 'password'}
               maxLength={16}
               style={{ flex: 1, '--font-size': '16px' }}
+              onEnterPress={(e) => {
+                (e.target as HTMLInputElement).blur()
+              }}
             />
             <div
               className={styles['eye-icon']}

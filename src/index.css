@@ -12,8 +12,18 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-html, body, #root {
+html, body {
   height: 100%;
+  /* 禁用默认的过度滚动行为，防止拉出浏览器背景 */
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100%;
+  min-height: 100dvh; /* 使用动态视口高度 */
+  /* 增加安全区域 CSS 变量 */
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
 }
 
 body {
