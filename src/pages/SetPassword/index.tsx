@@ -163,7 +163,7 @@ export default function SetPassword() {
               maxLength={16}
               style={{ flex: 1, '--font-size': '16px' }}
               enterKeyHint="done"
-              onEnterPress={(e) => {
+              onEnterPress={() => {
                 confirmInputRef.current?.blur()
               }}
             />

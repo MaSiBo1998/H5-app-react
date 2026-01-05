@@ -14,10 +14,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import HeaderNav from '@/components/common/HeaderNav'
 import ApplySteps from '@/pages/Apply/components/ApplySteps'
 import { getStepConfigInfo, getAddressList, saveWorkInfo } from '@/services/api/apply'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
 import getNowAndNextStep from './progress'
+import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 export default function WorkInfo(): ReactElement {
   const navigate = useNavigate()
@@ -61,7 +62,90 @@ export default function WorkInfo(): ReactElement {
   const [nextPath, setNextPath] = useState('')
   let startTime: number = 0
   const isWorker = form.workType == 1 || form.workType == 2
-  
+
+  // 埋点 Hook
+  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+
+  // 埋点相关 Refs
+  const pageStartTime = useRef(Date.now())
+  const inputData = useRef({
+    companyName: { startTime: 0, inputType: 1 },
+    companyPhone: { startTime: 0, inputType: 1 },
+    companyDetail: { startTime: 0, inputType: 1 }
+  })
+  const pickerStartTime = useRef(0)
+
+
+
+  // Input Handlers
+  const handleInputFocus = (field: 'companyName' | 'companyPhone' | 'companyDetail') => {
+    inputData.current[field].startTime = Date.now()
+    inputData.current[field].inputType = 1
+  }
+
+  const handlePaste = (field: 'companyName' | 'companyPhone' | 'companyDetail') => {
+    inputData.current[field].inputType = 2
+  }
+
+  const handleInputBlur = (field: 'companyName' | 'companyPhone' | 'companyDetail') => {
+    const data = inputData.current[field]
+    if (data.startTime) {
+      const duration = Date.now() - data.startTime
+      let timeKey = '', typeKey = ''
+      if (field === 'companyName') { timeKey = '12'; typeKey = '11' }
+      else if (field === 'companyPhone') { timeKey = '14'; typeKey = '13' }
+      else if (field === 'companyDetail') { timeKey = '17'; typeKey = '16' }
+
+      toSetRiskInfo('000004', timeKey, duration)
+      toSetRiskInfo('000004', typeKey, data.inputType)
+      data.startTime = 0
+    }
+  }
+
+  // Picker Handlers
+  const handlePickerOpen = (type: string) => {
+    pickerStartTime.current = Date.now()
+    switch (type) {
+      case 'workType': setWorkTypeVisible(true); break;
+      case 'salaryRange': setSalaryRangeVisible(true); break;
+      case 'workYears': setWorkYearsVisible(true); break;
+      case 'payFreq': setPayFreqVisible(true); break;
+      case 'noFixed': setNoFixedVisible(true); break;
+      case 'weekly': setWeeklyVisible(true); break;
+      case 'biweeklyFirst': setBiweeklyFirstVisible(true); break;
+      case 'biweeklySecond': setBiweeklySecondVisible(true); break;
+      case 'monthly': setMonthlyVisible(true); break;
+      case 'companyAddr': setAddrVisible(true); break;
+    }
+  }
+
+  const handlePickerClose = (type: string, _isConfirm: boolean = false) => {
+    if (pickerStartTime.current) {
+      const duration = Date.now() - pickerStartTime.current
+      const keyMap: Record<string, string> = {
+        workType: '1', salaryRange: '2', payFreq: '3',
+        noFixed: '4', weekly: '5', biweeklyFirst: '6', biweeklySecond: '7', monthly: '8',
+        workYears: '9', companyAddr: '15'
+      }
+      if (keyMap[type]) {
+        toSetRiskInfo('000004', keyMap[type], duration)
+      }
+      pickerStartTime.current = 0
+    }
+    switch (type) {
+      case 'workType': setWorkTypeVisible(false); break;
+      case 'salaryRange': setSalaryRangeVisible(false); break;
+      case 'workYears': setWorkYearsVisible(false); break;
+      case 'payFreq': setPayFreqVisible(false); break;
+      case 'noFixed': setNoFixedVisible(false); break;
+      case 'weekly': setWeeklyVisible(false); break;
+      case 'biweeklyFirst': setBiweeklyFirstVisible(false); break;
+      case 'biweeklySecond': setBiweeklySecondVisible(false); break;
+      case 'monthly': setMonthlyVisible(false); break;
+      case 'companyAddr': setAddrVisible(false); break;
+    }
+  }
+
   // 初始化
   useEffect(() => {
     startTime = new Date().getTime()
@@ -99,18 +183,18 @@ export default function WorkInfo(): ReactElement {
         })
         const normalize = (s: string): string => s.trim().toLowerCase()
         const modeMap: Record<string | number, 'no' | 'weekly' | 'biweekly' | 'monthly'> = {}
-          ; (payFreq.length ? payFreq : [
-            { label: 'no arreglado', value: 'no' },
-            { label: 'salario semanal', value: 'weekly' },
-            { label: 'salario quincenal', value: 'biweekly' },
-            { label: 'salario mensual', value: 'monthly' },
-          ]).forEach(opt => {
-            const l = normalize(opt.label)
-            if (l.includes('no arreglado')) modeMap[opt.value] = 'no'
-            else if (l.includes('semanal')) modeMap[opt.value] = 'weekly'
-            else if (l.includes('quincenal')) modeMap[opt.value] = 'biweekly'
-            else if (l.includes('mensual')) modeMap[opt.value] = 'monthly'
-          })
+        ; (payFreq.length ? payFreq : [
+          { label: 'no arreglado', value: 'no' },
+          { label: 'salario semanal', value: 'weekly' },
+          { label: 'salario quincenal', value: 'biweekly' },
+          { label: 'salario mensual', value: 'monthly' },
+        ]).forEach(opt => {
+          const l = normalize(opt.label)
+          if (l.includes('no arreglado')) modeMap[opt.value] = 'no'
+          else if (l.includes('semanal')) modeMap[opt.value] = 'weekly'
+          else if (l.includes('quincenal')) modeMap[opt.value] = 'biweekly'
+          else if (l.includes('mensual')) modeMap[opt.value] = 'monthly'
+        })
         setPayFreqModeMap(modeMap)
       } catch { }
       
@@ -129,12 +213,20 @@ export default function WorkInfo(): ReactElement {
       } catch { }
     }
     init()
+
+    return () => {
+      // 页面卸载时埋点
+      const duration = Date.now() - pageStartTime.current
+      toSetRiskInfo('000005', '2', duration)
+      toSubmitRiskPoint()
+    }
   }, [])
 
   // 提交表单
   const onSubmit = async () => {
     if (!form.workType || !form.salaryRange || (isWorker && (!form.workYears || !form.payFreq))) {
       Toast.show({ content: 'Por favor complete la información requerida' })
+      toSetRiskInfo('000005', '8', '1')
       return
     }
     setLoading(true)
@@ -151,6 +243,8 @@ export default function WorkInfo(): ReactElement {
         coxswain:startTime
       }
       await saveWorkInfo(payload)
+      toSetRiskInfo('000005', '9', '1')
+      await toSubmitRiskPoint()
       if (isProfileEntry) {
         navigate('/my-info')
       } else {
@@ -158,12 +252,9 @@ export default function WorkInfo(): ReactElement {
       }
     } catch {
       Toast.show({ content: 'Envío fallido' })
+      toSetRiskInfo('000005', '9', '0')
     }
     setLoading(false)
-  }
-
-  const openAddr = async () => {
-    setAddrVisible(true)
   }
 
   // 计算当前发薪模式
@@ -220,7 +311,7 @@ export default function WorkInfo(): ReactElement {
           {/* 工作类型 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Tipo de trabajo</label>
-            <div className={styles['input-wrapper']} onClick={() => setWorkTypeVisible(true)}>
+            <div className={styles['input-wrapper']} onClick={() => handlePickerOpen('workType')}>
               <UserOutline className={styles['input-icon']} />
               <div className={styles['input-content']} style={{ color: form.workType ? '#333333' : '#cccccc' }}>
                 {(() => {
@@ -235,7 +326,7 @@ export default function WorkInfo(): ReactElement {
           {/* 薪资范围 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Rango salarial</label>
-            <div className={styles['input-wrapper']} onClick={() => setSalaryRangeVisible(true)}>
+            <div className={styles['input-wrapper']} onClick={() => handlePickerOpen('salaryRange')}>
               <PayCircleOutline className={styles['input-icon']} />
               <div className={styles['input-content']} style={{ color: form.salaryRange ? '#333333' : '#cccccc' }}>
                 {(() => {
@@ -251,7 +342,7 @@ export default function WorkInfo(): ReactElement {
             {/* 发薪频率 */}
             <div className={styles['form-group']}>
               <label className={styles['form-label']}>Frecuencia de pago</label>
-              <div className={styles['input-wrapper']} onClick={() => setPayFreqVisible(true)}>
+              <div className={styles['input-wrapper']} onClick={() => handlePickerOpen('payFreq')}>
                 <CalendarOutline className={styles['input-icon']} />
                 <div className={styles['input-content']} style={{ color: form.payFreq ? '#333333' : '#cccccc' }}>
                   {(() => {
@@ -266,7 +357,7 @@ export default function WorkInfo(): ReactElement {
             {showNoFixed && (
               <div className={styles['form-group']}>
                 <label className={styles['form-label']}>Fecha de pago</label>
-                <div className={styles['input-wrapper']} onClick={() => setNoFixedVisible(true)}>
+                <div className={styles['input-wrapper']} onClick={() => handlePickerOpen('noFixed')}>
                   <CalendarOutline className={styles['input-icon']} />
                   <div className={styles['input-content']} style={{ color: form.payDate ? '#333333' : '#cccccc' }}>
                     {form.payDate || 'Seleccionar fecha de pago'}
@@ -280,7 +371,7 @@ export default function WorkInfo(): ReactElement {
             {showWeekly && (
               <div className={styles['form-group']}>
                 <label className={styles['form-label']}>Día de la semana</label>
-                <div className={styles['input-wrapper']} onClick={() => setWeeklyVisible(true)}>
+                <div className={styles['input-wrapper']} onClick={() => handlePickerOpen('weekly')}>
                   <CalendarOutline className={styles['input-icon']} />
                   <div className={styles['input-content']} style={{ color: form.payDate ? '#333333' : '#cccccc' }}>
                     {form.payDate ? (['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'][Number(form.payDate) - 1] || 'Seleccionar día de la semana') : 'Seleccionar día de la semana'}
@@ -295,7 +386,7 @@ export default function WorkInfo(): ReactElement {
 
               <div className={styles['form-group']} style={{ flex: 1 }}>
                 <label className={styles['form-label']}>Primer día</label>
-                <div className={styles['input-wrapper']} onClick={() => setBiweeklyFirstVisible(true)}>
+                <div className={styles['input-wrapper']} onClick={() => handlePickerOpen('biweeklyFirst')}>
                   <CalendarOutline className={styles['input-icon']} />
                   <div className={styles['input-content']} style={{ color: (form.payDate || '').split('###')[0] ? '#333333' : '#cccccc' }}>
                     {(form.payDate || '').split('###')[0] || 'Seleccionar primero'}
@@ -304,7 +395,7 @@ export default function WorkInfo(): ReactElement {
               </div>
               <div className={styles['form-group']} style={{ flex: 1 }}>
                 <label className={styles['form-label']}>Segundo día</label>
-                <div className={styles['input-wrapper']} onClick={() => setBiweeklySecondVisible(true)}>
+                <div className={styles['input-wrapper']} onClick={() => handlePickerOpen('biweeklySecond')}>
                   <CalendarOutline className={styles['input-icon']} />
                   <div className={styles['input-content']} style={{ color: (form.payDate || '').split('###')[1] ? '#333333' : '#cccccc' }}>
                     {(form.payDate || '').split('###')[1] || 'Seleccionar segundo'}
@@ -318,7 +409,7 @@ export default function WorkInfo(): ReactElement {
             {showMonthly && (
               <div className={styles['form-group']}>
                 <label className={styles['form-label']}>Día del mes</label>
-                <div className={styles['input-wrapper']} onClick={() => setMonthlyVisible(true)}>
+                <div className={styles['input-wrapper']} onClick={() => handlePickerOpen('monthly')}>
                   <CalendarOutline className={styles['input-icon']} />
                   <div className={styles['input-content']} style={{ color: form.payDate ? '#333333' : '#cccccc' }}>
                     {form.payDate ? `Cada mes día ${String(form.payDate).padStart(2, '0')}` : 'Seleccionar día de pago'}
@@ -330,7 +421,7 @@ export default function WorkInfo(): ReactElement {
             {/* 工作年限 */}
             <div className={styles['form-group']}>
               <label className={styles['form-label']}>Años de trabajo</label>
-              <div className={styles['input-wrapper']} onClick={() => setWorkYearsVisible(true)}>
+              <div className={styles['input-wrapper']} onClick={() => handlePickerOpen('workYears')}>
                 <ClockCircleOutline className={styles['input-icon']} />
                 <div className={styles['input-content']} style={{ color: form.workYears ? '#333333' : '#cccccc' }}>
                   {(() => {
@@ -349,6 +440,9 @@ export default function WorkInfo(): ReactElement {
                 <Input
                   value={form.companyName}
                   onChange={v => setForm({ ...form, companyName: v })}
+                  onFocus={() => handleInputFocus('companyName')}
+                  onBlur={() => handleInputBlur('companyName')}
+                  onPaste={() => handlePaste('companyName')}
                   placeholder="Ingresa el nombre de la empresa"
                   clearable
                   style={{ '--font-size': '16px', flex: 1 }}
@@ -363,6 +457,9 @@ export default function WorkInfo(): ReactElement {
                 <Input
                   value={form.companyPhone}
                   onChange={v => setForm({ ...form, companyPhone: v })}
+                  onFocus={() => handleInputFocus('companyPhone')}
+                  onBlur={() => handleInputBlur('companyPhone')}
+                  onPaste={() => handlePaste('companyPhone')}
                   placeholder="Ingresa el teléfono de la empresa"
                   type="tel"
                   clearable
@@ -373,7 +470,7 @@ export default function WorkInfo(): ReactElement {
             {/* 公司地址 */}
             <div className={styles['form-group']}>
               <label className={styles['form-label']}>Dirección de la empresa</label>
-              <div className={styles['input-wrapper']} onClick={openAddr}>
+              <div className={styles['input-wrapper']} onClick={() => handlePickerOpen('companyAddr')}>
               <LocationOutline className={styles['input-icon']} />
               <div className={styles['input-content']} style={{ color: form.companyAddr ? '#333333' : '#cccccc' }}>
                 {form.companyAddr || 'Seleccionar dirección'}
@@ -389,6 +486,9 @@ export default function WorkInfo(): ReactElement {
                 <Input
                   value={form.companyDetail}
                   onChange={v => setForm({ ...form, companyDetail: v })}
+                  onFocus={() => handleInputFocus('companyDetail')}
+                  onBlur={() => handleInputBlur('companyDetail')}
+                  onPaste={() => handlePaste('companyDetail')}
                   placeholder="Ingresa el detalle de la dirección (opcional)"
                   clearable
                   style={{ '--font-size': '16px', flex: 1 }}
@@ -400,44 +500,44 @@ export default function WorkInfo(): ReactElement {
         </Space>
       </Card>
       {/* 工作类型 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.workType.map(o => ({ label: o.label, value: o.value }))]} visible={workTypeVisible} onClose={() => setWorkTypeVisible(false)} onConfirm={(vals) => { setForm({ ...form, workType: vals[0] as any }); setWorkTypeVisible(false) }} />
+      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.workType.map(o => ({ label: o.label, value: o.value }))]} visible={workTypeVisible} onClose={() => handlePickerClose('workType')} onConfirm={(vals) => { setForm({ ...form, workType: vals[0] as any }); handlePickerClose('workType', true) }} />
       {/* 薪资范围  */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.salaryRange.map(o => ({ label: o.label, value: o.value }))]} visible={salaryRangeVisible} onClose={() => setSalaryRangeVisible(false)} onConfirm={(vals) => { setForm({ ...form, salaryRange: vals[0] as any }); setSalaryRangeVisible(false) }} />
+      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.salaryRange.map(o => ({ label: o.label, value: o.value }))]} visible={salaryRangeVisible} onClose={() => handlePickerClose('salaryRange')} onConfirm={(vals) => { setForm({ ...form, salaryRange: vals[0] as any }); handlePickerClose('salaryRange', true) }} />
       {/* 工作年限 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.workYears.map(o => ({ label: o.label, value: o.value }))]} visible={workYearsVisible} onClose={() => setWorkYearsVisible(false)} onConfirm={(vals) => { setForm({ ...form, workYears: vals[0] as any }); setWorkYearsVisible(false) }} />
+      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.workYears.map(o => ({ label: o.label, value: o.value }))]} visible={workYearsVisible} onClose={() => handlePickerClose('workYears')} onConfirm={(vals) => { setForm({ ...form, workYears: vals[0] as any }); handlePickerClose('workYears', true) }} />
       {/*  */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.payFreq.map(o => ({ label: o.label, value: o.value }))]} visible={payFreqVisible} onClose={() => setPayFreqVisible(false)} onConfirm={(vals) => {
+      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.payFreq.map(o => ({ label: o.label, value: o.value }))]} visible={payFreqVisible} onClose={() => handlePickerClose('payFreq')} onConfirm={(vals) => {
         const sel = vals[0] as any
         const mode = payFreqModeMap[sel] ?? (typeof sel === 'string' ? (sel as any) : undefined)
         setForm({ ...form, payFreq: sel, payDate: mode === 'no' ? '' : '' })
-        setPayFreqVisible(false)
+        handlePickerClose('payFreq', true)
       }} />
       {/* 不固定 */}
-      <DatePicker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" precision="day" visible={noFixedVisible} onClose={() => setNoFixedVisible(false)} onConfirm={(val) => {
+      <DatePicker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" precision="day" visible={noFixedVisible} onClose={() => handlePickerClose('noFixed')} onConfirm={(val) => {
         const mm = String((val.getMonth() + 1)).padStart(2, '0')
         const dd = String(val.getDate()).padStart(2, '0')
         setForm({ ...form, payDate: `${dd}/${mm}` })
-        setNoFixedVisible(false)
+        handlePickerClose('noFixed', true)
       }} />
       {/* 单周新 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[weekOptions]} visible={weeklyVisible} onClose={() => setWeeklyVisible(false)} onConfirm={(vals) => { setForm({ ...form, payDate: String(vals[0]) }); setWeeklyVisible(false) }} />
+      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[weekOptions]} visible={weeklyVisible} onClose={() => handlePickerClose('weekly')} onConfirm={(vals) => { setForm({ ...form, payDate: String(vals[0]) }); handlePickerClose('weekly', true) }} />
       {/* 第一周 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[dayOptions]} visible={biweeklyFirstVisible} onClose={() => setBiweeklyFirstVisible(false)} onConfirm={(vals) => {
+      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[dayOptions]} visible={biweeklyFirstVisible} onClose={() => handlePickerClose('biweeklyFirst')} onConfirm={(vals) => {
         const val = vals[0] as string
         const parts = (form.payDate || '').split('###')
         const second = parts[1] || ''
         setForm({ ...form, payDate: `${val}###${second}` })
-        setBiweeklyFirstVisible(false)
+        handlePickerClose('biweeklyFirst', true)
       }} />
       {/* 第二周 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[dayOptions]} visible={biweeklySecondVisible} onClose={() => setBiweeklySecondVisible(false)} onConfirm={(vals) => {
+      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[dayOptions]} visible={biweeklySecondVisible} onClose={() => handlePickerClose('biweeklySecond')} onConfirm={(vals) => {
         const val = vals[0] as string
         const first = (form.payDate || '').split('###')[0] || ''
         setForm({ ...form, payDate: `${first}###${val}` })
-        setBiweeklySecondVisible(false)
+        handlePickerClose('biweeklySecond', true)
       }} />
       {/*月薪 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[dayOptions]} visible={monthlyVisible} onClose={() => setMonthlyVisible(false)} onConfirm={(vals) => { setForm({ ...form, payDate: String(vals[0]) }); setMonthlyVisible(false) }} />
+      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[dayOptions]} visible={monthlyVisible} onClose={() => handlePickerClose('monthly')} onConfirm={(vals) => { setForm({ ...form, payDate: String(vals[0]) }); handlePickerClose('monthly', true) }} />
       {/* 地址 */}
       <Cascader
         confirmText="Confirmar"
@@ -445,9 +545,10 @@ export default function WorkInfo(): ReactElement {
         options={addrOptions}
         visible={addrVisible}
         placeholder="Seleccionar dirección"
-        onClose={() => setAddrVisible(false)}
+        onClose={() => handlePickerClose('companyAddr')}
         onConfirm={(val) => {
           setForm({ ...form, companyAddr: val.join('-') })
+          handlePickerClose('companyAddr', true)
         }}
       />
       <div className={styles['submit-bar']}>

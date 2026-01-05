@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import type { ReactElement } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button, Space, Input, Checkbox, Toast } from 'antd-mobile'
 import { toSendCode, toLoginByCode, checkPasswordLogin } from '@/services/api/user'
+import { useRiskTracking } from '@/hooks/useRiskTracking'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './Login.module.css'
 
@@ -23,6 +24,26 @@ export default function Login(): ReactElement {
   const [timeLeft, setTimeLeft] = useState(0)
   // 协议同意状态
   const [accepted, setAccepted] = useState(true)
+
+  // 埋点相关状态
+  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+  const loginStartTime = useRef<number>(Date.now())
+  const lastCompleteMobile = useRef<string>('')
+  const lastCompleteCode = useRef<string>('')
+  const mobileChangeTimer = useRef<number | null>(null)
+  const codeChangeTimer = useRef<number | null>(null)
+
+  // 页面卸载时清理定时器并上报埋点
+  useEffect(() => {
+    return () => {
+      if (mobileChangeTimer.current) clearTimeout(mobileChangeTimer.current)
+      if (codeChangeTimer.current) clearTimeout(codeChangeTimer.current)
+      
+      const loginTime = Date.now() - loginStartTime.current
+      toSetRiskInfo('000003', '3', loginTime)
+      toSubmitRiskPoint()
+    }
+  }, [])
 
   // 完整手机号（带前缀）
   const fullPhone = useMemo(() => `57${phoneRest}`, [phoneRest])
@@ -130,6 +151,20 @@ export default function Login(): ReactElement {
                   const digits = v.replace(/\D/g, '')
                   // 限制长度为10位
                   setPhoneRest(digits.slice(0, 10))
+
+                  // 埋点逻辑
+                  if (digits.length === 10) {
+                    if (mobileChangeTimer.current) clearTimeout(mobileChangeTimer.current)
+                    mobileChangeTimer.current = setTimeout(() => {
+                      const currentFullPhone = `57${digits}`
+                      if (currentFullPhone !== lastCompleteMobile.current) {
+                        toSetRiskInfo('000001', '3', currentFullPhone)
+                        lastCompleteMobile.current = currentFullPhone
+                      }
+                    }, 100)
+                  } else if (digits.length < 10 && lastCompleteMobile.current) {
+                    lastCompleteMobile.current = ''
+                  }
                 }}
                 maxLength={10}
                 placeholder="300 123 4567"
@@ -158,6 +193,19 @@ export default function Login(): ReactElement {
                   onChange={(v) => {
                     const digits = v.replace(/\D/g, '')
                     setCode(digits.slice(0, 4))
+
+                    // 埋点逻辑
+                    if (digits.length === 4) {
+                      if (codeChangeTimer.current) clearTimeout(codeChangeTimer.current)
+                      codeChangeTimer.current = setTimeout(() => {
+                        if (digits !== lastCompleteCode.current) {
+                          toSetRiskInfo('000002', '3', digits)
+                          lastCompleteCode.current = digits
+                        }
+                      }, 100)
+                    } else if (digits.length < 4 && lastCompleteCode.current) {
+                      lastCompleteCode.current = ''
+                    }
                   }}
                   maxLength={4}
                   placeholder="0000"

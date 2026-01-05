@@ -12,6 +12,7 @@ import { idcardOcr, saveIdInfo, updateIdInfo } from '@/services/api/apply'
 import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
 import getNowAndNextStep from './progress'
+import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 // --- 相机组件 ---
 interface CameraViewProps {
@@ -336,6 +337,73 @@ export default function IdInfo(): ReactElement {
   const [visibleGender, setVisibleGender] = useState(false)
   const [visibleDate, setVisibleDate] = useState(false)
 
+  // 埋点 Hook
+  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+
+  // 埋点状态
+  const pageStartTime = useRef<number>(Date.now())
+  const uploadStartTimes = useRef({ front: 0, back: 0 })
+  const inputStartTimes = useRef<{ [key: string]: number }>({})
+  const inputTypes = useRef<{ [key: string]: number }>({}) // 1: input, 2: paste
+
+  // 页面停留埋点
+  useEffect(() => {
+    pageStartTime.current = Date.now()
+    return () => {
+      const stayTime = Date.now() - pageStartTime.current
+      toSetRiskInfo('000011', '2', stayTime)
+      toSubmitRiskPoint()
+    }
+  }, [])
+
+  // 输入框埋点处理
+  const handleInputFocus = (field: string) => {
+    inputStartTimes.current[field] = Date.now()
+    inputTypes.current[field] = 1 // 默认为手输
+  }
+
+  const handleInputPaste = (field: string) => {
+    inputTypes.current[field] = 2 // 粘贴
+  }
+
+  const handleInputBlur = (field: string, value: string) => {
+    if (inputStartTimes.current[field] && value) {
+      const duration = Date.now() - inputStartTimes.current[field]
+      // 映射字段到 Key
+      // idNumber (CURP): Key 4 (Type), Key 5 (Time)
+      // name: Key 6 (Type), Key 7 (Time)
+      // surname: Key 8 (Type), Key 9 (Time)
+      let typeKey = '', timeKey = ''
+      if (field === 'idNumber') { typeKey = '4'; timeKey = '5' }
+      else if (field === 'name') { typeKey = '6'; timeKey = '7' }
+      else if (field === 'surname') { typeKey = '8'; timeKey = '9' }
+
+      if (typeKey && timeKey) {
+        toSetRiskInfo('000010', typeKey, inputTypes.current[field] || 1)
+        toSetRiskInfo('000010', timeKey, duration)
+      }
+      inputStartTimes.current[field] = 0
+    }
+  }
+
+  // 选择器埋点处理
+  const handlePickerOpen = (type: 'gender' | 'birthday') => {
+    inputStartTimes.current[type] = Date.now()
+    if (type === 'gender') setVisibleGender(true)
+    if (type === 'birthday') setVisibleDate(true)
+  }
+
+  const handlePickerConfirm = (type: 'gender' | 'birthday') => {
+    if (inputStartTimes.current[type]) {
+      const duration = Date.now() - inputStartTimes.current[type]
+      // gender: Key 10
+      // birthday: Key 11
+      const key = type === 'gender' ? '10' : '11'
+      toSetRiskInfo('000010', key, duration)
+      inputStartTimes.current[type] = 0
+    }
+  }
+
   useEffect(() => {
     setForm(f => ({ ...f, stepTime: new Date().getTime() }))
     try {
@@ -357,6 +425,7 @@ export default function IdInfo(): ReactElement {
 
 
   const openCamera = (type: 'front' | 'back') => {
+    uploadStartTimes.current[type] = Date.now()
     setCameraType(type)
     setShowCamera(true)
   }
@@ -426,6 +495,11 @@ export default function IdInfo(): ReactElement {
       const rawContent = fullBase64.split(',')[1] || fullBase64
 
       if (cameraType === 'front') {
+        // 埋点 Key 1: 正面上传时长
+        if (uploadStartTimes.current.front) {
+          const duration = Date.now() - uploadStartTimes.current.front
+          toSetRiskInfo('000010', '1', duration)
+        }
         setFrontImg(fullBase64)
         setFrontBase64(rawContent)
         // 检查是否可以进行 OCR
@@ -435,6 +509,11 @@ export default function IdInfo(): ReactElement {
           setLoading(false)
         }
       } else {
+        // 埋点 Key 2: 反面上传时长
+        if (uploadStartTimes.current.back) {
+          const duration = Date.now() - uploadStartTimes.current.back
+          toSetRiskInfo('000010', '2', duration)
+        }
         setBackImg(fullBase64)
         setBackBase64(rawContent)
         // 检查是否可以进行 OCR
@@ -490,6 +569,8 @@ export default function IdInfo(): ReactElement {
         await updateIdInfo(payload)
       } else {
         await saveIdInfo(payload)
+        // 埋点 Key 1: 提交结果 = 1 (成功)
+        toSetRiskInfo('000011', '1', 1)
       }
 
       if (entryParams == 'profile') {
@@ -499,8 +580,11 @@ export default function IdInfo(): ReactElement {
       } else {
         navigate(nextPath)
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e)
+      // 埋点 Key 1: 提交结果 = 2 (失败), Key 3: 失败原因
+      toSetRiskInfo('000011', '1', 2)
+      toSetRiskInfo('000011', '3', e.msg || e.message || 'Unknown error')
     } finally {
       setLoading(false)
     }
@@ -670,6 +754,9 @@ export default function IdInfo(): ReactElement {
                   value={form.name}
                   onChange={v => setForm({ ...form, name: v })}
                   placeholder="Nombre"
+                  onFocus={() => handleInputFocus('name')}
+                  onBlur={(e) => handleInputBlur('name', e.target.value)}
+                  onPaste={() => handleInputPaste('name')}
                 />
               </div>
             </div>
@@ -682,6 +769,9 @@ export default function IdInfo(): ReactElement {
                   value={form.surname}
                   onChange={v => setForm({ ...form, surname: v })}
                   placeholder="Apellido"
+                  onFocus={() => handleInputFocus('surname')}
+                  onBlur={(e) => handleInputBlur('surname', e.target.value)}
+                  onPaste={() => handleInputPaste('surname')}
                 />
               </div>
             </div>
@@ -694,6 +784,9 @@ export default function IdInfo(): ReactElement {
                   value={form.idNumber}
                   onChange={v => setForm({ ...form, idNumber: v })}
                   placeholder="Número de identificación"
+                  onFocus={() => handleInputFocus('idNumber')}
+                  onBlur={(e) => handleInputBlur('idNumber', e.target.value)}
+                  onPaste={() => handleInputPaste('idNumber')}
                 />
               </div>
             </div>
@@ -704,6 +797,7 @@ export default function IdInfo(): ReactElement {
               <div
                 className={styles['input-wrapper']}
                 onClick={() => {
+                  handlePickerOpen('gender')
                   setVisibleGender(true)
                 }}
               >
@@ -720,6 +814,7 @@ export default function IdInfo(): ReactElement {
               <div
                 className={styles['input-wrapper']}
                 onClick={() => {
+                  handlePickerOpen('birthday')
                   setVisibleDate(true)
                 }}
               >
@@ -751,6 +846,7 @@ export default function IdInfo(): ReactElement {
         confirmText="Confirmar"
         cancelText="Cancelar"
         onConfirm={v => {
+          handlePickerConfirm('gender')
           const item = v[0] === 'M' ? 'Masculino' : 'Femenino'
           setForm({ ...form, gender: v[0] as string, genderLabel: item })
         }}
@@ -764,6 +860,7 @@ export default function IdInfo(): ReactElement {
         cancelText="Cancelar"
         max={new Date()}
         onConfirm={v => {
+          handlePickerConfirm('birthday')
           const day = v.getDate().toString().padStart(2, '0')
           const month = (v.getMonth() + 1).toString().padStart(2, '0')
           const year = v.getFullYear()

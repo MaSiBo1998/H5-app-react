@@ -120,6 +120,42 @@ export const toLoginByCode = (data: LoginByCodeParams) => {
   )
 }
 
+// 通用埋点参数
+export interface UniversalPointParams {
+  innerInfoList: Array<{
+    http: string
+    bended: Array<{
+      despot: string
+      elbrus: string
+    }>
+  }>
+}
+
+// 通用埋点
+export const toUniversalPoint = (data: UniversalPointParams) => {
+  const deviceInfo = getStorage<any>(StorageKeys.DEVICE_INFO) || {}
+  const onding = deviceInfo?.amidol?.indium || ''
+  const leaving = deviceInfo?.amidol?.grating || ''
+
+  return request<unknown>(
+    '/moray/mediate',
+    {
+      method: 'POST',
+      body: {
+        majorca: btoa(JSON.stringify({
+          sediment: {
+            onding,
+            leaving
+          },
+          placer: data.innerInfoList
+        }))
+      },
+      isLoading: false,
+      withAuth: false
+    }
+  )
+}
+
 // 设置密码参数
 export interface SetPasswordParams {
   loginPwd: string

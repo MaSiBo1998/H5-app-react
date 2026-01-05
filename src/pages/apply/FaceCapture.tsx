@@ -8,7 +8,7 @@ import { saveFaceInfo, updateFaceInfo } from '@/services/api/apply'
 import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
 import getNowAndNextStep from './progress'
-
+import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 export default function FaceCapture(): ReactElement {
   const navigate = useNavigate()
@@ -35,9 +35,16 @@ export default function FaceCapture(): ReactElement {
   //下一步骤
   const [nextPath, setNextPath] = useState('')
 
+  // 埋点 Hook
+  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+
+  // 埋点相关 Refs
+  const pageStartTime = useRef(Date.now())
+  const faceStartTime = useRef(0)
   // 初始化
   useEffect(() => {
     setStepTime(new Date().getTime())
+    pageStartTime.current = Date.now()
     try {
       (async () => {
         const { nextPath } = await getNowAndNextStep()
@@ -47,6 +54,10 @@ export default function FaceCapture(): ReactElement {
     }
     return () => {
       stopCamera()
+      // 页面卸载/隐藏时埋点
+      const duration = Date.now() - pageStartTime.current
+      toSetRiskInfo('000012', '2', duration)
+      toSubmitRiskPoint()
     }
   }, [])
 
@@ -61,6 +72,7 @@ export default function FaceCapture(): ReactElement {
   // 启动摄像头
   const startCamera = async () => {
     try {
+      faceStartTime.current = Date.now() // 记录开始时间
       setIsCameraActive(true) // 先渲染视频元素
       const s = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -140,13 +152,18 @@ export default function FaceCapture(): ReactElement {
   const submitFace = async (base64Str: string) => {
     setLoading(true)
     setIsError(false)
+
+    // 记录拍照时长
+    const duration = Date.now() - faceStartTime.current
+    toSetRiskInfo('000012', '1', duration)
+
     try {
       // 移除 base64 前缀
       const cleanBase64 = base64Str.split(',')[1]
 
       const payload: any = {
         moil: cleanBase64,
-        // haslet:entryParams == 'homeEdit'?5: 1,
+        haslet:entryParams == 'homeEdit'?5: 1,
         coxswain: stepTime
       }
 
@@ -157,6 +174,10 @@ export default function FaceCapture(): ReactElement {
         await saveFaceInfo(payload)
       }
 
+      // 提交成功埋点
+      toSetRiskInfo('000012', '4', '1')
+      await toSubmitRiskPoint()
+
       if (entryParams == 'profile') {
         navigate('/my-info')
       } else if (entryParams == 'homeEdit') {
@@ -164,9 +185,12 @@ export default function FaceCapture(): ReactElement {
       } else {
         navigate(nextPath)
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e)
       setIsError(true)
+      // 提交失败埋点
+      toSetRiskInfo('000012', '3', e.msg || e.message || 'Error')
+      toSetRiskInfo('000012', '4', '2')
     } finally {
       setLoading(false)
     }

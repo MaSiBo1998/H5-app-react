@@ -1,4 +1,4 @@
-import { type ReactElement, useState, useEffect } from 'react'
+import { type ReactElement, useState, useEffect, useRef } from 'react'
 import { Card, Button, Input, Toast, Space } from 'antd-mobile'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { RightOutline, BankcardOutline, UserOutline } from 'antd-mobile-icons'
@@ -9,6 +9,7 @@ import { getStepConfigInfo, saveBankInfo, getUserBankInfo } from '@/services/api
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
 import getNowAndNextStep from './progress'
+import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 // 银行类型接口
 interface BankType {
@@ -45,10 +46,43 @@ export default function BankInfo(): ReactElement {
   // 银行选择器显示状态
   const [bankPickerVisible, setBankPickerVisible] = useState(false)
 
+  // 埋点 Hook
+  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+
+  // 埋点相关 Refs
+  const pageStartTime = useRef(Date.now())
+  const pickerStartTimes = useRef<{ bankType: number; bankName: number }>({
+    bankType: 0,
+    bankName: 0,
+  })
+  const bankAccountData = useRef({ startTime: 0, inputType: 1 })
+
+  // 银行账号输入埋点
+  const handleBankAccountFocus = () => {
+    bankAccountData.current.startTime = Date.now()
+    bankAccountData.current.inputType = 1
+  }
+  const handleBankAccountPaste = () => {
+    bankAccountData.current.inputType = 2
+  }
+  const handleBankAccountBlur = () => {
+    if (bankAccountData.current.startTime && form.bankAccount) {
+      const duration = Date.now() - bankAccountData.current.startTime
+      toSetRiskInfo('000013', '2', bankAccountData.current.inputType)
+      toSetRiskInfo('000013', '3', duration)
+      bankAccountData.current.startTime = 0
+    }
+  }
+
   // 初始化
   useEffect(() => {
     const init = async () => {
       setForm(prev => ({ ...prev, stepTime: Date.now() }))
+      // 记录页面开始时间
+      pageStartTime.current = Date.now()
+      // 第一次选择银行类型的开始时间 (Vue逻辑: if (!this.pickerStartTimes.bankType) ...)
+      pickerStartTimes.current.bankType = Date.now()
+
       try {
         const { nextPath } = await getNowAndNextStep()
         setNextPath(nextPath ?? '')
@@ -108,10 +142,24 @@ export default function BankInfo(): ReactElement {
       }
     }
     init()
+
+    return () => {
+      // 页面卸载/隐藏时埋点
+      const duration = Date.now() - pageStartTime.current
+      toSetRiskInfo('000014', '2', duration)
+      toSubmitRiskPoint()
+    }
   }, [])
 
   // 切换银行类型
   const handleTypeSelect = (type: BankType) => {
+    // 记录选择时长
+    if (pickerStartTimes.current.bankType) {
+      const duration = Date.now() - pickerStartTimes.current.bankType
+      toSetRiskInfo('000013', '1', duration)
+      pickerStartTimes.current.bankType = 0
+    }
+
     setForm(prev => {
       const isBank = type.shoddy === 1 // 假设 1 是银行卡
       return {
@@ -135,6 +183,12 @@ export default function BankInfo(): ReactElement {
     }
   }
 
+  // 打开银行列表
+  const handleOpenBankList = () => {
+    pickerStartTimes.current.bankName = Date.now()
+    setBankPickerVisible(true)
+  }
+
   // 提交
   const handleSubmit = async () => {
     const { bankType, bankName, bankCode, bankAccount, stepTime } = form
@@ -152,6 +206,11 @@ export default function BankInfo(): ReactElement {
       Toast.show('Por favor ingrese el número de cuenta')
       return
     }
+    // 简单校验长度
+    if (bankType === 2 && (bankAccount.length < 7 || bankAccount.length > 10)) {
+       Toast.show('Por favor ingrese un número de cuenta válido')
+       return
+    }
 
     setLoading(true)
     try {
@@ -164,6 +223,11 @@ export default function BankInfo(): ReactElement {
       }
 
       await saveBankInfo(payload)
+      
+      // 提交成功埋点
+      toSetRiskInfo('000014', '1', '1')
+      await toSubmitRiskPoint()
+
       setTimeout(() => {
         if (isProfileEntry) {
           navigate('/my-info')
@@ -172,6 +236,9 @@ export default function BankInfo(): ReactElement {
         }
       }, 500)
     } catch (error: any) {
+      // 提交失败埋点
+      toSetRiskInfo('000014', '1', '2')
+      toSetRiskInfo('000014', '3', error.msg || error.message || 'Unknown error')
       Toast.show(error.message || 'Error al guardar')
     } finally {
       setLoading(false)
@@ -264,7 +331,7 @@ export default function BankInfo(): ReactElement {
               <label className={styles['form-label']}>Nombre del banco</label>
               <div
                 className={styles['input-wrapper']}
-                onClick={() => setBankPickerVisible(true)}
+                onClick={handleOpenBankList}
               >
                 <BankcardOutline className={styles['input-icon']} />
                 <div className={styles['input-content']} style={{ color: form.bankName ? '#333333' : '#cccccc' }}>
@@ -281,6 +348,13 @@ export default function BankInfo(): ReactElement {
                     bankCode: bank.code,
                     bankName: bank.name
                   }))
+                  
+                  // 记录银行名称选择时间
+                  if (pickerStartTimes.current.bankName) {
+                    const duration = Date.now() - pickerStartTimes.current.bankName
+                    toSetRiskInfo('000013', '4', duration)
+                    pickerStartTimes.current.bankName = 0
+                  }
                 }}
               />
             </div>
@@ -305,6 +379,9 @@ export default function BankInfo(): ReactElement {
                   }
                   setForm(prev => ({ ...prev, bankAccount: val }))
                 }}
+                onFocus={handleBankAccountFocus}
+                onBlur={handleBankAccountBlur}
+                {...{ onPaste: handleBankAccountPaste } as any}
                 style={{ '--font-size': '16px', flex: 1 }}
                 clearable
                 type="number"

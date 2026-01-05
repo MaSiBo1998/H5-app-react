@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactElement } from 'react'
+import { useEffect, useState, useRef, type ReactElement } from 'react'
 import { Card, Space, Input, Picker, Button, Toast } from 'antd-mobile'
 // import { useNavigate } from 'react-router-dom'
 import getNowAndNextStep from '@/pages/Apply/progress'
@@ -9,6 +9,8 @@ import { CalendarOutline, PhonebookOutline, RightOutline, UserOutline } from 'an
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { saveContactInfo } from '@/services/api/apply'
 import { getStorage, StorageKeys } from '@/utils/storage'
+import { useRiskTracking } from '@/hooks/useRiskTracking'
+
 
 export default function ContactsInfo(): ReactElement {
 
@@ -16,6 +18,8 @@ export default function ContactsInfo(): ReactElement {
   const [searchParams] = useSearchParams()
   // 是否从个人中心进入
   const isProfileEntry = searchParams.get('entry') === 'profile'
+  // 入口参数
+  // const entryParams = searchParams.get('entry')
 
   // 下一步跳转路径
   const [nextPath, setNextPath] = useState('')
@@ -46,6 +50,88 @@ export default function ContactsInfo(): ReactElement {
   })
   // 加载状态
   const [loading, setLoading] = useState(false)
+
+  // 埋点 Hook
+  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+
+  // 埋点状态
+  const pageStartTime = useRef<number>(Date.now())
+  
+  // 存储每个联系人的输入状态
+  const contactInputData = useRef(Array.from({ length: 5 }, () => ({
+    phoneStartTime: 0,
+    phoneInputType: 1,
+    nameStartTime: 0,
+    nameInputType: 1,
+    relationStartTime: 0
+  })))
+
+  // 页面停留埋点
+  useEffect(() => {
+    pageStartTime.current = Date.now()
+    return () => {
+      const stayTime = Date.now() - pageStartTime.current
+      toSetRiskInfo('000007', '2', stayTime)
+      toSubmitRiskPoint()
+    }
+  }, [])
+
+  // 输入处理函数
+  const handlePhoneFocus = (index: number) => {
+    contactInputData.current[index].phoneStartTime = Date.now()
+    contactInputData.current[index].phoneInputType = 1
+  }
+
+  const handlePhonePaste = (index: number) => {
+    contactInputData.current[index].phoneInputType = 2
+  }
+
+  const handlePhoneBlur = (index: number) => {
+    const data = contactInputData.current[index]
+    if (data.phoneStartTime) {
+      const duration = Date.now() - data.phoneStartTime
+      const timeKey = index * 5 + 3
+      const typeKey = index * 5 + 2
+      toSetRiskInfo('000006', timeKey.toString(), duration)
+      toSetRiskInfo('000006', typeKey.toString(), data.phoneInputType)
+      data.phoneStartTime = 0
+    }
+  }
+
+  const handleNameFocus = (index: number) => {
+    contactInputData.current[index].nameStartTime = Date.now()
+    contactInputData.current[index].nameInputType = 1
+  }
+
+  const handleNamePaste = (index: number) => {
+    contactInputData.current[index].nameInputType = 2
+  }
+
+  const handleNameBlur = (index: number) => {
+    const data = contactInputData.current[index]
+    if (data.nameStartTime) {
+      const duration = Date.now() - data.nameStartTime
+      const timeKey = index * 5 + 5
+      const typeKey = index * 5 + 4
+      toSetRiskInfo('000006', timeKey.toString(), duration)
+      toSetRiskInfo('000006', typeKey.toString(), data.nameInputType)
+      data.nameStartTime = 0
+    }
+  }
+
+  const handleRelationOpen = (index: number) => {
+    contactInputData.current[index].relationStartTime = Date.now()
+  }
+
+  const handleRelationConfirm = (index: number) => {
+    const data = contactInputData.current[index]
+    if (data.relationStartTime) {
+      const duration = Date.now() - data.relationStartTime
+      const timeKey = index * 5 + 1
+      toSetRiskInfo('000006', timeKey.toString(), duration)
+      data.relationStartTime = 0
+    }
+  }
 
   // 初始化
   useEffect(() => {
@@ -96,13 +182,19 @@ export default function ContactsInfo(): ReactElement {
 
       if (isMandatory) {
         if (!hasAll) {
-          Toast.show(`Por favor complete la información del contacto ${i + 1}`)
+          const msg = `Por favor complete la información del contacto ${i + 1}`
+          Toast.show(msg)
+          toSetRiskInfo('000007', '1', 2)
+          toSetRiskInfo('000007', '3', msg)
           return
         }
       } else {
         // 选填项，如果填写了任意一项，则必须全部填写
         if (hasAny && !hasAll) {
-          Toast.show(`Por favor complete toda la información del contacto ${i + 1}`)
+          const msg = `Por favor complete toda la información del contacto ${i + 1}`
+          Toast.show(msg)
+          toSetRiskInfo('000007', '1', 2)
+          toSetRiskInfo('000007', '3', msg)
           return
         }
       }
@@ -120,13 +212,16 @@ export default function ContactsInfo(): ReactElement {
         }))
     }
     saveContactInfo(submitForm).then(() => {
+        toSetRiskInfo('000007', '1', 1)
         setLoading(false)
         if (isProfileEntry) {
           navigate('/my-info')
         } else {
           navigate(nextPath)
         }
-      }).catch(() => {
+      }).catch((e: any) => {
+        toSetRiskInfo('000007', '1', 2)
+        toSetRiskInfo('000007', '3', e.msg || e.message || 'Unknown error')
         setLoading(false)
       })
     }
@@ -180,6 +275,9 @@ export default function ContactsInfo(): ReactElement {
                           clearable
                           type='number'
                           style={{ '--font-size': '16px', flex: 1 }}
+                          onFocus={() => handlePhoneFocus(index)}
+                          onBlur={() => handlePhoneBlur(index)}
+                          onPaste={() => handlePhonePaste(index)}
                         />
                       </div>
                     </div>
@@ -187,6 +285,7 @@ export default function ContactsInfo(): ReactElement {
                     <div className={styles['form-group']}>
                       <label className={styles['form-label']}>Relación{index + 1} {index > 2 ? '(opcional)' : ''}</label>
                       <div className={styles['input-wrapper']} onClick={() => {
+                        handleRelationOpen(index)
                         setCurrentContactIndex(index)
                         setRelationVisible(true)
                       }}>
@@ -211,6 +310,9 @@ export default function ContactsInfo(): ReactElement {
                           placeholder='jack maray'
                           clearable
                           style={{ '--font-size': '16px', flex: 1 }}
+                          onFocus={() => handleNameFocus(index)}
+                          onBlur={() => handleNameBlur(index)}
+                          onPaste={() => handleNamePaste(index)}
                         />
                       </div>
                     </div>
@@ -229,6 +331,7 @@ export default function ContactsInfo(): ReactElement {
             visible={relationVisible}
             onClose={() => setRelationVisible(false)}
             onConfirm={(vals) => {
+              handleRelationConfirm(currentContactIndex)
               const val = vals[0]
               if (val) {
                 setForm(prev => ({
