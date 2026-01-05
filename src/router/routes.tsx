@@ -54,8 +54,6 @@ export const routes: RouteObject[] = [
       },
       // 状态详情页
       { path: '/status', element: <StatusPage /> },
-
-
       // 申请流程页面
       { path: 'work', element: <WorkInfo /> },
       { path: 'contacts', element: <ContactsInfo /> },

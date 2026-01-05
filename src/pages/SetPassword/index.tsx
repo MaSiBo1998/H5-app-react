@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Input, Button, Toast } from 'antd-mobile'
+import type { InputRef } from 'antd-mobile'
 import { EyeInvisibleOutline, EyeOutline } from 'antd-mobile-icons'
 import { toSetPassword, loginByPassword } from '@/services/api/user'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
@@ -21,6 +22,7 @@ export default function SetPassword() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const confirmInputRef = useRef<InputRef>(null)
 
   const config = useMemo(() => {
     switch (typeParam) {
@@ -140,6 +142,8 @@ export default function SetPassword() {
               type={showPassword ? 'text' : 'password'}
               maxLength={16}
               style={{ flex: 1, '--font-size': '16px' }}
+              enterKeyHint="next"
+              onEnterPress={() => confirmInputRef.current?.focus()}
             />
             <div
               className={styles['eye-icon']}
@@ -151,14 +155,16 @@ export default function SetPassword() {
 
           <div className={styles['input-item']}>
             <Input
+              ref={confirmInputRef}
               value={confirmPassword}
               onChange={(val) => handlePasswordChange(val, setConfirmPassword)}
               placeholder="Vuelva a introducir la contraseña"
               type={showConfirmPassword ? 'text' : 'password'}
               maxLength={16}
               style={{ flex: 1, '--font-size': '16px' }}
+              enterKeyHint="done"
               onEnterPress={(e) => {
-                (e.target as HTMLInputElement).blur()
+                confirmInputRef.current?.blur()
               }}
             />
             <div
