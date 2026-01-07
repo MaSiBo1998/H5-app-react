@@ -128,7 +128,7 @@ export interface UniversalPointParams {
       despot: string
       elbrus: string
     }>
-  }>
+  }>,
 }
 
 // 通用埋点
@@ -151,7 +151,8 @@ export const toUniversalPoint = (data: UniversalPointParams) => {
         }))
       },
       isLoading: false,
-      withAuth: false
+      withAuth: false,
+      skipErrorHandler: true,
     }
   )
 }

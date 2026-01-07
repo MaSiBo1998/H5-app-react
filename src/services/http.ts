@@ -26,7 +26,9 @@ export interface RequestOptions {
   withAuth?: boolean
   isLoading?: boolean
   // 重试次数，默认 0
-  retries?: number
+  retries?: number,
+  // 是否跳过全局错误处理（包括 Toast 提示和 Token 过期跳转）
+  skipErrorHandler?: boolean,
 }
 
 // 将参数对象转换为查询字符串
@@ -177,11 +179,15 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
             return inner
           }
           if (code === 'R6566S') {
-            handleTokenExpired(record)
+            if (!options.skipErrorHandler) {
+              handleTokenExpired(record)
+            }
           }
           console.log('code', code, msg)
           errorShown = true
-          Toast.show({ content: msg || 'Error', duration: 2000 })
+          if (!options.skipErrorHandler) {
+            Toast.show({ content: msg || 'Error', duration: 2000 })
+          }
           throw new HttpError(msg || 'Business error', 460, code, raw)
         }
       }
