@@ -173,6 +173,19 @@ export default function ContactsInfo(): ReactElement {
 
   // 提交表单
   const onSubmit = () => {
+    // 校验重复手机号
+    const phones = form.deedy
+      .map(item => item.verdure)
+      .filter(phone => phone && phone.trim() !== '')
+
+    if (new Set(phones).size !== phones.length) {
+      const msg = 'No se permiten números de teléfono duplicados'
+      Toast.show(msg)
+      toSetRiskInfo('000007', '1', 2)
+      toSetRiskInfo('000007', '3', msg)
+      return
+    }
+
     // 校验逻辑
     for (let i = 0; i < form.deedy.length; i++) {
       const item = form.deedy[i]
@@ -197,6 +210,15 @@ export default function ContactsInfo(): ReactElement {
           toSetRiskInfo('000007', '3', msg)
           return
         }
+      }
+
+      // 校验手机号长度
+      if (item.verdure && item.verdure.length < 10) {
+        const msg = `Contacto número ${i + 1}, Por favor ingrese un número de teléfono válido`
+        Toast.show(msg)
+        toSetRiskInfo('000007', '1', 2)
+        toSetRiskInfo('000007', '3', msg)
+        return
       }
     }
 
@@ -267,13 +289,15 @@ export default function ContactsInfo(): ReactElement {
                          
                           value={item.verdure}
                           onChange={v => {
+                            // 限制只能输入数字
                             let val = v.replace(/\D/g, '')
                             if (val.length > 10) val = val.slice(0, 10)
                             setForm({ ...form, deedy: form.deedy.map((item, i) => i === index ? { ...item, verdure: val } : item) })
                           }}
                           placeholder={'300 123 456' + index}
                           clearable
-                          type='number'
+                          type='tel'
+                          inputMode='numeric'
                           style={{ '--font-size': '16px', flex: 1 }}
                           onFocus={() => handlePhoneFocus(index)}
                           onBlur={() => handlePhoneBlur(index)}
@@ -306,7 +330,10 @@ export default function ContactsInfo(): ReactElement {
                         <UserOutline className={styles['input-icon']} />
                         <Input
                           value={item.jacobin}
-                          onChange={v => setForm({ ...form, deedy: form.deedy.map((item, i) => i === index ? { ...item, jacobin: v } : item) })}
+                          onChange={v => {
+                            if (v.length > 100) v = v.slice(0, 100)
+                            setForm({ ...form, deedy: form.deedy.map((item, i) => i === index ? { ...item, jacobin: v } : item) })
+                          }}
                           placeholder='jack maray'
                           clearable
                           style={{ '--font-size': '16px', flex: 1 }}

@@ -1,0 +1,127 @@
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 32px 24px 24px;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 77, 64, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 装饰背景 */
+.modal-content::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(38, 166, 154, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.modal-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: #e0f2f1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: #00897b;
+  box-shadow: 0 8px 16px rgba(0, 137, 123, 0.1);
+}
+
+.modal-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #263238;
+  line-height: 1.5;
+  margin-bottom: 28px;
+  padding: 0 8px;
+}
+
+.highlight {
+  color: #d32f2f;
+  font-weight: 700;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  justify-content: stretch;
+}
+
+.btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 22px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-confirm {
+  background: linear-gradient(90deg, #26a69a 0%, #00897b 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(38, 166, 154, 0.3);
+}
+
+.btn-confirm:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 6px rgba(38, 166, 154, 0.2);
+}
+
+.btn-cancel {
+  background: #f5f5f5;
+  color: #78909c;
+}
+
+.btn-cancel:active {
+  background: #eceff1;
+  transform: scale(0.96);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

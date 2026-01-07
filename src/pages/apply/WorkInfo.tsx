@@ -60,7 +60,7 @@ export default function WorkInfo(): ReactElement {
   const [biweeklySecondVisible, setBiweeklySecondVisible] = useState(false)
   const [monthlyVisible, setMonthlyVisible] = useState(false)
   const [nextPath, setNextPath] = useState('')
-  let startTime: number = 0
+  const [startTime,setStartTime] = useState(0)
   const isWorker = form.workType == 1 || form.workType == 2
 
   // 埋点 Hook
@@ -148,7 +148,7 @@ export default function WorkInfo(): ReactElement {
 
   // 初始化
   useEffect(() => {
-    startTime = new Date().getTime()
+    setStartTime(new Date().getTime())
     console.log('EntryForm', 'startTime', startTime)
     try {
       (async () => {
@@ -456,7 +456,13 @@ export default function WorkInfo(): ReactElement {
                 <PhoneFill className={styles['input-icon']} />
                 <Input
                   value={form.companyPhone}
-                  onChange={v => setForm({ ...form, companyPhone: v })}
+                  onChange={v =>{
+                    if(v.length >10){
+                      setForm({ ...form, companyPhone: v.slice(0, 10) })
+                    }else{
+                      setForm({ ...form, companyPhone: v })
+                    }
+                  } }
                   onFocus={() => handleInputFocus('companyPhone')}
                   onBlur={() => handleInputBlur('companyPhone')}
                   onPaste={() => handlePaste('companyPhone')}
@@ -512,13 +518,21 @@ export default function WorkInfo(): ReactElement {
         setForm({ ...form, payFreq: sel, payDate: mode === 'no' ? '' : '' })
         handlePickerClose('payFreq', true)
       }} />
-      {/* 不固定 */}
-      <DatePicker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" precision="day" visible={noFixedVisible} onClose={() => handlePickerClose('noFixed')} onConfirm={(val) => {
-        const mm = String((val.getMonth() + 1)).padStart(2, '0')
-        const dd = String(val.getDate()).padStart(2, '0')
-        setForm({ ...form, payDate: `${dd}/${mm}` })
-        handlePickerClose('noFixed', true)
-      }} />
+      {/* 不固定 - 只选择日期，月份默认当月 */}
+      <Picker
+        closeOnMaskClick={false}
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+        columns={[dayOptions]}
+        visible={noFixedVisible}
+        onClose={() => handlePickerClose('noFixed')}
+        onConfirm={(vals) => {
+          const dd = String(vals[0])
+          const mm = String(new Date().getMonth() + 1).padStart(2, '0')
+          setForm({ ...form, payDate: `${dd}/${mm}` })
+          handlePickerClose('noFixed', true)
+        }}
+      />
       {/* 单周新 */}
       <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[weekOptions]} visible={weeklyVisible} onClose={() => handlePickerClose('weekly')} onConfirm={(vals) => { setForm({ ...form, payDate: String(vals[0]) }); handlePickerClose('weekly', true) }} />
       {/* 第一周 */}
