@@ -352,8 +352,8 @@ export default function ContactsInfo(): ReactElement {
           {/* 薪资范围  */}
           <Picker
             closeOnMaskClick={false}
-            confirmText="Confirmar"
-            cancelText="Cancelar"
+            confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+            cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
             columns={[options.relation.map(o => ({ label: o.deicide, value: o.shoddy }))]}
             visible={relationVisible}
             onClose={() => setRelationVisible(false)}

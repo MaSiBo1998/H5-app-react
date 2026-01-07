@@ -109,12 +109,18 @@ export default function PersonalInfo(): ReactElement {
   }
 
   // 邮箱埋点
-  const handleEmailFocus = () => {
+  const handleEmailFocus = (e: any) => {
     emailData.current.startTime = Date.now()
     emailData.current.inputType = 1
     if (form.emailAccount && !form.emailAccount.includes('@')) {
       setVisibles(prev => ({ ...prev, emailSuffix: true }))
     }
+    // 解决键盘遮挡
+    setTimeout(() => {
+      try {
+        e?.target?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      } catch (error) {}
+    }, 300)
   }
   
   const handleEmailPaste = () => {
@@ -132,9 +138,15 @@ export default function PersonalInfo(): ReactElement {
   }
 
   // 邮箱验证码埋点
-  const handleEmailCodeFocus = () => {
+  const handleEmailCodeFocus = (e: any) => {
     emailCodeData.current.startTime = Date.now()
     emailCodeData.current.inputType = 1
+    // 解决键盘遮挡
+    setTimeout(() => {
+      try {
+        e?.target?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      } catch (error) {}
+    }, 300)
   }
   const handleEmailCodePaste = () => {
     emailCodeData.current.inputType = 2
@@ -559,7 +571,7 @@ export default function PersonalInfo(): ReactElement {
 
           {/* 邮箱验证码 */}
           <div className={styles['form-group']}>
-            <label className={styles['form-label']}>Código de verificación</label>
+            {/* <label className={styles['form-label']}>Código de verificación</label> */}
             <div className={styles['input-wrapper']}>
               <MailOutline className={styles['input-icon']} />
               <Input
@@ -584,7 +596,8 @@ export default function PersonalInfo(): ReactElement {
                   padding: '0 8px',
                   borderLeft: '1px solid #eee',
                   height: '24px',
-                  lineHeight: '24px'
+                  lineHeight: '24px',
+                  color:'#26a69a'
                 }}
               >
                 {countdown > 0 ? `${countdown}s` : 'Enviar'}
@@ -612,6 +625,8 @@ export default function PersonalInfo(): ReactElement {
         visible={visibles.education}
         onClose={() => { setVisibles(v => ({ ...v, education: false })) }}
         value={[form.educationValue]}
+        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         onConfirm={v => {
           setForm(f => ({ ...f, educationValue: v[0] as string, education: options.education.find(i => i.value === v[0])?.label || '' }))
           handlePickerConfirm('education')
@@ -622,6 +637,8 @@ export default function PersonalInfo(): ReactElement {
         visible={visibles.marital}
         onClose={() => { setVisibles(v => ({ ...v, marital: false })) }}
         value={[form.maritalValue]}
+        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         onConfirm={v => {
           setForm(f => ({ ...f, maritalValue: v[0] as string, marital: options.marital.find(i => i.value === v[0])?.label || '' }))
           handlePickerConfirm('marital')
@@ -632,6 +649,8 @@ export default function PersonalInfo(): ReactElement {
         visible={visibles.children}
         onClose={() => { setVisibles(v => ({ ...v, children: false })) }}
         value={[form.childrenValue]}
+        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         onConfirm={v => {
           setForm(f => ({ ...f, childrenValue: v[0] as string, children: options.children.find(i => i.value === v[0])?.label || '' }))
           handlePickerConfirm('children')
@@ -642,6 +661,8 @@ export default function PersonalInfo(): ReactElement {
         visible={visibles.residenceType}
         onClose={() => { setVisibles(v => ({ ...v, residenceType: false })) }}
         value={[form.residenceTypeValue]}
+        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         onConfirm={v => {
           setForm(f => ({ ...f, residenceTypeValue: v[0] as string, residenceType: options.residenceType.find(i => i.value === v[0])?.label || '' }))
           handlePickerConfirm('residenceType')
@@ -652,6 +673,8 @@ export default function PersonalInfo(): ReactElement {
         visible={visibles.loanUse}
         onClose={() => { setVisibles(v => ({ ...v, loanUse: false })) }}
         value={[form.loanUse]}
+        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         onConfirm={v => {
           setForm(f => ({ ...f, loanUse: v[0] as string }))
           handlePickerConfirm('loanUse')
@@ -661,8 +684,14 @@ export default function PersonalInfo(): ReactElement {
         options={addrOptions}
         visible={visibles.address}
         onClose={() => { setVisibles(v => ({ ...v, address: false })) }}
+        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         onConfirm={(_v, extend) => {
           const items = extend.items
+          if (items.length < 2) {
+            Toast.show('Por favor seleccione provincia y ciudad')
+            return
+          }
           const address = items.map(i => i?.label).join(' ')
           const last = items[items.length - 1]
           setForm(f => ({

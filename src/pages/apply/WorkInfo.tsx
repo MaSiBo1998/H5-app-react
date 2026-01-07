@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import { Card, Space, Button, Input, Cascader, DatePicker, Picker, Toast } from 'antd-mobile'
+import { Card, Space, Button, Input, Cascader, Picker, Toast } from 'antd-mobile'
 import {
   RightOutline,
   UserOutline,
@@ -506,13 +506,13 @@ export default function WorkInfo(): ReactElement {
         </Space>
       </Card>
       {/* 工作类型 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.workType.map(o => ({ label: o.label, value: o.value }))]} visible={workTypeVisible} onClose={() => handlePickerClose('workType')} onConfirm={(vals) => { setForm({ ...form, workType: vals[0] as any }); handlePickerClose('workType', true) }} />
+      <Picker closeOnMaskClick={false} confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>} cancelText={<span style={{ color: '#999999' }}>Cancelar</span>} columns={[options.workType.map(o => ({ label: o.label, value: o.value }))]} visible={workTypeVisible} onClose={() => handlePickerClose('workType')} onConfirm={(vals) => { setForm({ ...form, workType: vals[0] as any }); handlePickerClose('workType', true) }} />
       {/* 薪资范围  */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.salaryRange.map(o => ({ label: o.label, value: o.value }))]} visible={salaryRangeVisible} onClose={() => handlePickerClose('salaryRange')} onConfirm={(vals) => { setForm({ ...form, salaryRange: vals[0] as any }); handlePickerClose('salaryRange', true) }} />
+      <Picker closeOnMaskClick={false} confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>} cancelText={<span style={{ color: '#999999' }}>Cancelar</span>} columns={[options.salaryRange.map(o => ({ label: o.label, value: o.value }))]} visible={salaryRangeVisible} onClose={() => handlePickerClose('salaryRange')} onConfirm={(vals) => { setForm({ ...form, salaryRange: vals[0] as any }); handlePickerClose('salaryRange', true) }} />
       {/* 工作年限 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.workYears.map(o => ({ label: o.label, value: o.value }))]} visible={workYearsVisible} onClose={() => handlePickerClose('workYears')} onConfirm={(vals) => { setForm({ ...form, workYears: vals[0] as any }); handlePickerClose('workYears', true) }} />
+      <Picker closeOnMaskClick={false} confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>} cancelText={<span style={{ color: '#999999' }}>Cancelar</span>} columns={[options.workYears.map(o => ({ label: o.label, value: o.value }))]} visible={workYearsVisible} onClose={() => handlePickerClose('workYears')} onConfirm={(vals) => { setForm({ ...form, workYears: vals[0] as any }); handlePickerClose('workYears', true) }} />
       {/*  */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[options.payFreq.map(o => ({ label: o.label, value: o.value }))]} visible={payFreqVisible} onClose={() => handlePickerClose('payFreq')} onConfirm={(vals) => {
+      <Picker closeOnMaskClick={false} confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>} cancelText={<span style={{ color: '#999999' }}>Cancelar</span>} columns={[options.payFreq.map(o => ({ label: o.label, value: o.value }))]} visible={payFreqVisible} onClose={() => handlePickerClose('payFreq')} onConfirm={(vals) => {
         const sel = vals[0] as any
         const mode = payFreqModeMap[sel] ?? (typeof sel === 'string' ? (sel as any) : undefined)
         setForm({ ...form, payFreq: sel, payDate: mode === 'no' ? '' : '' })
@@ -521,8 +521,8 @@ export default function WorkInfo(): ReactElement {
       {/* 不固定 - 只选择日期，月份默认当月 */}
       <Picker
         closeOnMaskClick={false}
-        confirmText="Confirmar"
-        cancelText="Cancelar"
+        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         columns={[dayOptions]}
         visible={noFixedVisible}
         onClose={() => handlePickerClose('noFixed')}
@@ -534,9 +534,9 @@ export default function WorkInfo(): ReactElement {
         }}
       />
       {/* 单周新 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[weekOptions]} visible={weeklyVisible} onClose={() => handlePickerClose('weekly')} onConfirm={(vals) => { setForm({ ...form, payDate: String(vals[0]) }); handlePickerClose('weekly', true) }} />
+      <Picker closeOnMaskClick={false} confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>} cancelText={<span style={{ color: '#999999' }}>Cancelar</span>} columns={[weekOptions]} visible={weeklyVisible} onClose={() => handlePickerClose('weekly')} onConfirm={(vals) => { setForm({ ...form, payDate: String(vals[0]) }); handlePickerClose('weekly', true) }} />
       {/* 第一周 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[dayOptions]} visible={biweeklyFirstVisible} onClose={() => handlePickerClose('biweeklyFirst')} onConfirm={(vals) => {
+      <Picker closeOnMaskClick={false} confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>} cancelText={<span style={{ color: '#999999' }}>Cancelar</span>} columns={[dayOptions]} visible={biweeklyFirstVisible} onClose={() => handlePickerClose('biweeklyFirst')} onConfirm={(vals) => {
         const val = vals[0] as string
         const parts = (form.payDate || '').split('###')
         const second = parts[1] || ''
@@ -544,18 +544,18 @@ export default function WorkInfo(): ReactElement {
         handlePickerClose('biweeklyFirst', true)
       }} />
       {/* 第二周 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[dayOptions]} visible={biweeklySecondVisible} onClose={() => handlePickerClose('biweeklySecond')} onConfirm={(vals) => {
+      <Picker closeOnMaskClick={false} confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>} cancelText={<span style={{ color: '#999999' }}>Cancelar</span>} columns={[dayOptions]} visible={biweeklySecondVisible} onClose={() => handlePickerClose('biweeklySecond')} onConfirm={(vals) => {
         const val = vals[0] as string
         const first = (form.payDate || '').split('###')[0] || ''
         setForm({ ...form, payDate: `${first}###${val}` })
         handlePickerClose('biweeklySecond', true)
       }} />
       {/*月薪 */}
-      <Picker closeOnMaskClick={false} confirmText="Confirmar" cancelText="Cancelar" columns={[dayOptions]} visible={monthlyVisible} onClose={() => handlePickerClose('monthly')} onConfirm={(vals) => { setForm({ ...form, payDate: String(vals[0]) }); handlePickerClose('monthly', true) }} />
+      <Picker closeOnMaskClick={false} confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>} cancelText={<span style={{ color: '#999999' }}>Cancelar</span>} columns={[dayOptions]} visible={monthlyVisible} onClose={() => handlePickerClose('monthly')} onConfirm={(vals) => { setForm({ ...form, payDate: String(vals[0]) }); handlePickerClose('monthly', true) }} />
       {/* 地址 */}
       <Cascader
-        confirmText="Confirmar"
-        cancelText="Cancelar"
+        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         options={addrOptions}
         visible={addrVisible}
         placeholder="Seleccionar dirección"

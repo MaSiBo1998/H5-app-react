@@ -71,22 +71,60 @@ export default function FaceCapture(): ReactElement {
 
   // 启动摄像头
   const startCamera = async () => {
+    // 确保之前的流已停止
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop())
+      setStream(null)
+    }
+
     try {
       faceStartTime.current = Date.now() // 记录开始时间
       setIsCameraActive(true) // 先渲染视频元素
-      const s = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      })
+
+      let s: MediaStream
+      try {
+        // 尝试首选配置
+        s = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'user',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        })
+      } catch (firstErr: any) {
+        console.warn("First camera attempt failed:", firstErr)
+        // 降级策略：如果是因为参数约束或无法读取，尝试最基本的配置
+        if (firstErr.name === 'OverconstrainedError' || 
+            firstErr.name === 'ConstraintNotSatisfiedError' || 
+            firstErr.name === 'NotReadableError') {
+          s = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: 'user'
+            },
+            audio: false
+          })
+        } else {
+          throw firstErr
+        }
+      }
+      
       setStream(s)
-    } catch (err) {
+    } catch (err: any) {
       console.error("Camera error:", err)
       setIsCameraActive(false)
-      Toast.show('No se pudo acceder a la cámara. Por favor verifique los permisos.')
+      
+      let msg = 'No se pudo acceder a la cámara.'
+      // 根据错误类型提供更准确的提示
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        msg = 'Acceso a la cámara denegado. Por favor, habilite los permisos.'
+      } else if (err.name === 'NotFoundError') {
+        msg = 'No se encontró la cámara.'
+      } else if (err.name === 'NotReadableError') {
+        msg = 'La cámara está ocupada o no es accesible. Cierre otras aplicaciones.'
+      }
+      
+      Toast.show(msg)
     }
   }
 

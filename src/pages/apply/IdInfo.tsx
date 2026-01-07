@@ -416,7 +416,7 @@ export default function IdInfo(): ReactElement {
   }, [])
 
   const handleBack = () => {
-    if (entryParams == '') {
+    if (entryParams == 'profile') {
       navigate('/my-info')
     } else {
       navigate('/')
@@ -801,7 +801,7 @@ export default function IdInfo(): ReactElement {
                   setVisibleGender(true)
                 }}
               >
-                <div style={{ flex: 1, color: form.genderLabel ? '#333' : '#ccc' }}>
+                <div style={{ flex: 1, color: form.genderLabel ? '#333' : '#ccc', fontSize: '16px' }}>
                   {form.genderLabel || 'Seleccionar género'}
                 </div>
                 <RightOutline color="#cccccc" />
@@ -818,7 +818,7 @@ export default function IdInfo(): ReactElement {
                   setVisibleDate(true)
                 }}
               >
-                <div style={{ flex: 1, color: form.birthday ? '#333' : '#ccc' }}>
+                <div style={{ flex: 1, color: form.birthday ? '#333' : '#ccc', fontSize: '16px' }}>
                   {form.birthday || 'dd/mm/aaaa'}
                 </div>
                 <RightOutline color="#cccccc" />
@@ -843,8 +843,8 @@ export default function IdInfo(): ReactElement {
           { label: 'Masculino', value: 'M' },
           { label: 'Femenino', value: 'F' }
         ]]}
-        confirmText="Confirmar"
-        cancelText="Cancelar"
+        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         onConfirm={v => {
           handlePickerConfirm('gender')
           const item = v[0] === 'M' ? 'Masculino' : 'Femenino'
@@ -856,8 +856,9 @@ export default function IdInfo(): ReactElement {
         closeOnMaskClick={false}
         visible={visibleDate}
         onClose={() => setVisibleDate(false)}
-        confirmText="Confirmar"
-        cancelText="Cancelar"
+        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
+        min={new Date(1900, 0, 1)}
         max={new Date()}
         onConfirm={v => {
           handlePickerConfirm('birthday')
