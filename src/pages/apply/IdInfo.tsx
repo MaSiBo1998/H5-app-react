@@ -324,7 +324,12 @@ export default function IdInfo(): ReactElement {
   const [frontImg, setFrontImg] = useState('') // 用于显示的 URL
   const [backImg, setBackImg] = useState('')
   const [frontBase64, setFrontBase64] = useState('')
-
+  const [backBase64, setBackBase64] = useState('')
+  // 用于提交的 URL (OCR 返回)
+  const [frontSubmitUrl, setFrontSubmitUrl] = useState('')
+  const [backSubmitUrl, setBackSubmitUrl] = useState('')
+  const [hasOcrRun, setHasOcrRun] = useState(false)
+  const [ocrError, setOcrError] = useState(false)
 
   // 控制
   const [showCamera, setShowCamera] = useState(false)
@@ -477,22 +482,32 @@ export default function IdInfo(): ReactElement {
     }
   }
 
+  // 自动触发 OCR
+  useEffect(() => {
+    if (frontBase64 && backBase64 && !hasOcrRun) {
+      performOcr(frontBase64, backBase64)
+    }
+  }, [frontBase64, backBase64, hasOcrRun])
+
   const performOcr = async (fBase64: string, bBase64: string) => {
     setLoading(true)
+    setOcrError(false)
     try {
       const payload = {
         liminal: fBase64,
         kenyon: bBase64,
         coxswain: form.stepTime,
-        trysail: 1 // 默认申请流程
+        trysail: entryParams == 'homeEdit' ? 4 : 1 // 默认申请流程
       }
 
       const res: any = await idcardOcr(payload)
 
       // 成功
+      setHasOcrRun(true)
       setShowForm(true)
-      if (res?.towy) setFrontImg(res.towy)
-      if (res?.curpBack) setBackImg(res.curpBack)
+      // 只保存提交用的 URL，不更新显示的图片（继续使用本地 Base64 以保证显示正常）
+      if (res?.towy) setFrontSubmitUrl(res.towy)
+      if (res?.curpBack) setBackSubmitUrl(res.curpBack)
 
       const updates: any = {}
       if (res.costa) updates.name = res.costa
@@ -515,8 +530,9 @@ export default function IdInfo(): ReactElement {
       // 自动提交逻辑：如果所有关键信息都识别成功
       if (updates.name && updates.surname && updates.idNumber && updates.gender && updates.birthday) {
         try {
-          // 刚拍摄的图片为base64，不需要再次上传，传空字符串
-          await submitData({ ...form, ...updates }, '', '', true)
+          // 使用 OCR 返回的 URL 进行提交
+          // 注意：res.towy 可能为空，如果为空则 finalFront 为空，符合 "只传 HTTP" 的要求
+          await submitData({ ...form, ...updates }, res?.towy || '', res?.curpBack || '', true)
           return
         } catch (e) {
           console.error('Auto submit error', e)
@@ -526,7 +542,16 @@ export default function IdInfo(): ReactElement {
 
     } catch (e) {
       console.error(e)
+      setHasOcrRun(false) // 允许重试
+      setOcrError(true)
       setShowForm(true)
+      // 识别失败，清空选择的图片
+      setFrontImg('')
+      setBackImg('')
+      setFrontBase64('')
+      setBackBase64('')
+      setFrontSubmitUrl('')
+      setBackSubmitUrl('')
     } finally {
       setLoading(false)
     }
@@ -541,6 +566,26 @@ export default function IdInfo(): ReactElement {
       // 分割以获取原始内容
       const rawContent = fullBase64.split(',')[1] || fullBase64
 
+      // 如果之前已经识别过（无论成功失败，只要是重新开始流程），且当前是修改操作
+      // 根据用户需求：再次点击选择拍照,清空之前的图片,正反面都重新上传以后再次出发ocr
+      if (hasOcrRun) {
+        setHasOcrRun(false)
+        // 清空另一侧的图片，强制用户重新上传两张
+        if (cameraType === 'front') {
+          setBackImg('')
+          setBackBase64('')
+          setBackSubmitUrl('')
+        } else {
+          setFrontImg('')
+          setFrontBase64('')
+          setFrontSubmitUrl('')
+        }
+        // 同时隐藏表单（可选，如果希望重新识别前不显示表单）
+        // setShowForm(false) 
+        // 用户之前抱怨还没识别就显示表单，所以这里隐藏表单比较合理，等下次OCR结束再显示
+        // setShowForm(false)
+      }
+
       if (cameraType === 'front') {
         // 埋点 Key 1: 正面上传时长
         if (uploadStartTimes.current.front) {
@@ -549,7 +594,8 @@ export default function IdInfo(): ReactElement {
         }
         setFrontImg(fullBase64)
         setFrontBase64(rawContent)
-        setBackImg('')
+        setFrontSubmitUrl('')
+        // setBackImg('') // 不需要清空背面，因为可能先拍背面再拍正面
         setLoading(false)
       } else {
         // 埋点 Key 2: 反面上传时长
@@ -558,12 +604,9 @@ export default function IdInfo(): ReactElement {
           toSetRiskInfo('000010', '2', duration)
         }
         setBackImg(fullBase64)
-        // 检查是否可以进行 OCR
-        if (frontBase64) {
-          performOcr(frontBase64, rawContent)
-        } else {
-          setLoading(false)
-        }
+        setBackBase64(rawContent)
+        setBackSubmitUrl('')
+        setLoading(false)
       }
     } catch (e) {
       console.error(e)
@@ -584,7 +627,11 @@ export default function IdInfo(): ReactElement {
 
     setLoading(true)
     try {
-      await submitData(form, frontImg, backImg)
+      // 优先使用 OCR 返回的 URL (frontSubmitUrl/backSubmitUrl)
+      // 如果没有 URL (如 OCR 失败或未运行)，则尝试使用 frontImg/backImg (可能是 Base64 或回显 URL)
+      // 但 submitData 内部会过滤掉非 HTTP 的内容，所以如果只有 Base64，提交时会变为空字符串
+      // 这是符合预期的（只传 HTTP）
+      await submitData(form, frontSubmitUrl || frontImg, backSubmitUrl || backImg)
     } catch (e: any) {
       console.error(e)
       // 埋点 Key 1: 提交结果 = 2 (失败), Key 3: 失败原因
@@ -625,7 +672,9 @@ export default function IdInfo(): ReactElement {
       <Card className={styles['form-card']}>
         <div className={styles['section-header']}>
           <div className={styles['section-title']}>Identificación</div>
-          <div className={styles['section-subtitle']}>Sube fotos de tu identificación</div>
+          <div className={styles['section-subtitle']} style={{ color: ocrError ? '#ff4d4f' : '' }}>
+            {ocrError ? 'Error de identificación, por favor suba de nuevo' : 'Sube fotos de tu identificación'}
+          </div>
         </div>
 
         {/* 上传区域 */}
@@ -642,7 +691,7 @@ export default function IdInfo(): ReactElement {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '2px dashed #e0e0e0',
+              border: ocrError ? '2px dashed #ff4d4f' : '2px dashed #e0e0e0',
               overflow: 'hidden',
               position: 'relative',
               cursor: 'pointer',
@@ -681,7 +730,7 @@ export default function IdInfo(): ReactElement {
                   marginBottom: 8,
                   margin: '0 auto 8px'
                 }}>
-                  <CameraOutline fontSize={24} color='#00897b' />
+                  <CameraOutline fontSize={24} color={ocrError ? '#ff4d4f' : '#00897b'} />
                 </div>
                 <div style={{ fontSize: 13, color: '#546e7a', fontWeight: 500 }}>Frente</div>
                 <div style={{ fontSize: 10, color: '#b0bec5', marginTop: 2 }}>Subir foto</div>
@@ -701,7 +750,7 @@ export default function IdInfo(): ReactElement {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '2px dashed #e0e0e0',
+              border: ocrError ? '2px dashed #ff4d4f' : '2px dashed #e0e0e0',
               overflow: 'hidden',
               position: 'relative',
               cursor: 'pointer',
@@ -740,7 +789,7 @@ export default function IdInfo(): ReactElement {
                   marginBottom: 8,
                   margin: '0 auto 8px'
                 }}>
-                  <CameraOutline fontSize={24} color='#00897b' />
+                  <CameraOutline fontSize={24} color={ocrError ? '#ff4d4f' : '#00897b'} />
                 </div>
                 <div style={{ fontSize: 13, color: '#546e7a', fontWeight: 500 }}>Reverso</div>
                 <div style={{ fontSize: 10, color: '#b0bec5', marginTop: 2 }}>Subir foto</div>
@@ -749,7 +798,7 @@ export default function IdInfo(): ReactElement {
           </div>
         </div>
 
-        {!showForm && (
+        {showForm && (
           <Space direction="vertical" block>
             {/* 名字 */}
             <div className={styles['form-group']}>
