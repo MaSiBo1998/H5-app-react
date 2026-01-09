@@ -7,6 +7,7 @@ import { loginByPassword } from '@/services/api/user'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import HeaderNav from '@/components/common/HeaderNav'
 import styles from './PasswordLogin.module.css'
+import { collectDeviceInfo } from '@/utils/device'
 
 /**
  * 密码登录页面
@@ -17,7 +18,24 @@ export default function PasswordLogin(): ReactElement {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-
+  // 验证码Token
+  const [tokenKey, setTokenKey] = useState('')
+  // 获取tokenKey
+  useEffect(() => {
+    let tokenKey = ''
+    try {
+      // @ts-ignore
+      const client = new window.FingerPrint(
+        "https://us.mobilebene.com/w",
+        import.meta.env.VITE_APP_JG_KEY
+      )
+      // @ts-ignore
+      tokenKey = await client.record("info")
+      setTokenKey(tokenKey)
+    } catch (err) {
+      console.log('金果SDK获取token失败', err)
+    }
+  }, [])
   // 获取存储的手机号
   const mobile = getStorage<string>(StorageKeys.USER_PHONE) || ''
 
@@ -37,9 +55,25 @@ export default function PasswordLogin(): ReactElement {
 
   const handleLogin = async () => {
     if (!canSubmit) return
+    if (!tokenKey) {
+      Toast.show({
+        content: 'La red es anormal, por favor actualice y vuelva a iniciar sesión',
+        position: 'center',
+      })
+      return
+    }
     setLoading(true)
     try {
-      const deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || undefined
+      let deviceInfo: any = {}
+      try {
+        deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || await collectDeviceInfo()
+      } catch (e) {
+        console.error('Device info error', e)
+      }
+      if (deviceInfo && typeof deviceInfo === 'object') {
+        if (!deviceInfo.amidol) deviceInfo.amidol = {}
+        deviceInfo.amidol.nitrolic = tokenKey
+      }
       const res = await loginByPassword({ mobile, loginPwd: password, deviceInfo })
       setStorage(StorageKeys.LOGIN_INFO, res)
       navigate('/')
@@ -101,7 +135,7 @@ export default function PasswordLogin(): ReactElement {
 
           <div
             className={styles['to-code']}
-            onClick={() => navigate('/login',{state:{mobile:mobile}})}
+            onClick={() => navigate('/login', { state: { mobile: mobile } })}
           >
             Código de verificación
           </div>

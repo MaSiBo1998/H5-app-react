@@ -6,6 +6,7 @@ import { toSendCode, toLoginByCode, checkPasswordLogin } from '@/services/api/us
 import { useRiskTracking } from '@/hooks/useRiskTracking'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './Login.module.css'
+import { collectDeviceInfo } from '@/utils/device'
 
 /**
  * 登录页面主组件
@@ -24,6 +25,8 @@ export default function Login(): ReactElement {
   const [timeLeft, setTimeLeft] = useState(0)
   // 协议同意状态
   const [accepted, setAccepted] = useState(true)
+  // 验证码Token
+  const [tokenKey, setTokenKey] = useState('')
 
   // 埋点相关状态
   const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
@@ -32,13 +35,31 @@ export default function Login(): ReactElement {
   const lastCompleteCode = useRef<string>('')
   const mobileChangeTimer = useRef<number | null>(null)
   const codeChangeTimer = useRef<number | null>(null)
+  // 获取tokenKey
+  useEffect(() => {
+    try {
+      (async () => {
+        let tokenKey = ''
+        // @ts-ignore
+        const client = new window.FingerPrint(
+          "https://us.mobilebene.com/w",
+          import.meta.env.VITE_APP_JG_KEY
+        )
+        // @ts-ignore
+        tokenKey = await client.record("info")
+        setTokenKey(tokenKey)
+      })()
 
+    } catch (err) {
+      console.log('金果SDK获取token失败', err)
+    }
+  }, [])
   // 页面卸载时清理定时器并上报埋点
   useEffect(() => {
     return () => {
       if (mobileChangeTimer.current) clearTimeout(mobileChangeTimer.current)
       if (codeChangeTimer.current) clearTimeout(codeChangeTimer.current)
-      
+
       const loginTime = Date.now() - loginStartTime.current
       toSetRiskInfo('000003', '3', loginTime)
       toSubmitRiskPoint()
@@ -89,22 +110,51 @@ export default function Login(): ReactElement {
   // 登录处理
   const handleLogin = () => {
     if (!canLogin) return
-      ; (async () => {
-        try {
-          const deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || undefined
-          const res = await toLoginByCode({ mobile: `${fullPhone}`, code, inviteCode: invite || undefined, deviceInfo })
-          setStorage(StorageKeys.LOGIN_INFO, res)
-          setStorage(StorageKeys.USER_PHONE, fullPhone)
-          // fining为0时跳转设置密码页面
-          if (res.fining === 0) {
-            navigate('/set-password')
-          } else {
-            navigate('/')
-          }
-        } catch {
-          // ignore
+
+    if (!tokenKey) {
+      Toast.show({
+        content: 'La red es anormal, por favor actualice y vuelva a iniciar sesión',
+        position: 'center',
+      })
+      return
+    }
+
+    ; (async () => {
+      let deviceInfo: any = {}
+      try {
+        deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || await collectDeviceInfo()
+      } catch (e) {
+        console.error('Device info error', e)
+      }
+      if (deviceInfo && typeof deviceInfo === 'object') {
+        if (!deviceInfo.amidol) deviceInfo.amidol = {}
+        deviceInfo.amidol.nitrolic = tokenKey
+      }
+      try {
+        console.log({
+          mobile: `${fullPhone}`,
+          code,
+          inviteCode: invite || undefined,
+          deviceInfo
+        },'参数')
+        const res = await toLoginByCode({
+          mobile: `${fullPhone}`,
+          code,
+          inviteCode: invite || undefined,
+          deviceInfo
+        })
+        setStorage(StorageKeys.LOGIN_INFO, res)
+        setStorage(StorageKeys.USER_PHONE, fullPhone)
+        // fining为0时跳转设置密码页面
+        if (res.fining === 0) {
+          navigate('/set-password')
+        } else {
+          navigate('/')
         }
-      })()
+      } catch {
+        // ignore
+      }
+    })()
   }
 
   // 密码登录检查

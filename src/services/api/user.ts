@@ -2,6 +2,7 @@ import { request } from '@/services/http'
 import { encryptByRSA, rsaPublicKey } from '@/utils/encryption.ts'
 import type { DeviceInfo } from '@/utils/device'
 import { getStorage, StorageKeys } from '@/utils/storage'
+import { getCookie } from '@/utils/cookie'
 
 // 发送验证码参数
 export interface SendCodeParams {
@@ -36,6 +37,18 @@ export const toSendCode = (data: SendCodeParams) => {
   )
 }
 
+// 首次打开上报
+export const firstOpenUpload = () => {
+  return request<unknown>(
+    '/api/first_open',
+    {
+      method: 'POST',
+      body: {},
+      isLoading: false,
+    },
+  )
+}
+
 // 退出登录
 export const toLogOut = (data: Record<string, unknown> = {}) => {
   return request<unknown>(
@@ -46,30 +59,6 @@ export const toLogOut = (data: Record<string, unknown> = {}) => {
       isLoading: true,
     },
   )
-}
-
-// 登录
-export const toLogin = (data: LoginParams) => {
-  return request<{ success: boolean; token?: string; message?: string }>(
-    '/api/login',
-    {
-      method: 'POST',
-      body: {
-        phone: data.mobile,
-        code: data.code,
-      },
-      isLoading: true,
-      withAuth: false,
-    },
-  )
-}
-
-// 获取 Cookie
-function getCookie(name: string): string | null {
-  const match = document.cookie.match(
-    new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\/+^])/g, '\\$1') + '=([^;]*)'),
-  )
-  return match ? decodeURIComponent(match[1]) : null
 }
 
 // 验证码登录参数
@@ -102,7 +91,6 @@ export const toLoginByCode = (data: LoginByCodeParams) => {
       }),
     ),
   }
-  const deviceInfo = data.deviceInfo ?? (getStorage(StorageKeys.DEVICE_INFO) || {})
   return request<{ success: boolean; token?: string; msg?: string; code?: string; fining?: number }>(
     '/lanner/karoo',
     {
@@ -111,7 +99,7 @@ export const toLoginByCode = (data: LoginByCodeParams) => {
         romish: encryptByRSA(data.mobile, rsaPublicKey),
         odds: data.code,
         dubitant: data.inviteCode,
-        blastous: btoa(JSON.stringify(deviceInfo)),
+        blastous: btoa(JSON.stringify(data.deviceInfo)),
         bewail,
       },
       isLoading: true,
