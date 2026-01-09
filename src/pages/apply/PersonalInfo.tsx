@@ -250,6 +250,7 @@ export default function PersonalInfo(): ReactElement {
     residenceAddressDetail: '',
     postalCode: '',
     loanUse: '',
+    loanUseValue: '',
     emailAccount: '',
     emailCode: '',
     stepTime: 0
@@ -706,7 +707,8 @@ export default function PersonalInfo(): ReactElement {
         confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
         cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         onConfirm={v => {
-          setForm(f => ({ ...f, loanUse: v[0] as string }))
+          console.log('loanUse', options.loanUse,v)
+          setForm(f => ({ ...f, loanUseValue: v[0] as string,loanUse: options.loanUse.find(i => i.value === v[0])?.label || '' }))
           handlePickerConfirm('loanUse')
         }}
       />
