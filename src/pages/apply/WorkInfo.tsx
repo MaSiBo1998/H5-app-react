@@ -283,6 +283,21 @@ export default function WorkInfo(): ReactElement {
     return { label: v, value: v }
   }), [])
 
+  const monthOptions = useMemo(() => [
+    { label: 'Enero', value: '01' },
+    { label: 'Febrero', value: '02' },
+    { label: 'Marzo', value: '03' },
+    { label: 'Abril', value: '04' },
+    { label: 'Mayo', value: '05' },
+    { label: 'Junio', value: '06' },
+    { label: 'Julio', value: '07' },
+    { label: 'Agosto', value: '08' },
+    { label: 'Septiembre', value: '09' },
+    { label: 'Octubre', value: '10' },
+    { label: 'Noviembre', value: '11' },
+    { label: 'Diciembre', value: '12' },
+  ], [])
+
   return (
     <div className={styles['page-container']}>
       <HeaderNav
@@ -518,17 +533,17 @@ export default function WorkInfo(): ReactElement {
         setForm({ ...form, payFreq: sel, payDate: mode === 'no' ? '' : '' })
         handlePickerClose('payFreq', true)
       }} />
-      {/* 不固定 - 只选择日期，月份默认当月 */}
+      {/* 不固定 - 选择日期和月份 */}
       <Picker
         closeOnMaskClick={false}
         confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
         cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
-        columns={[dayOptions]}
+        columns={[dayOptions, monthOptions]}
         visible={noFixedVisible}
         onClose={() => handlePickerClose('noFixed')}
         onConfirm={(vals) => {
           const dd = String(vals[0])
-          const mm = String(new Date().getMonth() + 1).padStart(2, '0')
+          const mm = String(vals[1])
           setForm({ ...form, payDate: `${dd}/${mm}` })
           handlePickerClose('noFixed', true)
         }}
@@ -554,11 +569,12 @@ export default function WorkInfo(): ReactElement {
       <Picker closeOnMaskClick={false} confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>} cancelText={<span style={{ color: '#999999' }}>Cancelar</span>} columns={[dayOptions]} visible={monthlyVisible} onClose={() => handlePickerClose('monthly')} onConfirm={(vals) => { setForm({ ...form, payDate: String(vals[0]) }); handlePickerClose('monthly', true) }} />
       {/* 地址 */}
       <Cascader
+        title="Seleccionar dirección"
         confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
         cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
+        placeholder="Seleccionar"
         options={addrOptions}
         visible={addrVisible}
-        placeholder="Seleccionar dirección"
         onClose={() => handlePickerClose('companyAddr')}
         onConfirm={(val) => {
           setForm({ ...form, companyAddr: val.join('-') })

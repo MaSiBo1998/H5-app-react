@@ -20,8 +20,17 @@ import type { StatusData } from '@/components/status/types'
 // 手机号脱敏处理
 function maskPhone(raw: string | null): string {
   if (!raw) return 'Invitado'
-  // 脱敏处理
-  return raw.replace(/(\d{2})\d{6}(\d{4})/, '$1******$2')
+  let phone = raw
+  if (phone.length === 12 && phone.startsWith('57')) {
+    phone = phone.slice(2)
+  }
+  // 脱敏处理: 前2后2
+  if (phone.length > 4) {
+    const start = phone.slice(0, 2)
+    const end = phone.slice(-2)
+    return `${start}******${end}`
+  }
+  return phone
 }
 
 export default function Profile(): ReactElement {

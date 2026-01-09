@@ -116,11 +116,11 @@ export default function FaceCapture(): ReactElement {
       
       let msg = 'No se pudo acceder a la cámara.'
       // 根据错误类型提供更准确的提示
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
         msg = 'Acceso a la cámara denegado. Por favor, habilite los permisos.'
-      } else if (err.name === 'NotFoundError') {
+      } else if (err?.name === 'NotFoundError') {
         msg = 'No se encontró la cámara.'
-      } else if (err.name === 'NotReadableError') {
+      } else if (err?.name === 'NotReadableError') {
         msg = 'La cámara está ocupada o no es accesible. Cierre otras aplicaciones.'
       }
       
@@ -133,8 +133,8 @@ export default function FaceCapture(): ReactElement {
     if (stream) {
       stream.getTracks().forEach(track => track.stop())
       setStream(null)
-      setIsCameraActive(false)
     }
+    setIsCameraActive(false)
   }
 
   // 返回处理
@@ -283,7 +283,7 @@ export default function FaceCapture(): ReactElement {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        paddingTop: 40,
+        paddingTop: 0,
         paddingBottom: 56,
         border: 'none',
         background: 'transparent',
@@ -296,11 +296,12 @@ export default function FaceCapture(): ReactElement {
           background: 'linear-gradient(135deg, #26a69a 0%, #00897b 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          letterSpacing: '-0.5px'
+          letterSpacing: '-0.5px',
+          textAlign:'center'
         }}>
           Verificación Facial
         </div>
-        <div style={{ fontSize: 16, color: '#546e7a', marginBottom: 40, textAlign: 'center', maxWidth: '85%', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 16, color: '#546e7a', marginBottom: 40, textAlign: 'center', maxWidth: '85%', margin: '0 auto 40px', lineHeight: 1.6 }}>
           Por favor, asegúrese de tener buena iluminación y mantenga su rostro dentro del marco.
         </div>
 
@@ -353,6 +354,7 @@ export default function FaceCapture(): ReactElement {
             {isCameraActive && !imgSrc && (
               <>
                 <video
+                  key={stream?.id}
                   ref={videoRef}
                   autoPlay
                   playsInline

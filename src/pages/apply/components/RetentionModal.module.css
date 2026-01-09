@@ -101,12 +101,13 @@
 }
 
 .btn-cancel {
-  background: #f5f5f5;
-  color: #78909c;
+  background: #ffffff;
+  color: #26a69a;
+  border: 1px solid #26a69a;
 }
 
 .btn-cancel:active {
-  background: #eceff1;
+  background: #e0f2f1;
   transform: scale(0.96);
 }
 

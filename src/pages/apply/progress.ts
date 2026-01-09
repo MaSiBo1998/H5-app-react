@@ -47,5 +47,6 @@ export default async function getNowAndNextStep() {
   } catch (error) {
     console.error(error)
   }
+  if (!nextPath) nextPath = '/'
   return { nowPath, nextPath }
 }

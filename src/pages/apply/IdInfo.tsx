@@ -324,13 +324,12 @@ export default function IdInfo(): ReactElement {
   const [frontImg, setFrontImg] = useState('') // 用于显示的 URL
   const [backImg, setBackImg] = useState('')
   const [frontBase64, setFrontBase64] = useState('')
-  const [backBase64, setBackBase64] = useState('')
+
 
   // 控制
   const [showCamera, setShowCamera] = useState(false)
   const [cameraType, setCameraType] = useState<'front' | 'back'>('front')
   const [loading, setLoading] = useState(false)
-  const [ocrFailCount, setOcrFailCount] = useState(0)
   const [showForm, setShowForm] = useState(false)
 
   // 可见性
@@ -430,6 +429,54 @@ export default function IdInfo(): ReactElement {
     setShowCamera(true)
   }
 
+  const submitData = async (data: typeof form, fImg: string, bImg: string, isAuto: boolean = false) => {
+    let finalFront = ''
+    if (fImg && fImg.startsWith('http')) {
+      finalFront = fImg
+    }
+
+    let finalBack = ''
+    if (bImg && bImg.startsWith('http')) {
+      finalBack = bImg
+    }
+
+    const payload: any = {
+      elysium: finalFront,
+      politico: finalBack,
+      costa: data.name,
+      gardant: data.surname,
+      cavalier: data.idNumber,
+      hurter: data.gender,
+      hemiopia: data.birthday,
+      opiatic: 1,
+      kyushu: 1,
+      coxswain: data.stepTime
+    }
+
+    if (entryParams === 'homeEdit') {
+      payload.gain = orderId
+      await updateIdInfo(payload)
+    } else {
+      await saveIdInfo(payload)
+      toSetRiskInfo('000011', '1', 1)
+    }
+
+    if (isAuto) {
+      Toast.show({
+        content: 'Verificación exitosa',
+        icon: 'success'
+      })
+    }
+
+    if (entryParams === 'profile') {
+      navigate('/my-info')
+    } else if (entryParams === 'homeEdit') {
+      navigate('/')
+    } else {
+      navigate(nextPath)
+    }
+  }
+
   const performOcr = async (fBase64: string, bBase64: string) => {
     setLoading(true)
     try {
@@ -465,21 +512,21 @@ export default function IdInfo(): ReactElement {
       }
       setForm(prev => ({ ...prev, ...updates }))
 
+      // 自动提交逻辑：如果所有关键信息都识别成功
+      if (updates.name && updates.surname && updates.idNumber && updates.gender && updates.birthday) {
+        try {
+          // 刚拍摄的图片为base64，不需要再次上传，传空字符串
+          await submitData({ ...form, ...updates }, '', '', true)
+          return
+        } catch (e) {
+          console.error('Auto submit error', e)
+          // 自动提交失败则停留在页面，让用户手动提交
+        }
+      }
+
     } catch (e) {
       console.error(e)
-      const newCount = ocrFailCount + 1
-      setOcrFailCount(newCount)
-
-      if (newCount >= 2) {
-        setShowForm(true)
-        Toast.show('No se pudo reconocer la identificación, por favor ingrese los datos manualmente')
-      } else {
-        Toast.show('No se pudo reconocer la identificación, por favor intente nuevamente')
-        setFrontImg('')
-        setBackImg('')
-        setFrontBase64('')
-        setBackBase64('')
-      }
+      setShowForm(true)
     } finally {
       setLoading(false)
     }
@@ -502,12 +549,8 @@ export default function IdInfo(): ReactElement {
         }
         setFrontImg(fullBase64)
         setFrontBase64(rawContent)
-        // 检查是否可以进行 OCR
-        if (backBase64) {
-          performOcr(rawContent, backBase64)
-        } else {
-          setLoading(false)
-        }
+        setBackImg('')
+        setLoading(false)
       } else {
         // 埋点 Key 2: 反面上传时长
         if (uploadStartTimes.current.back) {
@@ -515,7 +558,6 @@ export default function IdInfo(): ReactElement {
           toSetRiskInfo('000010', '2', duration)
         }
         setBackImg(fullBase64)
-        setBackBase64(rawContent)
         // 检查是否可以进行 OCR
         if (frontBase64) {
           performOcr(frontBase64, rawContent)
@@ -542,44 +584,7 @@ export default function IdInfo(): ReactElement {
 
     setLoading(true)
     try {
-      let finalFront = ''
-      if (frontImg && frontImg.startsWith('http')) {
-        finalFront = frontImg
-      }
-
-      let finalBack = ''
-      if (backImg && backImg.startsWith('http')) {
-        finalBack = backImg
-      }
-
-      let payload: any = {
-        elysium: finalFront,
-        politico: finalBack,
-        costa: form.name,
-        gardant: form.surname,
-        cavalier: form.idNumber,
-        hurter: form.gender,
-        hemiopia: form.birthday,
-        opiatic: 1, // 相机
-        kyushu: 1, // 相机
-        coxswain: form.stepTime
-      }
-      if (entryParams == 'homeEdit') {
-        payload.gain = orderId
-        await updateIdInfo(payload)
-      } else {
-        await saveIdInfo(payload)
-        // 埋点 Key 1: 提交结果 = 1 (成功)
-        toSetRiskInfo('000011', '1', 1)
-      }
-
-      if (entryParams == 'profile') {
-        navigate('/my-info')
-      } else if (entryParams == 'homeEdit') {
-        navigate('/')
-      } else {
-        navigate(nextPath)
-      }
+      await submitData(form, frontImg, backImg)
     } catch (e: any) {
       console.error(e)
       // 埋点 Key 1: 提交结果 = 2 (失败), Key 3: 失败原因
@@ -744,7 +749,7 @@ export default function IdInfo(): ReactElement {
           </div>
         </div>
 
-        {showForm && (
+        {!showForm && (
           <Space direction="vertical" block>
             {/* 名字 */}
             <div className={styles['form-group']}>
@@ -752,7 +757,11 @@ export default function IdInfo(): ReactElement {
               <div className={styles['input-wrapper']}>
                 <Input
                   value={form.name}
-                  onChange={v => setForm({ ...form, name: v })}
+                  onChange={v => {
+                    if (v.length <= 20) {
+                      setForm({ ...form, name: v })
+                    }
+                  }}
                   placeholder="Nombre"
                   onFocus={() => handleInputFocus('name')}
                   onBlur={(e) => handleInputBlur('name', e.target.value)}
@@ -767,7 +776,11 @@ export default function IdInfo(): ReactElement {
               <div className={styles['input-wrapper']}>
                 <Input
                   value={form.surname}
-                  onChange={v => setForm({ ...form, surname: v })}
+                  onChange={v => {
+                    if (v.length <= 20) {
+                      setForm({ ...form, surname: v })
+                    }
+                  }}
                   placeholder="Apellido"
                   onFocus={() => handleInputFocus('surname')}
                   onBlur={(e) => handleInputBlur('surname', e.target.value)}
@@ -782,7 +795,12 @@ export default function IdInfo(): ReactElement {
               <div className={styles['input-wrapper']}>
                 <Input
                   value={form.idNumber}
-                  onChange={v => setForm({ ...form, idNumber: v })}
+                  onChange={v => {
+                    const val = v.replace(/\D/g, '')
+                    if (val.length <= 20) {
+                      setForm({ ...form, idNumber: val })
+                    }
+                  }}
                   placeholder="Número de identificación"
                   onFocus={() => handleInputFocus('idNumber')}
                   onBlur={(e) => handleInputBlur('idNumber', e.target.value)}

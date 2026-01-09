@@ -56,6 +56,9 @@ export default function BankInfo(): ReactElement {
     bankName: 0,
   })
   const bankAccountData = useRef({ startTime: 0, inputType: 1 })
+  
+  // 表单数据缓存
+  const formDataCache = useRef<Record<number, { bankName: string, bankCode: string, bankAccount: string }>>({})
 
   // 银行账号输入埋点
   const handleBankAccountFocus = () => {
@@ -160,8 +163,33 @@ export default function BankInfo(): ReactElement {
       pickerStartTimes.current.bankType = 0
     }
 
+    // 1. 保存当前类型的数据到缓存
+    if (form.bankType) {
+      formDataCache.current[form.bankType] = {
+        bankName: form.bankName,
+        bankCode: form.bankCode,
+        bankAccount: form.bankAccount
+      }
+    }
+
+    // 2. 尝试从缓存获取新类型的数据
+    const cachedData = formDataCache.current[type.shoddy]
+
     setForm(prev => {
       const isBank = type.shoddy === 1 // 假设 1 是银行卡
+
+      // 如果有缓存，使用缓存数据
+      if (cachedData) {
+        return {
+          ...prev,
+          bankType: type.shoddy,
+          bankTypeTitle: type.deicide,
+          bankName: cachedData.bankName,
+          bankCode: cachedData.bankCode,
+          bankAccount: cachedData.bankAccount
+        }
+      }
+
       return {
         ...prev,
         bankType: type.shoddy,
@@ -175,10 +203,13 @@ export default function BankInfo(): ReactElement {
     // 针对 Nequi 等自动填充手机号逻辑
     const name = type.deicide.toLowerCase()
     if (name.includes('nequi') || name.includes('daviplata')) {
-      const mobile = getStorage<string>(StorageKeys.MOBILE) || ''
-      const cleanMobile = mobile.startsWith('57') ? mobile.slice(2) : mobile
-      if (cleanMobile) {
-        setForm(prev => ({ ...prev, bankAccount: cleanMobile }))
+      // 只有当没有缓存数据，或者缓存中的 bankAccount 为空时，才尝试自动填充
+      if (!cachedData || !cachedData.bankAccount) {
+        const mobile = getStorage<string>(StorageKeys.USER_PHONE) || ''
+        const cleanMobile = mobile.startsWith('57') ? mobile.slice(2) : mobile
+        if (cleanMobile) {
+          setForm(prev => ({ ...prev, bankAccount: cleanMobile }))
+        }
       }
     }
   }
@@ -206,9 +237,15 @@ export default function BankInfo(): ReactElement {
       Toast.show('Por favor ingrese el número de cuenta')
       return
     }
-    // 简单校验长度
-    if (bankType === 2 && (bankAccount.length < 7 || bankAccount.length > 10)) {
-       Toast.show('Por favor ingrese un número de cuenta válido')
+    
+    // Nequi/Daviplata 校验 (通常 type=2，但也可能根据标题判断)
+    // 假设 bankType === 2 是电子钱包类型，或者根据名字判断
+    const isWallet = bankType === 2 || 
+                     form.bankTypeTitle.toLowerCase().includes('nequi') || 
+                     form.bankTypeTitle.toLowerCase().includes('daviplata')
+
+    if (isWallet && (bankAccount.length < 7 || bankAccount.length > 10)) {
+       Toast.show('Por favor ingrese un número de cuenta válido (7-10 dígitos)')
        return
     }
 
@@ -280,11 +317,11 @@ export default function BankInfo(): ReactElement {
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Tipo de cuenta</label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-              {bankTypes.map(item => {
+              {bankTypes.map((item,index)=> {
                 const isActive = form.bankTypeTitle === item.deicide
                 return (
                   <div
-                    key={item.shoddy}
+                    key={index}
                     onClick={() => handleTypeSelect(item)}
                     style={{
                       border: isActive ? '2px solid #26a69a' : '1px solid #cfd8dc',
@@ -296,13 +333,25 @@ export default function BankInfo(): ReactElement {
                       background: isActive ? '#e0f2f1' : '#ffffff',
                       position: 'relative',
                       transition: 'all 0.3s',
-                      boxShadow: isActive ? '0 4px 12px rgba(38, 166, 154, 0.2)' : '0 2px 4px rgba(0,0,0,0.02)'
+                      boxShadow: isActive ? '0 4px 12px rgba(38, 166, 154, 0.2)' : '0 2px 4px rgba(0,0,0,0.02)',
+                      cursor: 'pointer'
                     }}
                   >
-                    {isActive && (
+                    {isActive ? (
                       <div style={{ position: 'absolute', top: 4, right: 4, color: '#26a69a' }}>
                         <CheckIcon />
                       </div>
+                    ) : (
+                      <div style={{
+                        position: 'absolute',
+                        top: 4,
+                        right: 4,
+                        width: 16,
+                        height: 16,
+                        borderRadius: '50%',
+                        border: '1px solid #cfd8dc',
+                        background: '#fff'
+                      }} />
                     )}
                     {item.adapted && (
                       <img

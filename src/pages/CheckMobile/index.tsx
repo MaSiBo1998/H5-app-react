@@ -86,14 +86,18 @@ export default function CheckMobile() {
     if (mobile.length === 12 && mobile.startsWith('57')) {
       displayMobile = mobile.slice(2)
     }
-    // 对10位号码进行脱敏: 前3后4，中间星号
-    // 例如: 300****567
+    // 对10位号码进行脱敏: 前2后2，中间星号
+    // 例如: 30******67
     if (displayMobile.length === 10) {
-      return displayMobile.replace(/(\d{3})\d{4}(\d{3})/, '$1****$2')
+      return displayMobile.replace(/(\d{2})\d{6}(\d{2})/, '$1******$2')
     }
-    // Fallback for original regex if length matches 12 (though we stripped it)
-    // Or just return as is if not 10
-    return displayMobile.replace(/(\d{2})\d{6}(\d{4})/, '$1********$2')
+    // Fallback: 无论长度如何，只要大于4位，都保留前2后2
+    if (displayMobile.length > 4) {
+      const start = displayMobile.slice(0, 2)
+      const end = displayMobile.slice(-2)
+      return `${start}******${end}`
+    }
+    return displayMobile
   }, [mobile])
 
   const handleSendCode = async (phone: string, smsTypeVal: number, loginTypeVal: number) => {

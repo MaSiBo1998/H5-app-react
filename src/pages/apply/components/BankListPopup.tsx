@@ -86,7 +86,7 @@ export default function BankListPopup({ visible, onClose, onSelect }: Props) {
             <Loading />
           </div>
         ) : (
-          <div style={{ height: '100%', overflowY: 'auto' }}>
+          <div style={{ height: '100%', overflowY: 'auto', paddingBottom: 'calc(50px + env(safe-area-inset-bottom))' }}>
              <IndexBar sticky={false}>
                {indexList.map(group => (
                  <IndexBar.Panel

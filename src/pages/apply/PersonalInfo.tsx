@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type ReactElement } from 'react'
+import { createPortal } from 'react-dom'
 import { Card, Space, Button, Input, Picker, Cascader, Toast } from 'antd-mobile'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import HeaderNav from '@/components/common/HeaderNav'
@@ -57,6 +58,37 @@ export default function PersonalInfo(): ReactElement {
   const lastCompleteEmailCode = useRef('')
   const emailChangeTimer = useRef<number | null>(null)
   const emailCodeChangeTimer = useRef<number | null>(null)
+  const emailWrapperRef = useRef<HTMLDivElement>(null)
+  const [emailDropdownStyle, setEmailDropdownStyle] = useState<React.CSSProperties>({})
+  // 显示控制
+  const [visibles, setVisibles] = useState({
+    education: false,
+    marital: false,
+    children: false,
+    residenceType: false,
+    loanUse: false,
+    address: false,
+    emailSuffix: false
+  })
+  useEffect(() => {
+    if (visibles.emailSuffix && emailWrapperRef.current) {
+      const updatePosition = () => {
+        const rect = emailWrapperRef.current?.getBoundingClientRect()
+        if (rect) {
+          setEmailDropdownStyle({
+            position: 'absolute',
+            top: rect.bottom + window.scrollY,
+            left: rect.left + window.scrollX,
+            width: rect.width,
+            zIndex: 9999
+          })
+        }
+      }
+      updatePosition()
+      window.addEventListener('resize', updatePosition)
+      return () => window.removeEventListener('resize', updatePosition)
+    }
+  }, [visibles.emailSuffix])
 
 
 
@@ -80,13 +112,13 @@ export default function PersonalInfo(): ReactElement {
         toSetRiskInfo('000008', trackKeys[type], duration)
       }
       pickerStartTimes.current[type] = 0
-      
+
       // 特殊处理 Residence Address (Cascader)
       if (type === 'residenceAddress') {
-         // Key 2: 邮政编码输入方式 (2表示自动填充)
-         toSetRiskInfo("000008", "2", "2")
-         // Key 3: 邮政编码输入时长 (与地区选择时长相同)
-         toSetRiskInfo("000008", "3", duration)
+        // Key 2: 邮政编码输入方式 (2表示自动填充)
+        toSetRiskInfo("000008", "2", "2")
+        // Key 3: 邮政编码输入时长 (与地区选择时长相同)
+        toSetRiskInfo("000008", "3", duration)
       }
     }
   }
@@ -119,14 +151,14 @@ export default function PersonalInfo(): ReactElement {
     setTimeout(() => {
       try {
         e?.target?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-      } catch (error) {}
+      } catch (error) { }
     }, 300)
   }
-  
+
   const handleEmailPaste = () => {
     emailData.current.inputType = 2
   }
-  
+
   const handleEmailBlur = () => {
     if (emailData.current.startTime && form.emailAccount) {
       const duration = Date.now() - emailData.current.startTime
@@ -145,7 +177,7 @@ export default function PersonalInfo(): ReactElement {
     setTimeout(() => {
       try {
         e?.target?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-      } catch (error) {}
+      } catch (error) { }
     }, 300)
   }
   const handleEmailCodePaste = () => {
@@ -175,8 +207,8 @@ export default function PersonalInfo(): ReactElement {
   // 邮箱输入变化埋点
   const handleEmailChange = (val: string) => {
     setForm(prev => ({ ...prev, emailAccount: val }))
-    setVisibles(prev => ({ ...prev, emailSuffix: !!val && !val.includes('@') }))
-    
+    setVisibles(prev => ({ ...prev, emailSuffix: !!val }))
+
     if (validateEmail(val)) {
       if (val !== lastCompleteEmail.current) {
         toSetRiskInfo("000008", "11", val)
@@ -190,13 +222,13 @@ export default function PersonalInfo(): ReactElement {
     let newVal = val.replace(/\D/g, '')
     if (newVal.length > 6) newVal = newVal.slice(0, 6)
     setForm(prev => ({ ...prev, emailCode: newVal }))
-    
+
     if (newVal.length === 6) {
       if (emailCodeChangeTimer.current) clearTimeout(emailCodeChangeTimer.current as any)
       emailCodeChangeTimer.current = setTimeout(() => {
         if (newVal !== lastCompleteEmailCode.current) {
-           toSetRiskInfo("000008", "14", newVal)
-           lastCompleteEmailCode.current = newVal
+          toSetRiskInfo("000008", "14", newVal)
+          lastCompleteEmailCode.current = newVal
         }
       }, 100)
     } else if (newVal.length < 6 && lastCompleteEmailCode.current) {
@@ -223,16 +255,7 @@ export default function PersonalInfo(): ReactElement {
     stepTime: 0
   })
 
-  // 显示控制
-  const [visibles, setVisibles] = useState({
-    education: false,
-    marital: false,
-    children: false,
-    residenceType: false,
-    loanUse: false,
-    address: false,
-    emailSuffix: false
-  })
+
 
   const [addrOptions, setAddrOptions] = useState<any[]>([])
 
@@ -519,7 +542,7 @@ export default function PersonalInfo(): ReactElement {
           {/* 电子邮箱 */}
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Correo electrónico</label>
-            <div className={styles['input-wrapper']} style={{ position: 'relative', overflow: 'visible' }}>
+            <div className={styles['input-wrapper']} ref={emailWrapperRef} style={{ position: 'relative', overflow: 'visible' }}>
               <MailOutline className={styles['input-icon']} />
               <Input
                 value={form.emailAccount}
@@ -533,39 +556,46 @@ export default function PersonalInfo(): ReactElement {
               />
 
               {/* 邮箱后缀建议 */}
-              {visibles.emailSuffix && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  background: 'white',
-                  border: '1px solid #eee',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  zIndex: 10,
-                  maxHeight: '200px',
-                  overflowY: 'auto'
-                }}>
-                  {options.emailSuffixes.map((suffix, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => {
-                        handleEmailChange(form.emailAccount + suffix)
-                        setVisibles(prev => ({ ...prev, emailSuffix: false }))
-                      }}
-                      style={{
-                        padding: '12px 16px',
-                        borderBottom: '1px solid #f5f5f5',
-                        fontSize: '14px',
-                        color: '#333'
-                      }}
-                    >
-                      {form.emailAccount.split('@')[0]}{suffix}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {(() => {
+                if (!visibles.emailSuffix) return null
+                const prefix = form.emailAccount.split('@')[0]
+                const domain = form.emailAccount.includes('@') ? form.emailAccount.split('@')[1] : ''
+                const filtered = options.emailSuffixes.filter(s =>
+                  !form.emailAccount.includes('@') || s.toLowerCase().startsWith(`@${domain.toLowerCase()}`)
+                )
+                if (filtered.length === 0) return null
+
+                return createPortal(
+                  <div style={{
+                    background: 'white',
+                    border: '1px solid #eee',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    ...emailDropdownStyle
+                  }}>
+                    {filtered.map((suffix, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => {
+                          handleEmailChange(prefix + suffix)
+                          setVisibles(prev => ({ ...prev, emailSuffix: false }))
+                        }}
+                        style={{
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #f5f5f5',
+                          fontSize: '14px',
+                          color: '#333'
+                        }}
+                      >
+                        {prefix}{suffix}
+                      </div>
+                    ))}
+                  </div>,
+                  document.body
+                )
+              })()}
             </div>
           </div>
 
@@ -597,7 +627,7 @@ export default function PersonalInfo(): ReactElement {
                   borderLeft: '1px solid #eee',
                   height: '24px',
                   lineHeight: '24px',
-                  color:'#26a69a'
+                  color: '#26a69a'
                 }}
               >
                 {countdown > 0 ? `${countdown}s` : 'Enviar'}
@@ -681,6 +711,8 @@ export default function PersonalInfo(): ReactElement {
         }}
       />
       <Cascader
+        title="Seleccionar dirección"
+        placeholder="Seleccionar"
         options={addrOptions}
         visible={visibles.address}
         onClose={() => { setVisibles(v => ({ ...v, address: false })) }}
