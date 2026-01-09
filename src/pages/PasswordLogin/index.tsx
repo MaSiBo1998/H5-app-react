@@ -22,16 +22,22 @@ export default function PasswordLogin(): ReactElement {
   const [tokenKey, setTokenKey] = useState('')
   // 获取tokenKey
   useEffect(() => {
-    let tokenKey = ''
+
     try {
-      // @ts-ignore
-      const client = new window.FingerPrint(
-        "https://us.mobilebene.com/w",
-        import.meta.env.VITE_APP_JG_KEY
-      )
-      // @ts-ignore
-      tokenKey = await client.record("info")
-      setTokenKey(tokenKey)
+      (
+        async () => {
+          let tokenKey = ''
+          // @ts-ignore
+          const client = new window.FingerPrint(
+            "https://us.mobilebene.com/w",
+            import.meta.env.VITE_APP_JG_KEY
+          )
+          // @ts-ignore
+          tokenKey = await client.record("info")
+          setTokenKey(tokenKey)
+        }
+      )()
+
     } catch (err) {
       console.log('金果SDK获取token失败', err)
     }
