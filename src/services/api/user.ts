@@ -139,7 +139,7 @@ export const toUniversalPoint = (data: UniversalPointParams) => {
         }))
       },
       isLoading: false,
-      withAuth: false,
+      withAuth: true,
       skipErrorHandler: true,
     }
   )
