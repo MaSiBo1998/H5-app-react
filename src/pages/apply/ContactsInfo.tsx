@@ -172,7 +172,7 @@ export default function ContactsInfo(): ReactElement {
   }
 
   // 提交表单
-  const onSubmit = () => {
+  const onSubmit = async () => {
     // 校验重复手机号
     const phones = form.deedy
       .map(item => item.verdure)
