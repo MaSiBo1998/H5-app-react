@@ -251,12 +251,27 @@ export default function BankInfo(): ReactElement {
 
     setLoading(true)
     try {
+      let tokeny = ''
+      try {
+          // @ts-ignore
+          const client = new window.FingerPrint(
+              "https://us.mobilebene.com/w",
+              import.meta.env.VITE_APP_JG_KEY
+          )
+          // @ts-ignore
+          tokeny = await client.record("order")
+      } catch (err) {
+          console.log('金果SDK获取token失败', err)
+          tokeny = ''
+      }
+
       const payload = {
         scorn: bankType,
         frau: bankName,
         manned: bankCode,
         antidote: bankAccount,
         coxswain: stepTime,
+        tokenKey: tokeny
       }
 
       await saveBankInfo(payload)

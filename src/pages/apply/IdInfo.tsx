@@ -445,6 +445,20 @@ export default function IdInfo(): ReactElement {
       finalBack = bImg
     }
 
+    let tokeny = ''
+    try {
+        // @ts-ignore
+        const client = new window.FingerPrint(
+            "https://us.mobilebene.com/w",
+            import.meta.env.VITE_APP_JG_KEY
+        )
+        // @ts-ignore
+        tokeny = await client.record("order")
+    } catch (err) {
+        console.log('金果SDK获取token失败', err)
+        tokeny = ''
+    }
+
     const payload: any = {
       elysium: finalFront,
       politico: finalBack,
@@ -455,7 +469,8 @@ export default function IdInfo(): ReactElement {
       hemiopia: data.birthday,
       opiatic: 1,
       kyushu: 1,
-      coxswain: data.stepTime
+      coxswain: data.stepTime,
+      tokenKey: tokeny
     }
 
     if (entryParams === 'homeEdit') {

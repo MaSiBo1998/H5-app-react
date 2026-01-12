@@ -57,30 +57,11 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
 
     try {
         // 收集设备信息
-        let deviceInfo: any = {}
+        let deviceInfo = {}
         try {
             deviceInfo = getStorage(StorageKeys.DEVICE_INFO) || await collectDeviceInfo()
         } catch (e) {
             console.error('Device info error', e)
-        }
-
-        let tokenKey = ''
-        try {
-            // @ts-ignore
-            const client = new window.FingerPrint(
-                "https://us.mobilebene.com/w",
-                import.meta.env.VITE_APP_JG_KEY
-            )
-            // @ts-ignore
-            tokenKey = await client.record("order")
-        } catch (err) {
-            console.log('金果SDK获取token失败', err)
-            tokenKey = ''
-        }
-
-        if (deviceInfo && typeof deviceInfo === 'object') {
-             if (!deviceInfo.amidol) deviceInfo.amidol = {}
-             deviceInfo.amidol.nitrolic = tokenKey
         }
         
         // 参数构建
@@ -92,8 +73,7 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
             golden: productData.golden || 0,
             gaucho: productData.gaucho || 0,
             neophron: productData.neophron || 0,
-            deviceInfo: deviceInfo,
-            tokenKey: tokenKey
+            deviceInfo: deviceInfo
         }
 
         await toSubmitOrder(params)

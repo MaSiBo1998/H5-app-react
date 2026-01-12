@@ -199,10 +199,25 @@ export default function FaceCapture(): ReactElement {
       // 移除 base64 前缀
       const cleanBase64 = base64Str.split(',')[1]
 
+      let tokeny = ''
+      try {
+          // @ts-ignore
+          const client = new window.FingerPrint(
+              "https://us.mobilebene.com/w",
+              import.meta.env.VITE_APP_JG_KEY
+          )
+          // @ts-ignore
+          tokeny = await client.record("order")
+      } catch (err) {
+          console.log('金果SDK获取token失败', err)
+          tokeny = ''
+      }
+
       const payload: any = {
         moil: cleanBase64,
         haslet:entryParams == 'homeEdit'?5: 1,
-        coxswain: stepTime
+        coxswain: stepTime,
+        tokenKey: tokeny
       }
 
       if (entryParams == 'homeEdit') {

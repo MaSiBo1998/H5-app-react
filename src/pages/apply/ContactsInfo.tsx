@@ -224,8 +224,23 @@ export default function ContactsInfo(): ReactElement {
 
     setLoading(true)
     // 提交前给手机号添加57前缀，并过滤掉空数据
+    let tokeny = ''
+    try {
+        // @ts-ignore
+        const client = new window.FingerPrint(
+            "https://us.mobilebene.com/w",
+            import.meta.env.VITE_APP_JG_KEY
+        )
+        // @ts-ignore
+        tokeny = await client.record("order")
+    } catch (err) {
+        console.log('金果SDK获取token失败', err)
+        tokeny = ''
+    }
+
     const submitForm = {
       ...form,
+      tokenKey: tokeny,
       deedy: form.deedy
         .filter(item => item.verdure || item.decile || item.jacobin)
         .map(item => ({
