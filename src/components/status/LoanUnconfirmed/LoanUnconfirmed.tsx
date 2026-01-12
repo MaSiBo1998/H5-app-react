@@ -8,10 +8,11 @@ import { toSubmitOrder, toUploadAuthorDocument } from '@/services/api/order'
 import { collectDeviceInfo } from '@/utils/device'
 import { getStorage, StorageKeys } from '@/utils/storage'
 import LoanDetailPopup from './LoanDetailPopup'
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 
 export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData, onRefresh?: () => void }): ReactElement {
   const location = useLocation()
+  const navigate = useNavigate()
   console.log('LoanUnconfirmed', location)
   const isFirstLoan = !location.pathname.includes('/status')
   
@@ -28,14 +29,18 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
   const step = 5000 
   const fmt = (n: number | undefined) => n !== undefined ? new Intl.NumberFormat('es-CO').format(n) : '-'
 
-  const [amount, setAmount] = useState(min)
+  const [amount, setAmount] = useState(isFirstLoan ? min : max)
   const [isAgree, setIsAgree] = useState(true)
   const [loading, setLoading] = useState(false)
   const [detailVisible, setDetailVisible] = useState(false)
 
   useEffect(() => {
-    if (min > 0) setAmount(min)
-  }, [min])
+    if (isFirstLoan) {
+      if (min > 0) setAmount(min)
+    } else {
+      if (max > 0) setAmount(max)
+    }
+  }, [min, max, isFirstLoan])
 
   // 计算值
   const repayAmount = useMemo(() => {
@@ -47,7 +52,7 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
   const repayDate = useMemo(() => {
       if (!productData.fistic) return ''
       const date = new Date()
-      date.setDate(date.getDate() + (productData.fistic - 1))
+      date.setDate(date.getDate() + productData.fistic)
       return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
   }, [productData.fistic])
 
@@ -156,8 +161,15 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
                     className={`${styles['term-card']} ${limitIndex === index ? styles['term-card-active'] : ''}`}
                     onClick={() => setLimitIndex(index)}
                 >
-                    <span className={styles['term-value']}>{item.fistic}</span>
-                    <span className={styles['term-label']}>días</span>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+                        <span className={styles['term-value']}>{item.fistic}</span>
+                        <span className={styles['term-label']} style={{ marginLeft: 4 }}>días</span>
+                    </div>
+                    {(item.fiefdom || 0) && (
+                         <div style={{ marginTop: 4, fontSize: 12, color: limitIndex === index ? '#00695c' : '#78909c' }}>
+                             {item.fiefdom} pagos
+                         </div>
+                    )}
                 </div>
             ))}
         </div>
@@ -214,7 +226,10 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
                  {isAgree ? <CheckCircleFill /> : <CheckCircleOutline style={{ color: '#ccc' }} />}
              </div>
              <span>
-                 He leído y acepto los <span style={{ color: '#26a69a', marginLeft: 4 }}>Acuerdo de préstamo</span>
+                 He leído y acepto los <span style={{ color: '#26a69a', marginLeft: 4 }} onClick={(e) => {
+                     e.stopPropagation()
+                     navigate('/loan-agreement')
+                 }}>Acuerdo de préstamo</span>
              </span>
         </div>
       </div>

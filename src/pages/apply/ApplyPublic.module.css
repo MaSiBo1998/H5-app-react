@@ -161,3 +161,7 @@
 .advanced-overlay {
   background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.8) 100%);
 }
+
+.noYearDatePicker :global(.adm-picker-view-column):nth-child(1) {
+  display: none !important;
+}

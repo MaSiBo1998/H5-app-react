@@ -76,10 +76,32 @@ export default function FaceCapture(): ReactElement {
       stream.getTracks().forEach(track => track.stop())
       setStream(null)
     }
+    
+    // 额外清理：确保 video 元素上的流也被清理
+    if (videoRef.current && videoRef.current.srcObject) {
+      const oldStream = videoRef.current.srcObject as MediaStream
+      try {
+        oldStream.getTracks().forEach(track => track.stop())
+      } catch (e) {}
+      videoRef.current.srcObject = null
+    }
 
     try {
       faceStartTime.current = Date.now() // 记录开始时间
       setIsCameraActive(true) // 先渲染视频元素
+
+      // 兼容性处理：部分安卓机型(小米/三星)在未刷新页面时可能出现权限假死
+      // 先调用 enumerateDevices 唤醒媒体系统
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        try {
+          await navigator.mediaDevices.enumerateDevices()
+        } catch (e) {
+          console.warn('Enumerate devices failed:', e)
+        }
+      }
+
+      // 给一点缓冲时间让系统释放摄像头资源
+      await new Promise(resolve => setTimeout(resolve, 100))
 
       let s: MediaStream
       try {

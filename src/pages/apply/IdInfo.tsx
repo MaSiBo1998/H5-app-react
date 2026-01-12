@@ -631,10 +631,10 @@ export default function IdInfo(): ReactElement {
   }
 
   const onSubmit = async () => {
-    if (!frontImg || !backImg) {
-      Toast.show('Por favor suba las fotos de su identificación')
-      return
-    }
+    // if (!frontImg || !backImg) {
+    //   Toast.show('Por favor suba las fotos de su identificación')
+    //   return
+    // }
     if (!form.name || !form.surname || !form.idNumber || !form.gender || !form.birthday) {
       Toast.show('Por favor complete la información')
       return

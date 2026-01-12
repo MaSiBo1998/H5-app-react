@@ -1,6 +1,6 @@
 import { type ReactElement, useState, useEffect, useRef } from 'react'
 import { Card, Button, Input, Toast, Space } from 'antd-mobile'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { RightOutline, BankcardOutline, UserOutline } from 'antd-mobile-icons'
 import HeaderNav from '@/components/common/HeaderNav'
 import ApplySteps from '@/pages/Apply/components/ApplySteps'
@@ -23,6 +23,9 @@ interface BankType {
 export default function BankInfo(): ReactElement {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const location = useLocation()
+  const state = location.state as { gain?: string, isFirstLoan?: boolean } | null
+  
   // 是否从个人中心进入
   const isProfileEntry = searchParams.get('entry') === 'profile'
   //下一步骤
@@ -56,7 +59,7 @@ export default function BankInfo(): ReactElement {
     bankName: 0,
   })
   const bankAccountData = useRef({ startTime: 0, inputType: 1 })
-  
+
   // 表单数据缓存
   const formDataCache = useRef<Record<number, { bankName: string, bankCode: string, bankAccount: string }>>({})
 
@@ -237,32 +240,32 @@ export default function BankInfo(): ReactElement {
       Toast.show('Por favor ingrese el número de cuenta')
       return
     }
-    
+
     // Nequi/Daviplata 校验 (通常 type=2，但也可能根据标题判断)
     // 假设 bankType === 2 是电子钱包类型，或者根据名字判断
-    const isWallet = bankType === 2 || 
-                     form.bankTypeTitle.toLowerCase().includes('nequi') || 
-                     form.bankTypeTitle.toLowerCase().includes('daviplata')
+    const isWallet = bankType === 2 ||
+      form.bankTypeTitle.toLowerCase().includes('nequi') ||
+      form.bankTypeTitle.toLowerCase().includes('daviplata')
 
     if (isWallet && (bankAccount.length < 7 || bankAccount.length > 10)) {
-       Toast.show('Por favor ingrese un número de cuenta válido (7-10 dígitos)')
-       return
+      Toast.show('Por favor ingrese un número de cuenta válido (7-10 dígitos)')
+      return
     }
 
     setLoading(true)
     try {
       let tokeny = ''
       try {
-          // @ts-ignore
-          const client = new window.FingerPrint(
-              "https://us.mobilebene.com/w",
-              import.meta.env.VITE_APP_JG_KEY
-          )
-          // @ts-ignore
-          tokeny = await client.record("order")
+        // @ts-ignore
+        const client = new window.FingerPrint(
+          "https://us.mobilebene.com/w",
+          import.meta.env.VITE_APP_JG_KEY
+        )
+        // @ts-ignore
+        tokeny = await client.record("order")
       } catch (err) {
-          console.log('金果SDK获取token失败', err)
-          tokeny = ''
+        console.log('金果SDK获取token失败', err)
+        tokeny = ''
       }
 
       const payload = {
@@ -271,17 +274,25 @@ export default function BankInfo(): ReactElement {
         manned: bankCode,
         antidote: bankAccount,
         coxswain: stepTime,
-        tokenKey: tokeny
+        tokenKey: tokeny,
+        gain: state?.gain || ''
       }
 
       await saveBankInfo(payload)
-      
+
       // 提交成功埋点
       toSetRiskInfo('000014', '1', '1')
       await toSubmitRiskPoint()
 
       setTimeout(() => {
-        if (isProfileEntry) {
+        if (state?.gain) {
+          // 如果有 gain，说明是从 LoanFailed 页面跳转过来的
+          if (state.isFirstLoan) {
+            navigate('/')
+          } else {
+            navigate('/status')
+          }
+        } else if (isProfileEntry) {
           navigate('/my-info')
         } else {
           navigate(nextPath)
@@ -301,6 +312,12 @@ export default function BankInfo(): ReactElement {
   const handleBack = () => {
     if (isProfileEntry) {
       navigate('/my-info')
+    } else if (state?.gain) {
+      if (state.isFirstLoan) {
+        navigate('/')
+      } else {
+        navigate('/status')
+      }
     } else {
       navigate('/')
     }
@@ -332,7 +349,7 @@ export default function BankInfo(): ReactElement {
           <div className={styles['form-group']}>
             <label className={styles['form-label']}>Tipo de cuenta</label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-              {bankTypes.map((item,index)=> {
+              {bankTypes.map((item, index) => {
                 const isActive = form.bankTypeTitle === item.deicide
                 return (
                   <div
@@ -403,7 +420,7 @@ export default function BankInfo(): ReactElement {
                 </div>
                 <RightOutline color="#cccccc" />
               </div>
-              <BankListPopup 
+              <BankListPopup
                 visible={bankPickerVisible}
                 onClose={() => setBankPickerVisible(false)}
                 onSelect={(bank) => {
@@ -412,7 +429,7 @@ export default function BankInfo(): ReactElement {
                     bankCode: bank.code,
                     bankName: bank.name
                   }))
-                  
+
                   // 记录银行名称选择时间
                   if (pickerStartTimes.current.bankName) {
                     const duration = Date.now() - pickerStartTimes.current.bankName
@@ -436,9 +453,9 @@ export default function BankInfo(): ReactElement {
                 value={form.bankAccount}
                 onChange={v => {
                   let val = v.replace(/\D/g, '')
-                  if(form.bankType === 1 && val.length > 20) {
+                  if (form.bankType === 1 && val.length > 20) {
                     val = val.slice(0, 20)
-                  }else if(form.bankType === 2 && val.length > 10) {
+                  } else if (form.bankType === 2 && val.length > 10) {
                     val = val.slice(0, 10)
                   }
                   setForm(prev => ({ ...prev, bankAccount: val }))

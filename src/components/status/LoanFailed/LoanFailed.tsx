@@ -1,14 +1,19 @@
 import type { ReactElement } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import { CloseCircleFill } from "antd-mobile-icons"
 import styles from './LoanFailed.module.css'
 
 
 export default function LoanFailed({ data }: { data?: any }): ReactElement {
-  console.log('LoanFailed data:', data)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const isFirstLoan = !location.pathname.includes('/status')
+  // data 可能直接是 item，也可能是 StatusData (包含 atony 数组)
+  const gain = data?.gain || data?.atony?.[0]?.gain || ''
+
+  console.log('LoanFailed data:', data, 'gain:', gain)
   const handleEdit = () => {
-    // "修改银行账户"的逻辑
-    // 通常跳转到银行绑定页面
-    console.log("Edit bank info")
+    navigate('/bank', { state: { gain, isFirstLoan } })
   }
 
   return (
@@ -20,18 +25,18 @@ export default function LoanFailed({ data }: { data?: any }): ReactElement {
              <CloseCircleFill fontSize={48} color="#ffffff" />
           </div>
           <div className={styles['header-title']}>
-            Falla en el envío de dinero
+            Fallo de pago
           </div>
         </div>
       </div>
       
       <div className={styles['main-card']}>
         <div className={styles['tips-box']}>
-          La información de su tarjeta bancaria es incorrecta, por favor modifíquela.
+          Lo sentimos, ocurrió un error de su cuenta bancaria cuando le hicimos la transferencia. Por favor, modifique su cuenta bancaria o consulte con el banco para resolver este problema.
         </div>
         
         <button className={styles['submit-btn']} onClick={handleEdit}>
-          Modificar cuenta bancaria
+          Rehacer
         </button>
       </div>
     </div>

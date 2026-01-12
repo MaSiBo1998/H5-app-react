@@ -86,9 +86,9 @@ export interface Tailfan {
   fistic?: number // 天数
   galabia?: number // 逾期状态
   spado?: SpadoItem[]
-  berserk?: PaymentMethod[]
+  berserk?: PaymentMethod[],
+  scuzzy?: Scuzzy
 }
-
 export interface StatusData {
   // 状态码
   kaki?: number,

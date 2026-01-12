@@ -5,9 +5,12 @@ import { ClockCircleOutline } from "antd-mobile-icons"
 
 export default function LoanInProgress({ data }: { data: StatusData }): ReactElement {
   // Vue对应逻辑: appProductData.scuzzy.yell
-  // 数据源: data.atony[0].scuzzy.yell
-  const loanInfo = data.atony?.[0]?.scuzzy?.yell
+  // appProductData = this.productData?.tailfan ?? this.productData;
+  const productData = data.atony?.[0]
+  const appProductData = productData?.tailfan ?? productData
   
+  const loanInfo = appProductData?.scuzzy?.yell
+  console.log(loanInfo)
   const amount = loanInfo?.laterite
   const days = loanInfo?.fistic
   const account = loanInfo?.antidote

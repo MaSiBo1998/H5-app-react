@@ -77,7 +77,7 @@ export default function BankListPopup({ visible, onClose, onSelect }: Props) {
       visible={visible}
       onMaskClick={onClose}
       position="right"
-      bodyStyle={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', background: '#fff' }}
+      bodyStyle={{ width: '100vw', display: 'flex', flexDirection: 'column', background: '#fff' }}
     >
       <NavBar onBack={onClose} style={{ borderBottom: '1px solid #f5f5f5' }}>Seleccionar banco</NavBar>
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
@@ -86,7 +86,7 @@ export default function BankListPopup({ visible, onClose, onSelect }: Props) {
             <Loading />
           </div>
         ) : (
-          <div style={{ height: '100%', overflowY: 'auto', paddingBottom: 'calc(50px + env(safe-area-inset-bottom))' }}>
+          <div style={{ height: '100%', overflowY: 'auto', paddingBottom: 'calc(100px + env(safe-area-inset-bottom))' }}>
              <IndexBar sticky={false}>
                {indexList.map(group => (
                  <IndexBar.Panel

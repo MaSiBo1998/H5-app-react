@@ -4,6 +4,7 @@ import { Popup } from 'antd-mobile'
 import { RightOutline } from 'antd-mobile-icons'
 import styles from './LoanDetailPopup.module.css'
 import type { SpadoItem } from '../types'
+import { addDayToDateStr } from '@/utils/date'
 
 interface Props {
   visible: boolean
@@ -79,7 +80,7 @@ export default function LoanDetailPopup({ visible, onClose, items = [] }: Props)
                   </div>
                   <div className={styles['detail-row']}>
                     <span className={styles.label}>Fecha de reembolso</span>
-                    <span className={styles.value}>{item.movies}</span>
+                    <span className={styles.value}>{addDayToDateStr(item.movies || '')}</span>
                   </div>
                   {(item.sicken || 0) > 0 && (
                     <div className={`${styles['detail-row']} ${styles['over-color']}`}>

@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import { Card, Space, Button, Input, Cascader, Picker, Toast } from 'antd-mobile'
+import { Card, Space, Button, Input, Cascader, Picker, DatePicker, Toast } from 'antd-mobile'
 import {
   RightOutline,
   UserOutline,
@@ -168,9 +168,21 @@ export default function WorkInfo(): ReactElement {
       try {
         cached = getStorage(StorageKeys.APPLY_STEP_CONFIG)
       } catch { }
+      
       try {
-        const data = cached ?? await getStepConfigInfo({})
-        if (!cached) setStorage(StorageKeys.APPLY_STEP_CONFIG, data)
+        let data = cached
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+           try {
+             data = await getStepConfigInfo({})
+             if (data) setStorage(StorageKeys.APPLY_STEP_CONFIG, data)
+           } catch (e) {
+             console.error('Fetch config failed', e)
+           }
+        }
+        
+        // Fallback to empty array if still null
+        data = data || []
+        
         const workType = extractSpec(data, 1)
         const salaryRange = extractSpec(data, 2)
         const workYears = extractSpec(data, 3)
@@ -534,17 +546,33 @@ export default function WorkInfo(): ReactElement {
         handlePickerClose('payFreq', true)
       }} />
       {/* 不固定 - 选择日期和月份 */}
-      <Picker
-        closeOnMaskClick={false}
-        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
-        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
-        columns={[dayOptions, monthOptions]}
+      <DatePicker
         visible={noFixedVisible}
         onClose={() => handlePickerClose('noFixed')}
-        onConfirm={(vals) => {
-          const dd = String(vals[0])
-          const mm = String(vals[1])
-          setForm({ ...form, payDate: `${dd}/${mm}` })
+        precision="day"
+        className={styles.noYearDatePicker}
+        confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
+        cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
+        min={new Date(new Date().getFullYear(), 0, 1)}
+        max={new Date(new Date().getFullYear(), 11, 31)}
+        renderLabel={(type, data) => {
+          if (type === 'month') {
+            return monthOptions[data - 1]?.label || data
+          }
+          return data
+        }}
+        value={(() => {
+          if (form.payDate && form.payDate.includes('/')) {
+            const [d, m] = form.payDate.split('/')
+            const now = new Date()
+            return new Date(now.getFullYear(), parseInt(m) - 1, parseInt(d))
+          }
+          return new Date()
+        })()}
+        onConfirm={(val) => {
+          const d = String(val.getDate()).padStart(2, '0')
+          const m = String(val.getMonth() + 1).padStart(2, '0')
+          setForm({ ...form, payDate: `${d}/${m}` })
           handlePickerClose('noFixed', true)
         }}
       />

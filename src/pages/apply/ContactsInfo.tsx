@@ -7,8 +7,8 @@ import ApplySteps from '@/pages/Apply/components/ApplySteps'
 import styles from './ApplyPublic.module.css'
 import { CalendarOutline, PhonebookOutline, RightOutline, UserOutline } from 'antd-mobile-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveContactInfo } from '@/services/api/apply'
-import { getStorage, StorageKeys } from '@/utils/storage'
+import { getStepConfigInfo, saveContactInfo } from '@/services/api/apply'
+import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 
@@ -146,20 +146,37 @@ export default function ContactsInfo(): ReactElement {
 
     }
     // 获取配置项
-    try {
-      const stepConfig: Array<any> = getStorage<Array<any>>(StorageKeys.APPLY_STEP_CONFIG) || []
-      if (stepConfig) {
-        const contactStep = stepConfig.find(item => item.calices == 11)
-        if (contactStep) {
-          setOptions(prev => ({
-            ...prev,
-            relation: (contactStep.sawback || []).map((item: any) => ({ deicide: item.deicide, shoddy: item.shoddy }))
-          }))
+    const fetchConfig = async () => {
+      try {
+        let stepConfig: Array<any> = getStorage<Array<any>>(StorageKeys.APPLY_STEP_CONFIG) || []
+        
+        // 如果本地缓存没有配置，尝试从接口获取
+        if (stepConfig.length === 0) {
+          try {
+            const res = await getStepConfigInfo({}) as any
+            stepConfig = res || []
+            if (stepConfig.length > 0) {
+              setStorage(StorageKeys.APPLY_STEP_CONFIG, stepConfig)
+            }
+          } catch (err) {
+            console.error('Fetch config failed:', err)
+          }
         }
-      }
-    } catch (error) {
 
+        if (stepConfig && stepConfig.length > 0) {
+          const contactStep = stepConfig.find(item => item.calices == 11)
+          if (contactStep) {
+            setOptions(prev => ({
+              ...prev,
+              relation: (contactStep.sawback || []).map((item: any) => ({ deicide: item.deicide, shoddy: item.shoddy }))
+            }))
+          }
+        }
+      } catch (error) {
+        console.error('Config processing error:', error)
+      }
     }
+    fetchConfig()
   }, [])
 
   // 返回处理

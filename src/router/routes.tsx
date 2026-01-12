@@ -20,6 +20,7 @@ const CheckMobile = lazy(() => import('@/pages/CheckMobile'))
 const PasswordLogin = lazy(() => import('@/pages/PasswordLogin/index'))
 const Privacy = lazy(() => import('@/pages/Rule/Privacy'))
 const Term = lazy(() => import('@/pages/Rule/Term'))
+const LoanAgreement = lazy(() => import('@/pages/Rule/LoanAgreement'))
 const Help = lazy(() => import('@/pages/Help'))
 const SetPassword = lazy(() => import('@/pages/SetPassword'))
 export const routes: RouteObject[] = [
@@ -31,6 +32,8 @@ export const routes: RouteObject[] = [
   { path: '/privacy', element: <Privacy /> },
   // 条款与条件页
   { path: '/term', element: <Term /> },
+  // 贷款协议页
+  { path: '/loan-agreement', element: <LoanAgreement /> },
   // 验证手机号页
   { path: '/check-mobile', element: <CheckMobile /> },
   // 设置密码页

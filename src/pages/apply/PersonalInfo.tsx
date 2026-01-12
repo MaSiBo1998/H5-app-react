@@ -11,8 +11,8 @@ import {
   MailOutline,
   CalendarOutline
 } from 'antd-mobile-icons'
-import { savePersonalInfo, getAddressList, sendEmailCodeAPI } from '@/services/api/apply'
-import { getStorage, StorageKeys } from '@/utils/storage'
+import { savePersonalInfo, getAddressList, sendEmailCodeAPI, getStepConfigInfo } from '@/services/api/apply'
+import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
 import getNowAndNextStep from './progress'
 import { useRiskTracking } from '@/hooks/useRiskTracking'
@@ -144,7 +144,7 @@ export default function PersonalInfo(): ReactElement {
   const handleEmailFocus = (e: any) => {
     emailData.current.startTime = Date.now()
     emailData.current.inputType = 1
-    if (form.emailAccount && !form.emailAccount.includes('@')) {
+    if (form.emailAccount) {
       setVisibles(prev => ({ ...prev, emailSuffix: true }))
     }
     // 解决键盘遮挡
@@ -271,38 +271,55 @@ export default function PersonalInfo(): ReactElement {
     } catch (error) {
     }
     // 加载配置
-    try {
-      const stepConfig: Array<any> = getStorage<Array<any>>(StorageKeys.APPLY_STEP_CONFIG) || []
-      const commonConfig: { peanut: Array<any> } = getStorage<{ peanut: Array<any> }>(StorageKeys.COMMON_CONFIG) || { peanut: [] }
-      if (stepConfig) {
-        const extract = (code: number) => {
-          const hit = stepConfig.find(item => item.calices === code)
-          return (hit?.sawback || []).map((x: any) => ({
-            label: x.deicide,
-            value: x.shoddy
-          }))
+    const fetchConfig = async () => {
+      try {
+        let stepConfig: Array<any> = getStorage<Array<any>>(StorageKeys.APPLY_STEP_CONFIG) || []
+        
+        // 如果本地缓存没有配置，尝试从接口获取
+        if (stepConfig.length === 0) {
+          try {
+            const res = await getStepConfigInfo({}) as any
+            stepConfig = res || []
+            if (stepConfig.length > 0) {
+              setStorage(StorageKeys.APPLY_STEP_CONFIG, stepConfig)
+            }
+          } catch (err) {
+            console.error('Fetch config failed:', err)
+          }
         }
 
-        // 配置 13 是邮箱后缀，结构可能不同
-        const extractSuffixes = (code: number) => {
-          const hit = commonConfig?.peanut.find((item: any) => item.ingress === code)
-          // 假设 sawback 是对象数组，deicide 为后缀
-          // console.log(hit)
-          return hit?.popgun.split(',') || []
-        }
+        const commonConfig: { peanut: Array<any> } = getStorage<{ peanut: Array<any> }>(StorageKeys.COMMON_CONFIG) || { peanut: [] }
+        if (stepConfig && stepConfig.length > 0) {
+          const extract = (code: number) => {
+            const hit = stepConfig.find(item => item.calices === code)
+            return (hit?.sawback || []).map((x: any) => ({
+              label: x.deicide,
+              value: x.shoddy
+            }))
+          }
 
-        setOptions({
-          education: extract(6),
-          marital: extract(7),
-          children: extract(8),
-          residenceType: extract(9),
-          loanUse: extract(12),
-          emailSuffixes: extractSuffixes(13)
-        })
+          // 配置 13 是邮箱后缀，结构可能不同
+          const extractSuffixes = (code: number) => {
+            const hit = commonConfig?.peanut.find((item: any) => item.ingress === code)
+            // 假设 sawback 是对象数组，deicide 为后缀
+            // console.log(hit)
+            return hit?.popgun.split(',') || []
+          }
+
+          setOptions({
+            education: extract(6),
+            marital: extract(7),
+            children: extract(8),
+            residenceType: extract(9),
+            loanUse: extract(12),
+            emailSuffixes: extractSuffixes(13)
+          })
+        }
+      } catch (error) {
+        console.error(error)
       }
-    } catch (error) {
-      console.error(error)
     }
+    fetchConfig()
     const fetchAddress = async () => {
       try {
         const res: any = await getAddressList({})
@@ -562,7 +579,7 @@ export default function PersonalInfo(): ReactElement {
                 const prefix = form.emailAccount.split('@')[0]
                 const domain = form.emailAccount.includes('@') ? form.emailAccount.split('@')[1] : ''
                 const filtered = options.emailSuffixes.filter(s =>
-                  !form.emailAccount.includes('@') || s.toLowerCase().startsWith(`@${domain.toLowerCase()}`)
+                  !form.emailAccount.includes('@') || s.toLowerCase().startsWith(`@${domain.toLowerCase()}`) || domain === ''
                 )
                 if (filtered.length === 0) return null
 

@@ -3,6 +3,7 @@ import { Toast, SpinLoading } from "antd-mobile";
 import { useEffect, useState, type ReactElement } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getMyOrderDetail } from '@/services/api/myOrder';
+import { addDayToDateStr } from '@/utils/date';
 import styles from './Detail.module.css';
 
 export default function OrderDetail(): ReactElement {
@@ -93,7 +94,7 @@ export default function OrderDetail(): ReactElement {
                 {isSettled && (
                   <div className={styles['history-color']}>liquidación</div>
                 )}
-                <div className={styles['history-color']}>{item.movies}</div>
+                <div className={styles['history-color']}>{addDayToDateStr(item.movies)}</div>
               </div>
 
               {isRepayment && (
