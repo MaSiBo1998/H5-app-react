@@ -10,10 +10,11 @@ export default function LoanFailed({ data }: { data?: any }): ReactElement {
   const isFirstLoan = !location.pathname.includes('/status')
   // data 可能直接是 item，也可能是 StatusData (包含 atony 数组)
   const gain = data?.gain || data?.atony?.[0]?.gain || ''
+  const appName = data?.lima || data?.atony?.[0]?.lima || ''
 
   console.log('LoanFailed data:', data, 'gain:', gain)
   const handleEdit = () => {
-    navigate('/bank', { state: { gain, isFirstLoan } })
+    navigate(`/bank?entry=${isFirstLoan?'fistEdit':'reEdit'}`, { state: { gain, isFirstLoan, appName } })
   }
 
   return (

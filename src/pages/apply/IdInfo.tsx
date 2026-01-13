@@ -19,11 +19,11 @@ interface CameraViewProps {
   onCapture: (blob: Blob) => void
   onClose: () => void
   type: 'front' | 'back'
+  stream: MediaStream | null
 }
 
-const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
+const CameraView = ({ onCapture, onClose, stream }: CameraViewProps) => {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [stream, setStream] = useState<MediaStream | null>(null)
   const [rotation, setRotation] = useState(-90)
   const [isLayoutLandscape, setIsLayoutLandscape] = useState(window.innerWidth > window.innerHeight)
 
@@ -67,38 +67,11 @@ const CameraView = ({ onCapture, onClose }: Omit<CameraViewProps, 'type'>) => {
   }, [])
 
   useEffect(() => {
-    let mounted = true
-    const startCamera = async () => {
-      try {
-        const s = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'environment', // 使用后置摄像头
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
-          },
-          audio: false
-        })
-        if (mounted) {
-          setStream(s)
-          if (videoRef.current) {
-            videoRef.current.srcObject = s
-            videoRef.current.play().catch(e => console.error("Video play failed:", e))
-          }
-        }
-      } catch (err) {
-        console.error("Camera error:", err)
-        Toast.show('No se pudo acceder a la cámara')
-        onClose()
-      }
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream
+      videoRef.current.play().catch(e => console.error("Video play failed:", e))
     }
-    startCamera()
-    return () => {
-      mounted = false
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop())
-      }
-    }
-  }, [])
+  }, [stream])
 
   const handleCapture = () => {
     if (videoRef.current) {
@@ -334,6 +307,7 @@ export default function IdInfo(): ReactElement {
   // 控制
   const [showCamera, setShowCamera] = useState(false)
   const [cameraType, setCameraType] = useState<'front' | 'back'>('front')
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const [loading, setLoading] = useState(false)
   const [showForm, setShowForm] = useState(false)
 
@@ -357,8 +331,13 @@ export default function IdInfo(): ReactElement {
       const stayTime = Date.now() - pageStartTime.current
       toSetRiskInfo('000011', '2', stayTime)
       toSubmitRiskPoint()
+      
+      // 页面销毁时关闭摄像头
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop())
+      }
     }
-  }, [])
+  }, [cameraStream])
 
   // 输入框埋点处理
   const handleInputFocus = (field: string) => {
@@ -428,10 +407,37 @@ export default function IdInfo(): ReactElement {
   }
 
 
-  const openCamera = (type: 'front' | 'back') => {
+  const openCamera = async (type: 'front' | 'back') => {
     uploadStartTimes.current[type] = Date.now()
     setCameraType(type)
-    setShowCamera(true)
+    
+    // 如果没有权限或流已关闭，则重新获取
+    if (!cameraStream || !cameraStream.active) {
+      try {
+        setLoading(true)
+        const s = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        })
+        setCameraStream(s)
+        setShowCamera(true)
+      } catch (err) {
+        console.error("Camera error:", err)
+        Toast.show('No se pudo acceder a la cámara')
+      } finally {
+        setLoading(false)
+      }
+    } else {
+      setShowCamera(true)
+    }
+  }
+
+  const closeCamera = () => {
+    setShowCamera(false)
   }
 
   const submitData = async (data: typeof form, fImg: string, bImg: string, isAuto: boolean = false) => {
@@ -661,8 +667,10 @@ export default function IdInfo(): ReactElement {
     <div className={styles['page-container']}>
       {showCamera && (
         <CameraView
-          onClose={() => setShowCamera(false)}
+          onClose={closeCamera}
           onCapture={handleCapture}
+          stream={cameraStream}
+          type={cameraType}
         />
       )}
 
@@ -922,15 +930,14 @@ export default function IdInfo(): ReactElement {
         visible={visibleGender}
         onClose={() => setVisibleGender(false)}
         columns={[[
-          { label: 'Masculino', value: 'M' },
-          { label: 'Femenino', value: 'F' }
+          { label: 'Masculino', value: 'Masculino' },
+          { label: 'Femenino', value: 'Femenino' }
         ]]}
         confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
         cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         onConfirm={v => {
           handlePickerConfirm('gender')
-          const item = v[0] === 'M' ? 'Masculino' : 'Femenino'
-          setForm({ ...form, gender: v[0] as string, genderLabel: item })
+          setForm({ ...form, gender: v[0] as string, genderLabel: v[0] as string })
         }}
       />
 

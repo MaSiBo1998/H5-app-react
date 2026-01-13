@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactElement } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getProductDetail } from '@/services/api/product'
 import HeaderNav from '@/components/common/HeaderNav'
 import { PullToRefresh } from 'antd-mobile'
@@ -18,6 +18,7 @@ export function useStatusContext() {
   return useContext(StatusContext)
 }
 export default function StatusPage(): ReactElement {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const appName = searchParams.get('appName')
   const [data, setData] = useState<any>(null)
@@ -144,8 +145,9 @@ export default function StatusPage(): ReactElement {
             background={navStyle.background}
             color={navStyle.color}
             style={{ zIndex: 10, boxShadow: navStyle.boxShadow, transition: 'all 0.3s ease' }}
+            backDirect={false}
+            onBack={() =>{ console.log('onBack'), navigate('/')}}
           />
-
           <PullToRefresh onRefresh={() => fetchData(true)} pullingText="Desliza para actualizar"
             canReleaseText="Suelta para actualizar"
             refreshingText="Cargando..."

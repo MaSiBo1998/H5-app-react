@@ -24,10 +24,9 @@ export default function BankInfo(): ReactElement {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const location = useLocation()
-  const state = location.state as { gain?: string, isFirstLoan?: boolean } | null
-  
-  // 是否从个人中心进入
-  const isProfileEntry = searchParams.get('entry') === 'profile'
+  const state = location.state as { gain?: string, isFirstLoan?: boolean, appName?: string } | null
+  //进入来源  firstEdit 首贷修改,reEdit复贷修改,profile,个人中心, '' 首页进件
+  const entry = searchParams.get('entry')
   //下一步骤
   const [nextPath, setNextPath] = useState('')
 
@@ -279,24 +278,11 @@ export default function BankInfo(): ReactElement {
       }
 
       await saveBankInfo(payload)
-
       // 提交成功埋点
       toSetRiskInfo('000014', '1', '1')
       await toSubmitRiskPoint()
-
       setTimeout(async () => {
-        if (state?.gain) {
-          // 如果有 gain，说明是从 LoanFailed 页面跳转过来的
-          if (state.isFirstLoan) {
-            navigate('/')
-          } else {
-            navigate('/status')
-          }
-        } else if (isProfileEntry) {
-          navigate('/my-info')
-        } else {
-          navigate(nextPath || '/')
-        }
+        handleBack()
       }, 500)
     } catch (error: any) {
       // 提交失败埋点
@@ -310,16 +296,14 @@ export default function BankInfo(): ReactElement {
 
   // 返回处理
   const handleBack = () => {
-    if (isProfileEntry) {
-      navigate('/my-info')
-    } else if (state?.gain) {
-      if (state.isFirstLoan) {
-        navigate('/')
-      } else {
-        navigate('/status')
-      }
-    } else {
+    if (entry == 'firstEdit') {
       navigate('/')
+    } else if (entry == 'reEdit') {
+      navigate(state?.appName ? `/status?appName=${state.appName}` : '/status')
+    } else if (entry == 'profile') {
+      navigate('/my-info')
+    } else {
+      navigate(nextPath || '/')
     }
   }
 
@@ -327,10 +311,10 @@ export default function BankInfo(): ReactElement {
     <div className={styles['page-container']}>
       <HeaderNav
         title="Información bancaria"
-        backDirect={!isProfileEntry}
+        backDirect={!entry}
         onBack={handleBack}
       />
-      {!isProfileEntry && <ApplySteps steps={[
+      {!entry && <ApplySteps steps={[
         { key: 'workInfo', label: 'Laboral' },
         { key: 'contactInfo', label: 'Contactos' },
         { key: 'personalInfo', label: 'Personal' },
