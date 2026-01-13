@@ -14,7 +14,7 @@ import {
 import { savePersonalInfo, getAddressList, sendEmailCodeAPI, getStepConfigInfo } from '@/services/api/apply'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
-import getNowAndNextStep from './progress'
+import getNextStep from './progress'
 import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 export default function PersonalInfo(): ReactElement {
@@ -265,8 +265,7 @@ export default function PersonalInfo(): ReactElement {
     setForm(prev => ({ ...prev, stepTime: new Date().getTime() }))
     try {
       (async () => {
-        const { nextPath } = await getNowAndNextStep()
-        console.log(nextPath,'nextPath')
+        const { nextPath } = await getNextStep( '/personal')
         setNextPath(nextPath ?? '/')
       })()
     } catch (error) {

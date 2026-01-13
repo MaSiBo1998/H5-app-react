@@ -7,7 +7,7 @@ import { CameraOutline } from 'antd-mobile-icons'
 import { saveFaceInfo, updateFaceInfo } from '@/services/api/apply'
 import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
-import getNowAndNextStep from './progress'
+import getNextStep from './progress'
 import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 export default function FaceCapture(): ReactElement {
@@ -47,7 +47,7 @@ export default function FaceCapture(): ReactElement {
     pageStartTime.current = Date.now()
     try {
       (async () => {
-        const { nextPath } = await getNowAndNextStep()
+        const { nextPath } = await getNextStep('/face-capture')
         setNextPath(nextPath ?? '')
       })()  
     } catch (error) {
@@ -258,7 +258,7 @@ export default function FaceCapture(): ReactElement {
       } else if (entryParams == 'homeEdit') {
         navigate('/')
       } else {
-        navigate(nextPath)
+        navigate(nextPath || '/')
       }
     } catch (e: any) {
       console.error(e)

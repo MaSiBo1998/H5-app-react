@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, type ReactElement } from 'react'
 import { Card, Space, Input, Picker, Button, Toast } from 'antd-mobile'
 // import { useNavigate } from 'react-router-dom'
-import getNowAndNextStep from '@/pages/Apply/progress'
+import getNextStep from '@/pages/Apply/progress'
 import HeaderNav from '@/components/common/HeaderNav'
 import ApplySteps from '@/pages/Apply/components/ApplySteps'
 import styles from './ApplyPublic.module.css'
@@ -139,7 +139,7 @@ export default function ContactsInfo(): ReactElement {
     // 获取下一步直接跳转的路径
     try {
       (async () => {
-        const { nextPath } = await getNowAndNextStep()
+        const { nextPath } = await getNextStep('/contacts')
         console.log(nextPath,'nextPath')
         setNextPath(nextPath ?? '')
       })()
@@ -266,13 +266,13 @@ export default function ContactsInfo(): ReactElement {
           verdure: item.verdure ? `57${item.verdure}` : item.verdure
         }))
     }
-    saveContactInfo(submitForm).then(() => {
+    saveContactInfo(submitForm).then(async () => {
         toSetRiskInfo('000007', '1', 1)
         setLoading(false)
         if (isProfileEntry) {
           navigate('/my-info')
         } else {
-          navigate(nextPath)
+          navigate(nextPath || '/')
         }
       }).catch((e: any) => {
         toSetRiskInfo('000007', '1', 2)

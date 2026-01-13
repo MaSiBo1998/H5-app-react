@@ -8,7 +8,7 @@ import BankListPopup from '@/pages/Apply/components/BankListPopup'
 import { getStepConfigInfo, saveBankInfo, getUserBankInfo } from '@/services/api/apply'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
-import getNowAndNextStep from './progress'
+import getNextStep from './progress'
 import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 // 银行类型接口
@@ -90,7 +90,7 @@ export default function BankInfo(): ReactElement {
       pickerStartTimes.current.bankType = Date.now()
 
       try {
-        const { nextPath } = await getNowAndNextStep()
+        const { nextPath } = await getNextStep('/bank')
         setNextPath(nextPath ?? '')
       } catch (error) {
       }
@@ -284,7 +284,7 @@ export default function BankInfo(): ReactElement {
       toSetRiskInfo('000014', '1', '1')
       await toSubmitRiskPoint()
 
-      setTimeout(() => {
+      setTimeout(async () => {
         if (state?.gain) {
           // 如果有 gain，说明是从 LoanFailed 页面跳转过来的
           if (state.isFirstLoan) {
@@ -295,7 +295,7 @@ export default function BankInfo(): ReactElement {
         } else if (isProfileEntry) {
           navigate('/my-info')
         } else {
-          navigate(nextPath)
+          navigate(nextPath || '/')
         }
       }, 500)
     } catch (error: any) {

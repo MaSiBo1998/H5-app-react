@@ -17,7 +17,7 @@ import { getStepConfigInfo, getAddressList, saveWorkInfo } from '@/services/api/
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
-import getNowAndNextStep from './progress'
+import getNextStep from './progress'
 import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 export default function WorkInfo(): ReactElement {
@@ -149,10 +149,10 @@ export default function WorkInfo(): ReactElement {
   // 初始化
   useEffect(() => {
     setStartTime(new Date().getTime())
-    console.log('EntryForm', 'startTime', startTime)
+    console.log('WorkInfo', 'startTime', startTime)
     try {
       (async () => {
-        const { nextPath } = await getNowAndNextStep()
+        const { nextPath } = await getNextStep('/work')
         setNextPath(nextPath ?? '')
       })()
     } catch (error) {
@@ -260,7 +260,7 @@ export default function WorkInfo(): ReactElement {
       if (isProfileEntry) {
         navigate('/my-info')
       } else {
-        navigate(nextPath)
+        navigate(nextPath || '/')
       }
     } catch {
       Toast.show({ content: 'Envío fallido' })

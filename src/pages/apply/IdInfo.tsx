@@ -11,7 +11,7 @@ import {
 import { idcardOcr, saveIdInfo, updateIdInfo } from '@/services/api/apply'
 import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
-import getNowAndNextStep from './progress'
+import getNextStep from './progress'
 import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 // --- 相机组件 ---
@@ -412,7 +412,7 @@ export default function IdInfo(): ReactElement {
     setForm(f => ({ ...f, stepTime: new Date().getTime() }))
     try {
       (async () => {
-        const { nextPath } = await getNowAndNextStep()
+        const { nextPath } = await getNextStep('/id')
         setNextPath(nextPath ?? '')
       })()
     } catch (error) {
@@ -493,7 +493,7 @@ export default function IdInfo(): ReactElement {
     } else if (entryParams === 'homeEdit') {
       navigate('/')
     } else {
-      navigate(nextPath)
+      navigate(nextPath || '/')
     }
   }
 

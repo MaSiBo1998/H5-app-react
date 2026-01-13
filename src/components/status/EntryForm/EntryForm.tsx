@@ -5,7 +5,7 @@ import { PayCircleOutline, CheckCircleOutline, ClockCircleOutline } from "antd-m
 import { useNavigate } from "react-router-dom"
 import type { StatusData, StatusItem } from "../types"
 import styles from './EntryForm.module.css'
-import getNowAndNextStep from "@/pages/Apply/progress"
+import getNextStep from "@/pages/Apply/progress"
 
 export default function EntryForm({ data }: { data: StatusData }): ReactElement {
   const navigate = useNavigate()
@@ -44,18 +44,14 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
     { label: '180 días', value: 180 },
   ]
   // 当前路径
-  const [nowPath, setNowPath] = useState('')
+  const [nextPath, setNextPath] = useState('')
 
   // 初始化获取状态
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const { nowPath, nextPath } = await getNowAndNextStep()
-        if (nowPath) {
-          console.log('nowPath:', nowPath)
-          console.log('Next path:', nextPath)
-          setNowPath(nowPath)
-        }
+        const { nextPath } = await getNextStep()
+        setNextPath(nextPath)
       } catch (error) {
         console.error(error)
       }
@@ -66,23 +62,16 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
 
   // 跳转申请
   const goEntry = async () => {
-    if (nowPath) {
-      navigate(nowPath)
-      return
-    }
-    
     Toast.show({
       icon: 'loading',
       content: 'Cargando...',
       duration: 0,
     })
-    
     try {
-      const { nowPath } = await getNowAndNextStep()
       Toast.clear()
-      if (nowPath) {
-        navigate(nowPath)
-      } 
+      if (nextPath) {
+        navigate(nextPath)
+      }
     } catch (e) {
       Toast.clear()
     }
