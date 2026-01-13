@@ -32,9 +32,11 @@ export default async function getNextStep(currentPath?: string) {
         }
       }
     }
-    if (nextPath === currentPath) {
+    // 如果当前路径存在，且等于第一个未完成的路径，说明我们刚在这个页面完成了操作，应该取下一个
+    if (currentPath && undonePaths[0] === currentPath) {
       nextPath = undonePaths[1] || '/'
     } else {
+      // 否则，直接去第一个未完成的步骤
       nextPath = undonePaths[0] || '/'
     }
     console.log(undonePaths, 'undonePaths')
