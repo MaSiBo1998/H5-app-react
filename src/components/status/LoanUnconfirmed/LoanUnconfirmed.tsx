@@ -15,7 +15,7 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
   const navigate = useNavigate()
   console.log('LoanUnconfirmed', location)
   const isFirstLoan = !location.pathname.includes('/status')
-  
+  console.log(isFirstLoan,'isFirstLoan')
   // 数据提取逻辑
   const productDataList = useMemo(() => {
     return data?.atony?.[0]?.valour?.duodenal ?? data?.atony?.[0]?.duodenal ?? []
@@ -35,12 +35,8 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
   const [detailVisible, setDetailVisible] = useState(false)
 
   useEffect(() => {
-    if (isFirstLoan) {
-      if (min > 0) setAmount(min)
-    } else {
-      if (max > 0) setAmount(max)
-    }
-  }, [min, max, isFirstLoan])
+    setAmount(max)
+  }, [max])
 
   // 计算值
   const repayAmount = useMemo(() => {
@@ -52,9 +48,14 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
   const repayDate = useMemo(() => {
       if (!productData.fistic) return ''
       const date = new Date()
-      date.setDate(date.getDate() + productData.fistic)
+      // 单期产品当天算还款时间，所以还款时间应该少一天
+      // 分期产品当天不算
+      const isInstallment = (productData.fiefdom || 0) > 1
+      const days = isInstallment ? productData.fistic : (productData.fistic - 1)
+      
+      date.setDate(date.getDate() + days)
       return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
-  }, [productData.fistic])
+  }, [productData.fistic, productData.fiefdom])
 
   const handleSubmit = async () => {
     if (!isAgree || loading) return

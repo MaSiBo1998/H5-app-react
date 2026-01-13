@@ -140,6 +140,7 @@ export default function ContactsInfo(): ReactElement {
     try {
       (async () => {
         const { nextPath } = await getNowAndNextStep()
+        console.log(nextPath,'nextPath')
         setNextPath(nextPath ?? '')
       })()
     } catch (error) {

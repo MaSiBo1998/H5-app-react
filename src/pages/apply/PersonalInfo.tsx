@@ -266,6 +266,7 @@ export default function PersonalInfo(): ReactElement {
     try {
       (async () => {
         const { nextPath } = await getNowAndNextStep()
+        console.log(nextPath,'nextPath')
         setNextPath(nextPath ?? '/')
       })()
     } catch (error) {
