@@ -643,6 +643,8 @@ export default function IdInfo(): ReactElement {
     // }
     if (!form.name || !form.surname || !form.idNumber || !form.gender || !form.birthday) {
       Toast.show('Por favor complete la información')
+      toSetRiskInfo('000011', '1', 2)
+      toSetRiskInfo('000011', '3', 'Por favor complete la información')
       return
     }
 

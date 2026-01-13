@@ -54,6 +54,7 @@ export default function PersonalInfo(): ReactElement {
   const addressDetailData = useRef({ startTime: 0, inputType: 1 })
   const emailData = useRef({ startTime: 0, inputType: 1 })
   const emailCodeData = useRef({ startTime: 0, inputType: 1 })
+  const emailCodeClickStatus = useRef('2')
   const lastCompleteEmail = useRef('')
   const lastCompleteEmailCode = useRef('')
   const emailChangeTimer = useRef<number | null>(null)
@@ -265,7 +266,7 @@ export default function PersonalInfo(): ReactElement {
     setForm(prev => ({ ...prev, stepTime: new Date().getTime() }))
     try {
       (async () => {
-        const { nextPath } = await getNextStep( '/personal')
+        const { nextPath } = await getNextStep('/personal')
         setNextPath(nextPath ?? '/')
       })()
     } catch (error) {
@@ -274,7 +275,7 @@ export default function PersonalInfo(): ReactElement {
     const fetchConfig = async () => {
       try {
         let stepConfig: Array<any> = getStorage<Array<any>>(StorageKeys.APPLY_STEP_CONFIG) || []
-        
+
         // 如果本地缓存没有配置，尝试从接口获取
         if (stepConfig.length === 0) {
           try {
@@ -342,6 +343,7 @@ export default function PersonalInfo(): ReactElement {
       // 页面卸载时埋点
       const duration = Date.now() - pageStartTime.current
       toSetRiskInfo('000009', '2', duration)
+      toSetRiskInfo('000008', '16', emailCodeClickStatus.current)
       toSubmitRiskPoint()
       if (emailChangeTimer.current) clearTimeout(emailChangeTimer.current as any)
       if (emailCodeChangeTimer.current) clearTimeout(emailCodeChangeTimer.current as any)
@@ -371,6 +373,8 @@ export default function PersonalInfo(): ReactElement {
   }
 
   const sendCode = async () => {
+    emailCodeClickStatus.current = '1'
+    toSetRiskInfo('000008', '16', '1')
     if (!form.emailAccount) {
       Toast.show('Por favor ingrese el correo electrónico')
       return
@@ -405,6 +409,22 @@ export default function PersonalInfo(): ReactElement {
       Toast.show('Por favor complete toda la información')
       toSetRiskInfo('000009', '1', '2')
       toSetRiskInfo('000009', '3', 'Por favor complete toda la información')
+      return
+    }
+
+    // 邮箱格式校验
+    if (!validateEmail(form.emailAccount)) {
+      Toast.show('Por favor ingrese un correo electrónico válido')
+      toSetRiskInfo('000009', '1', '2')
+      toSetRiskInfo('000009', '3', 'Formato de correo electrónico incorrecto')
+      return
+    }
+
+    // 验证码校验
+    if (form.emailCode.length !== 6) {
+      Toast.show('Código de verificación incorrecto')
+      toSetRiskInfo('000009', '1', '2')
+      toSetRiskInfo('000009', '3', 'Código de verificación incorrecto')
       return
     }
 
@@ -724,8 +744,8 @@ export default function PersonalInfo(): ReactElement {
         confirmText={<span style={{ color: '#26a69a' }}>Confirmar</span>}
         cancelText={<span style={{ color: '#999999' }}>Cancelar</span>}
         onConfirm={v => {
-          console.log('loanUse', options.loanUse,v)
-          setForm(f => ({ ...f, loanUseValue: v[0] as string,loanUse: options.loanUse.find(i => i.value === v[0])?.label || '' }))
+          console.log('loanUse', options.loanUse, v)
+          setForm(f => ({ ...f, loanUseValue: v[0] as string, loanUse: options.loanUse.find(i => i.value === v[0])?.label || '' }))
           handlePickerConfirm('loanUse')
         }}
       />

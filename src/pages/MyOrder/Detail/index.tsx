@@ -94,7 +94,7 @@ export default function OrderDetail(): ReactElement {
                 {isSettled && (
                   <div className={styles['history-color']}>liquidación</div>
                 )}
-                <div className={styles['history-color']}>{addDayToDateStr(item.movies)}</div>
+                <div className={styles['history-color']}>{item.movies}</div>
               </div>
 
               {isRepayment && (

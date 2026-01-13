@@ -255,7 +255,7 @@ export default function WorkInfo(): ReactElement {
         coxswain:startTime
       }
       await saveWorkInfo(payload)
-      toSetRiskInfo('000005', '9', '1')
+      toSetRiskInfo('000005', '1', '1')
       await toSubmitRiskPoint()
       if (isProfileEntry) {
         navigate('/my-info')
@@ -264,7 +264,7 @@ export default function WorkInfo(): ReactElement {
       }
     } catch {
       Toast.show({ content: 'Envío fallido' })
-      toSetRiskInfo('000005', '9', '0')
+      toSetRiskInfo('000005', '1', '2')
     }
     setLoading(false)
   }

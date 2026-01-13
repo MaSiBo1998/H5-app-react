@@ -229,14 +229,20 @@ export default function BankInfo(): ReactElement {
     // 校验
     if (!bankType) {
       Toast.show('Por favor seleccione el tipo de cuenta')
+      toSetRiskInfo('000014', '1', '2')
+      toSetRiskInfo('000014', '3', 'Por favor seleccione el tipo de cuenta')
       return
     }
     if (bankType === 1 && (!bankName || !bankCode)) {
       Toast.show('Por favor seleccione el banco')
+      toSetRiskInfo('000014', '1', '2')
+      toSetRiskInfo('000014', '3', 'Por favor seleccione el banco')
       return
     }
     if (!bankAccount) {
       Toast.show('Por favor ingrese el número de cuenta')
+      toSetRiskInfo('000014', '1', '2')
+      toSetRiskInfo('000014', '3', 'Por favor ingrese el número de cuenta')
       return
     }
 
@@ -248,6 +254,8 @@ export default function BankInfo(): ReactElement {
 
     if (isWallet && (bankAccount.length < 7 || bankAccount.length > 10)) {
       Toast.show('Por favor ingrese un número de cuenta válido (7-10 dígitos)')
+      toSetRiskInfo('000014', '1', '2')
+      toSetRiskInfo('000014', '3', 'Por favor ingrese un número de cuenta válido (7-10 dígitos)')
       return
     }
 

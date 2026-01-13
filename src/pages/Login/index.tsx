@@ -35,6 +35,9 @@ export default function Login(): ReactElement {
   const lastCompleteCode = useRef<string>('')
   const mobileChangeTimer = useRef<number | null>(null)
   const codeChangeTimer = useRef<number | null>(null)
+  const phoneInputData = useRef({ startTime: 0, inputType: 1 })
+  const codeInputData = useRef({ startTime: 0, inputType: 1 })
+  
   // 获取tokenKey
   useEffect(() => {
     try {
@@ -61,7 +64,7 @@ export default function Login(): ReactElement {
       if (codeChangeTimer.current) clearTimeout(codeChangeTimer.current)
 
       const loginTime = Date.now() - loginStartTime.current
-      toSetRiskInfo('000003', '3', loginTime)
+      toSetRiskInfo('000003', '2', loginTime)
       toSubmitRiskPoint()
     }
   }, [])
@@ -116,6 +119,9 @@ export default function Login(): ReactElement {
         content: 'La red es anormal, por favor actualice y vuelva a iniciar sesión',
         position: 'center',
       })
+      toSetRiskInfo('000003', '1', '2')
+      toSetRiskInfo('000003', '3', 'La red es anormal')
+      toSubmitRiskPoint()
       return
     }
 
@@ -145,14 +151,20 @@ export default function Login(): ReactElement {
         })
         setStorage(StorageKeys.LOGIN_INFO, res)
         setStorage(StorageKeys.USER_PHONE, fullPhone)
+        
+        toSetRiskInfo('000003', '1', '1')
+        toSubmitRiskPoint()
+
         // fining为0时跳转设置密码页面
         if (res.fining === 0) {
           navigate('/set-password')
         } else {
           navigate('/')
         }
-      } catch {
-        // ignore
+      } catch (error: any) {
+        toSetRiskInfo('000003', '1', '2')
+        toSetRiskInfo('000003', '3', error?.message || 'Login failed')
+        toSubmitRiskPoint()
       }
     })()
   }
@@ -171,6 +183,44 @@ export default function Login(): ReactElement {
       }
     } catch (error) {
       // ignore
+    }
+  }
+
+  // 手机号输入埋点
+  const handlePhoneFocus = () => {
+    phoneInputData.current.startTime = Date.now()
+    phoneInputData.current.inputType = 1
+  }
+
+  const handlePhonePaste = () => {
+    phoneInputData.current.inputType = 2
+  }
+
+  const handlePhoneBlur = () => {
+    if (phoneInputData.current.startTime && phoneRest) {
+      const duration = Date.now() - phoneInputData.current.startTime
+      toSetRiskInfo('000001', '1', phoneInputData.current.inputType)
+      toSetRiskInfo('000001', '2', duration)
+      phoneInputData.current.startTime = 0
+    }
+  }
+
+  // 验证码输入埋点
+  const handleCodeFocus = () => {
+    codeInputData.current.startTime = Date.now()
+    codeInputData.current.inputType = 1
+  }
+
+  const handleCodePaste = () => {
+    codeInputData.current.inputType = 2
+  }
+
+  const handleCodeBlur = () => {
+    if (codeInputData.current.startTime && code) {
+      const duration = Date.now() - codeInputData.current.startTime
+      toSetRiskInfo('000002', '1', codeInputData.current.inputType)
+      toSetRiskInfo('000002', '2', duration)
+      codeInputData.current.startTime = 0
     }
   }
 
@@ -220,6 +270,9 @@ export default function Login(): ReactElement {
                 placeholder="300 123 4567"
                 clearable
                 type="tel"
+                onFocus={handlePhoneFocus}
+                onBlur={handlePhoneBlur}
+                onPaste={handlePhonePaste}
                 style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 16 }}
               />
             </div>
@@ -261,6 +314,9 @@ export default function Login(): ReactElement {
                   placeholder="0000"
                   clearable
                   type="tel"
+                  onFocus={handleCodeFocus}
+                  onBlur={handleCodeBlur}
+                  onPaste={handleCodePaste}
                   style={{ border: 'none', background: 'transparent', fontSize: 16 }}
                 />
               </div>
