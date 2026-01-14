@@ -264,7 +264,7 @@ export default function FaceCapture(): ReactElement {
 
       // 提交成功埋点
       toSetRiskInfo('000012', '4', '1')
-      await toSubmitRiskPoint()
+      // await toSubmitRiskPoint()
 
       if (entryParams == 'profile') {
         navigate('/my-info')

@@ -395,7 +395,7 @@ export default function PersonalInfo(): ReactElement {
       setCountdown(60)
     } catch (e: any) {
       toSetRiskInfo("000009", "1", "2")
-      toSetRiskInfo("000009", "3", e.msg || "Error al enviar el código")
+      toSetRiskInfo("000009", "3", e.message || e.msg || "Error al enviar el código")
     } finally {
       setCodeLoading(false)
     }
@@ -446,7 +446,7 @@ export default function PersonalInfo(): ReactElement {
 
       await savePersonalInfo(payload)
       toSetRiskInfo('000009', '1', '1') // 提交成功
-      await toSubmitRiskPoint()
+      // await toSubmitRiskPoint() // 移除此处提交，以便与页面停留时长合并上报
       if (isProfileEntry) {
         navigate('/my-info')
       } else {
@@ -454,7 +454,7 @@ export default function PersonalInfo(): ReactElement {
       }
     } catch (e: any) {
       toSetRiskInfo('000009', '1', '2') // 提交失败
-      toSetRiskInfo('000009', '3', e.msg || 'Submit failed')
+      toSetRiskInfo('000009', '3', e.message || e.msg || 'Submit failed')
     } finally {
       setLoading(false)
     }

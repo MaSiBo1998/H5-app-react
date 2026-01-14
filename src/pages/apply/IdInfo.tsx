@@ -331,8 +331,13 @@ export default function IdInfo(): ReactElement {
       const stayTime = Date.now() - pageStartTime.current
       toSetRiskInfo('000011', '2', stayTime)
       toSubmitRiskPoint()
-      
-      // 页面销毁时关闭摄像头
+    }
+  }, [])
+
+  // 摄像头资源清理
+  useEffect(() => {
+    return () => {
+      // 页面销毁或 stream 更新时关闭摄像头
       if (cameraStream) {
         cameraStream.getTracks().forEach(track => track.stop())
       }

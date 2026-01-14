@@ -121,7 +121,7 @@ export default function Login(): ReactElement {
       })
       toSetRiskInfo('000003', '1', '2')
       toSetRiskInfo('000003', '3', 'La red es anormal')
-      toSubmitRiskPoint()
+      // toSubmitRiskPoint()
       return
     }
 
@@ -153,7 +153,7 @@ export default function Login(): ReactElement {
         setStorage(StorageKeys.USER_PHONE, fullPhone)
         
         toSetRiskInfo('000003', '1', '1')
-        toSubmitRiskPoint()
+        // toSubmitRiskPoint()
 
         // fining为0时跳转设置密码页面
         if (res.fining === 0) {
@@ -164,7 +164,7 @@ export default function Login(): ReactElement {
       } catch (error: any) {
         toSetRiskInfo('000003', '1', '2')
         toSetRiskInfo('000003', '3', error?.message || 'Login failed')
-        toSubmitRiskPoint()
+        // toSubmitRiskPoint()
       }
     })()
   }
@@ -199,8 +199,8 @@ export default function Login(): ReactElement {
   const handlePhoneBlur = () => {
     if (phoneInputData.current.startTime && phoneRest) {
       const duration = Date.now() - phoneInputData.current.startTime
-      toSetRiskInfo('000001', '1', phoneInputData.current.inputType)
-      toSetRiskInfo('000001', '2', duration)
+      toSetRiskInfo('000001', '1', duration)
+      toSetRiskInfo('000001', '2', phoneInputData.current.inputType)
       phoneInputData.current.startTime = 0
     }
   }
@@ -218,8 +218,8 @@ export default function Login(): ReactElement {
   const handleCodeBlur = () => {
     if (codeInputData.current.startTime && code) {
       const duration = Date.now() - codeInputData.current.startTime
-      toSetRiskInfo('000002', '1', codeInputData.current.inputType)
-      toSetRiskInfo('000002', '2', duration)
+      toSetRiskInfo('000002', '1', duration)
+      toSetRiskInfo('000002', '2', codeInputData.current.inputType)
       codeInputData.current.startTime = 0
     }
   }

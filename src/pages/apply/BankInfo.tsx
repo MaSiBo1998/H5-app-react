@@ -288,7 +288,7 @@ export default function BankInfo(): ReactElement {
       await saveBankInfo(payload)
       // 提交成功埋点
       toSetRiskInfo('000014', '1', '1')
-      await toSubmitRiskPoint()
+      // await toSubmitRiskPoint()
       setTimeout(async () => {
         handleBack()
       }, 500)

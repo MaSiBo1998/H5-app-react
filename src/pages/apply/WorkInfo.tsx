@@ -238,7 +238,8 @@ export default function WorkInfo(): ReactElement {
   const onSubmit = async () => {
     if (!form.workType || !form.salaryRange || (isWorker && (!form.workYears || !form.payFreq))) {
       Toast.show({ content: 'Por favor complete la información requerida' })
-      toSetRiskInfo('000005', '8', '1')
+      toSetRiskInfo('000005', '1', '2')
+      toSetRiskInfo('000005', '3', 'Por favor complete la información requerida')
       return
     }
     setLoading(true)
@@ -256,7 +257,7 @@ export default function WorkInfo(): ReactElement {
       }
       await saveWorkInfo(payload)
       toSetRiskInfo('000005', '1', '1')
-      await toSubmitRiskPoint()
+      // await toSubmitRiskPoint() // 移除此处提交，以便与页面停留时长合并上报
       if (isProfileEntry) {
         navigate('/my-info')
       } else {
