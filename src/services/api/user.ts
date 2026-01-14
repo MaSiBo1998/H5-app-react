@@ -168,6 +168,23 @@ export const toSetPassword = (data: SetPasswordParams) => {
   )
 }
 
+// 修改密码(个人中心)
+export const toResetPassword = (data: SetPasswordParams) => {
+  const mobile = getStorage<string>(StorageKeys.USER_PHONE) || ''
+  return request<unknown>(
+    '/outlain/mindel',
+    {
+      method: 'POST',
+      body: {
+        romish: encryptByRSA(mobile, rsaPublicKey),
+        buddhist: data.loginPwd,
+        apices: data.loginPwdTwo,
+      },
+      isLoading: true,
+    },
+  )
+}
+
 // 校验验证码参数
 export interface CheckCodeParams {
   mobile: string

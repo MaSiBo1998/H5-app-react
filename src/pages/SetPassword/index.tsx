@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Input, Button, Toast } from 'antd-mobile'
 import type { InputRef } from 'antd-mobile'
 import { EyeInvisibleOutline, EyeOutline } from 'antd-mobile-icons'
-import { toSetPassword, } from '@/services/api/user'
+import { toSetPassword, toResetPassword } from '@/services/api/user'
 import HeaderNav from '@/components/common/HeaderNav'
 import styles from './SetPassword.module.css'
 
@@ -79,7 +79,11 @@ export default function SetPassword() {
 
     setLoading(true)
     try {
-      await toSetPassword({ loginPwd: password, loginPwdTwo: confirmPassword })
+      if (typeParam === 'userEditPass') {
+        await toResetPassword({ loginPwd: password, loginPwdTwo: confirmPassword })
+      } else {
+        await toSetPassword({ loginPwd: password, loginPwdTwo: confirmPassword })
+      }
 
       Toast.show({ content: 'Configuración exitosa' })
       navigate(config.successPath)

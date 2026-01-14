@@ -156,11 +156,11 @@ export default function Login(): ReactElement {
         // toSubmitRiskPoint()
 
         // fining为0时跳转设置密码页面
-        if (res.fining === 0) {
-          navigate('/set-password')
-        } else {
+        // if (res.fining === 0) {
+        //   navigate('/set-password')
+        // } else {
           navigate('/')
-        }
+        // }
       } catch (error: any) {
         toSetRiskInfo('000003', '1', '2')
         toSetRiskInfo('000003', '3', error?.message || 'Login failed')
