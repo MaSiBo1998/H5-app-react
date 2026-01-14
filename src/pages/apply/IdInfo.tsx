@@ -495,7 +495,7 @@ export default function IdInfo(): ReactElement {
     }
 
     if (entryParams === 'profile') {
-      navigate('/my-info')
+      navigate('/face-capture?entry=profile')
     } else if (entryParams === 'homeEdit') {
       navigate('/')
     } else {

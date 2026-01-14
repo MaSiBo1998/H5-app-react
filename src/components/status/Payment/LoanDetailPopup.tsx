@@ -4,7 +4,6 @@ import { Popup } from 'antd-mobile'
 import { RightOutline } from 'antd-mobile-icons'
 import styles from './LoanDetailPopup.module.css'
 import type { SpadoItem } from '../types'
-import { addDayToDateStr } from '@/utils/date'
 
 interface Props {
   visible: boolean

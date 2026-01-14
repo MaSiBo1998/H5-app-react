@@ -3,7 +3,6 @@ import { Toast, SpinLoading } from "antd-mobile";
 import { useEffect, useState, type ReactElement } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getMyOrderDetail } from '@/services/api/myOrder';
-import { addDayToDateStr } from '@/utils/date';
 import styles from './Detail.module.css';
 
 export default function OrderDetail(): ReactElement {

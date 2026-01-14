@@ -101,7 +101,7 @@ export default function FaceCapture(): ReactElement {
       }
 
       // 给一点缓冲时间让系统释放摄像头资源
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 300))
 
       let s: MediaStream
       try {
@@ -119,13 +119,26 @@ export default function FaceCapture(): ReactElement {
         // 降级策略：如果是因为参数约束或无法读取，尝试最基本的配置
         if (firstErr.name === 'OverconstrainedError' || 
             firstErr.name === 'ConstraintNotSatisfiedError' || 
-            firstErr.name === 'NotReadableError') {
-          s = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: 'user'
-            },
-            audio: false
-          })
+            firstErr.name === 'NotReadableError' ||
+            firstErr.name === 'NotAllowedError') {
+          try {
+            s = await navigator.mediaDevices.getUserMedia({
+              video: {
+                facingMode: 'user'
+              },
+              audio: false
+            })
+          } catch (secondErr: any) {
+            // 如果还是失败，尝试最基本的配置（不指定 facingMode）
+            if (secondErr.name === 'NotAllowedError' || secondErr.name === 'OverconstrainedError') {
+               s = await navigator.mediaDevices.getUserMedia({
+                 video: true,
+                 audio: false
+               })
+            } else {
+               throw secondErr
+            }
+          }
         } else {
           throw firstErr
         }
