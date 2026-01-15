@@ -15,7 +15,7 @@ import { savePersonalInfo, getAddressList, sendEmailCodeAPI, getStepConfigInfo }
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
 import getNextStep from './progress'
-import { useRiskTracking } from '@/hooks/useRiskTracking'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 export default function PersonalInfo(): ReactElement {
   const navigate = useNavigate()
@@ -38,7 +38,7 @@ export default function PersonalInfo(): ReactElement {
   })
 
   // 埋点 Hook
-  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+  const { toSetRiskInfo, toSubmitRiskPoint } = useReduxRiskTracking()
 
   // 埋点相关 Refs
 

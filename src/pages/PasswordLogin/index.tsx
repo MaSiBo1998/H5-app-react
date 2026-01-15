@@ -8,7 +8,7 @@ import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import HeaderNav from '@/components/common/HeaderNav'
 import styles from './PasswordLogin.module.css'
 import { collectDeviceInfo } from '@/utils/device'
-import { useRiskTracking } from '@/hooks/useRiskTracking'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 /**
  * 密码登录页面
@@ -22,7 +22,7 @@ export default function PasswordLogin(): ReactElement {
   // 验证码Token
   const [tokenKey, setTokenKey] = useState('')
   // 埋点相关状态
-  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+  const { toSetRiskInfo, toSubmitRiskPoint } = useReduxRiskTracking()
   const pageStartTime = useRef<number>(Date.now())
   // 获取tokenKey
   useEffect(() => {

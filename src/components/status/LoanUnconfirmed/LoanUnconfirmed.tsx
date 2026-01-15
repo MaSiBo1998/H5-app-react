@@ -9,7 +9,7 @@ import { collectDeviceInfo } from '@/utils/device'
 import { getStorage, StorageKeys } from '@/utils/storage'
 import LoanDetailPopup from './LoanDetailPopup'
 import { useLocation, useNavigate } from "react-router-dom"
-import { useRiskTracking } from '@/hooks/useRiskTracking'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData, onRefresh?: () => void }): ReactElement {
     const location = useLocation()
@@ -19,7 +19,7 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
     console.log(isFirstLoan, 'isFirstLoan')
     
     // 埋点 Hook
-    const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+    const { toSetRiskInfo, toSubmitRiskPoint } = useReduxRiskTracking()
     // 页面开始时间
     const pageStartTime = useRef(Date.now())
 

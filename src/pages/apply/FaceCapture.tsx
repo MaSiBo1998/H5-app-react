@@ -8,7 +8,7 @@ import { saveFaceInfo, updateFaceInfo } from '@/services/api/apply'
 import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
 import getNextStep from './progress'
-import { useRiskTracking } from '@/hooks/useRiskTracking'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 export default function FaceCapture(): ReactElement {
   const navigate = useNavigate()
@@ -36,7 +36,7 @@ export default function FaceCapture(): ReactElement {
   const [nextPath, setNextPath] = useState('')
 
   // 埋点 Hook
-  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+  const { toSetRiskInfo, toSubmitRiskPoint } = useReduxRiskTracking()
 
   // 埋点相关 Refs
   const pageStartTime = useRef(Date.now())

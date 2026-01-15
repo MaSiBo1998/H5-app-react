@@ -12,7 +12,7 @@ import { idcardOcr, saveIdInfo, updateIdInfo } from '@/services/api/apply'
 import { compressImage } from '@/utils/compress'
 import styles from './ApplyPublic.module.css'
 import getNextStep from './progress'
-import { useRiskTracking } from '@/hooks/useRiskTracking'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 // --- 相机组件 ---
 interface CameraViewProps {
@@ -316,7 +316,7 @@ export default function IdInfo(): ReactElement {
   const [visibleDate, setVisibleDate] = useState(false)
 
   // 埋点 Hook
-  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+  const { toSetRiskInfo, toSubmitRiskPoint } = useReduxRiskTracking()
 
   // 埋点状态
   const pageStartTime = useRef<number>(Date.now())

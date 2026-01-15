@@ -9,7 +9,7 @@ import { getStepConfigInfo, saveBankInfo, getUserBankInfo } from '@/services/api
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
 import getNextStep from './progress'
-import { useRiskTracking } from '@/hooks/useRiskTracking'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 // 银行类型接口
 interface BankType {
@@ -49,7 +49,7 @@ export default function BankInfo(): ReactElement {
   const [bankPickerVisible, setBankPickerVisible] = useState(false)
 
   // 埋点 Hook
-  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+  const { toSetRiskInfo, toSubmitRiskPoint } = useReduxRiskTracking()
 
   // 埋点相关 Refs
   const pageStartTime = useRef(Date.now())

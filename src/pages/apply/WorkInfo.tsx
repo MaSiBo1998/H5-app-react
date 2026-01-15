@@ -18,7 +18,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './ApplyPublic.module.css'
 import getNextStep from './progress'
-import { useRiskTracking } from '@/hooks/useRiskTracking'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking' 
 
 export default function WorkInfo(): ReactElement {
   const navigate = useNavigate()
@@ -64,7 +64,7 @@ export default function WorkInfo(): ReactElement {
   const isWorker = form.workType == 1 || form.workType == 2
 
   // 埋点 Hook
-  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+  const { toSetRiskInfo, toSubmitRiskPoint } = useReduxRiskTracking()
 
   // 埋点相关 Refs
   const pageStartTime = useRef(Date.now())

@@ -9,7 +9,7 @@ import { CalendarOutline, PhonebookOutline, RightOutline, UserOutline } from 'an
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getStepConfigInfo, saveContactInfo } from '@/services/api/apply'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
-import { useRiskTracking } from '@/hooks/useRiskTracking'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 
 export default function ContactsInfo(): ReactElement {
@@ -52,7 +52,7 @@ export default function ContactsInfo(): ReactElement {
   const [loading, setLoading] = useState(false)
 
   // 埋点 Hook
-  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+  const { toSetRiskInfo, toSubmitRiskPoint } = useReduxRiskTracking()
 
   // 埋点状态
   const pageStartTime = useRef<number>(Date.now())
