@@ -19,20 +19,21 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
     console.log(isFirstLoan, 'isFirstLoan')
     
     // 埋点 Hook
-    const { toSetRiskInfo, toSubmitRiskPoint } = useReduxRiskTracking()
+    const { toSetRiskInfo, toSubmitRiskPoint, getRiskValue } = useReduxRiskTracking()
     // 页面开始时间
     const pageStartTime = useRef(Date.now())
+    const detailStartTime = useRef(0)
 
     // 页面停留埋点
     useEffect(() => {
-      pageStartTime.current = Date.now()
-      return () => {
-        const duration = Date.now() - pageStartTime.current
-        const eventCode = isFirstLoan ? '000016' : '000017'
-        toSetRiskInfo(eventCode, '2', duration)
-        toSubmitRiskPoint()
-      }
-    }, [isFirstLoan])
+        pageStartTime.current = Date.now()
+        return () => {
+            const duration = Date.now() - pageStartTime.current
+            const eventCode = isFirstLoan ? '000016' : '000017'
+            toSetRiskInfo(eventCode, '2', duration)
+            toSubmitRiskPoint()
+        }
+    }, [isFirstLoan, toSetRiskInfo, toSubmitRiskPoint])
 
     // 数据提取逻辑
     const productDataList = useMemo(() => {
@@ -117,8 +118,7 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
             // 提交成功埋点
             const eventCode = isFirstLoan ? '000016' : '000017'
             toSetRiskInfo(eventCode, '1', '1')
-            // toSubmitRiskPoint() // 移除立即上报，由useEffect统一处理
-
+            toSetRiskInfo(eventCode, '4', amount)
             try {
                 await toUploadAuthorDocument({ deviceInfo })
             } catch (uploadError) {
@@ -204,7 +204,9 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
                                 // 埋点：用户最后提交的借款期限（每次点击都记录最新值，最终提交时以最后一次为准，或者这里记录点击行为）
                                 // 需求描述：用户提交 用户最后提交的借款期限 最后选择的借款期限
                                 // 这里先实时记录
-                                toSetRiskInfo('000015', '1', item.fistic)
+                                const eventCode = isFirstLoan ? '000016' : '000017'
+                                const termStr = `${item.fistic}天${item.fiefdom || 1}期`
+                                toSetRiskInfo(eventCode, '5', termStr)
                             }}
                         >
                             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
@@ -241,7 +243,13 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
                     <div
                         className={styles['detail-item']}
                         style={{ marginTop: 16, justifyContent: 'center', cursor: 'pointer' }}
-                        onClick={() => setDetailVisible(true)}
+                        onClick={() => {
+                            setDetailVisible(true)
+                            detailStartTime.current = Date.now()
+                            const eventCode = isFirstLoan ? '000016' : '000017'
+                            const count = Number(getRiskValue(eventCode, '9') || 0) + 1
+                            toSetRiskInfo(eventCode, '9', count,'overwrite')
+                        }}
                     >
                         <div style={{ color: '#26a69a', fontSize: 14, fontWeight: 500 }}>
                             Ver plan de pagos &gt;
@@ -252,7 +260,16 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
 
             <LoanDetailPopup
                 visible={detailVisible}
-                onClose={() => setDetailVisible(false)}
+                onClose={() => {
+                    setDetailVisible(false)
+                    if (detailStartTime.current > 0) {
+                        const duration = Date.now() - detailStartTime.current
+                        const eventCode = isFirstLoan ? '000016' : '000017'
+                        const totalDuration = Number(getRiskValue(eventCode, '10') || 0) + duration
+                        toSetRiskInfo(eventCode, '10', totalDuration)
+                        detailStartTime.current = 0
+                    }
+                }}
                 productData={productData}
                 amount={amount}
             />
@@ -274,7 +291,10 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
                     <span>
                         He leído y acepto los <span style={{ color: '#26a69a', marginLeft: 4 }} onClick={(e) => {
                             e.stopPropagation()
-                            navigate('/loan-agreement')
+                            const eventCode = isFirstLoan ? '000016' : '000017'
+                            const count = Number(getRiskValue(eventCode, '6') || 0) + 1
+                            toSetRiskInfo(eventCode, '6', count)
+                            navigate('/loan-agreement', { state: { eventCode } })
                         }}>Acuerdo de préstamo</span>
                     </span>
                 </div>

@@ -239,7 +239,7 @@ export default function Login(): ReactElement {
     setAccepted(val)
     // 累加点击次数
     const currentCount = Number(getRiskValue('000020', '1') || 0)
-    toSetRiskInfo('000020', '1', currentCount + 1)
+    toSetRiskInfo('000020', '1',currentCount + 1,'overwrite')
   }
 
   // 条款协议点击
@@ -247,7 +247,7 @@ export default function Login(): ReactElement {
     e.preventDefault()
     // 累加点击次数
     const currentCount = Number(getRiskValue('000021', '1') || 0)
-    toSetRiskInfo('000021', '1', currentCount + 1)
+    toSetRiskInfo('000021', '1', currentCount + 1,'overwrite')
     navigate('/term')
   }
 
@@ -256,7 +256,7 @@ export default function Login(): ReactElement {
     e.preventDefault()
     // 累加点击次数
     const currentCount = Number(getRiskValue('000022', '1') || 0)
-    toSetRiskInfo('000022', '1', currentCount + 1)
+    toSetRiskInfo('000022', '1', currentCount + 1,'overwrite')
     navigate('/privacy')
   }
 

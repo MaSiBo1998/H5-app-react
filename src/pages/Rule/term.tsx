@@ -4,7 +4,7 @@ import styles from './Term.module.css'
 import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 export default function Term(): ReactElement {
-  const { toAppendRiskInfo } = useReduxRiskTracking()
+  const { toSetRiskInfo } = useReduxRiskTracking()
   const startTime = useRef(Date.now())
   const isBottomReached = useRef(false)
 
@@ -30,9 +30,9 @@ export default function Term(): ReactElement {
       
       const duration = Date.now() - startTime.current
       
-      // 直接追加时长和阅读状态 (不累加，不覆盖)
-      toAppendRiskInfo('000021', '2', duration)
-      toAppendRiskInfo('000021', '3', isBottomReached.current ? 1 : 2)
+      // 直接追加时长和阅读状态
+      toSetRiskInfo('000021', '2', duration)
+      toSetRiskInfo('000021', '3', isBottomReached.current ? 1 : 2)
     }
   }, [])
 

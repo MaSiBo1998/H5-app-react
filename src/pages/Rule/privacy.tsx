@@ -4,7 +4,7 @@ import styles from './Privacy.module.css'
 import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 export default function Privacy(): ReactElement {
-    const { toAppendRiskInfo } = useReduxRiskTracking()
+    const { toSetRiskInfo } = useReduxRiskTracking()
     const startTime = useRef(Date.now())
     const isBottomReached = useRef(false)
 
@@ -29,8 +29,8 @@ export default function Privacy(): ReactElement {
             const duration = Date.now() - startTime.current
             
             // 直接追加时长和阅读状态 (不累加，不覆盖)
-            toAppendRiskInfo('000022', '2', duration)
-            toAppendRiskInfo('000022', '3', isBottomReached.current ? 1 : 2)
+            toSetRiskInfo('000022', '2', duration)
+            toSetRiskInfo('000022', '3', isBottomReached.current ? 1 : 2)
         }
     }, [])
 

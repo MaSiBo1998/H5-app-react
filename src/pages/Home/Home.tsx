@@ -60,7 +60,7 @@ export default function Home(): ReactElement {
 
               <div className={styles['header-content']}>
                 <div className={styles['brand-name']}>
-                  CrediPrisa
+                  Rapid Credito
                 </div>
 
                 <div onClick={handleContact} className={styles['contact-btn']}>

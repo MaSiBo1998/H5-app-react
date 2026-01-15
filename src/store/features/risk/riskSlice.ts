@@ -1,5 +1,6 @@
 import { createSlice,type PayloadAction } from '@reduxjs/toolkit'
-import { type RootState } from '@/store'
+import { type RootState, type AppDispatch } from '@/store'
+import { toUniversalPoint } from '@/services/api/user'
 
 // 埋点数据项的结构 (对应 bended 数组中的项)
 export interface RiskEventItem {
@@ -37,7 +38,7 @@ export const riskSlice = createSlice({
   name: 'risk',
   initialState,
   reducers: {
-    // 添加单个埋点事件 (如果 Key 已存在则覆盖 Value)
+    // 添加单个埋点事件 (追加模式)
     addRiskEvent: (state, action: PayloadAction<{ http: string; key: string; value: string | number }>) => {
       const { http, key, value } = action.payload
       
@@ -53,21 +54,69 @@ export const riskSlice = createSlice({
         state.events.push(eventItem)
       }
 
-      // 查找该 key 是否已存在
-      const existingKeyIndex = eventItem.bended.findIndex(item => item.despot === key.toString())
+      // 追加模式：直接添加
+      eventItem.bended.push({
+        despot: key.toString(),
+        elbrus: value.toString(),
+      })
 
+      // 同步到 sessionStorage
+      sessionStorage.setItem('risk_events', JSON.stringify(state.events))
+    },
+
+    // 覆盖单个埋点事件 (如果 Key 已存在则覆盖 Value)
+    overwriteRiskEvent: (state, action: PayloadAction<{ http: string; key: string; value: string | number }>) => {
+      const { http, key, value } = action.payload
+      
+      let eventItem = state.events.find((item) => item.http === http)
+      
+      if (!eventItem) {
+        eventItem = {
+          http: http,
+          bended: [],
+        }
+        state.events.push(eventItem)
+      }
+
+      const existingKeyIndex = eventItem.bended.findIndex(item => item.despot === key.toString())
       if (existingKeyIndex !== -1) {
-        // 如果存在，更新 value (覆盖模式)
         eventItem.bended[existingKeyIndex].elbrus = value.toString()
       } else {
-        // 如果不存在，添加新的键值对
         eventItem.bended.push({
           despot: key.toString(),
           elbrus: value.toString(),
         })
       }
 
-      // 同步到 sessionStorage
+      sessionStorage.setItem('risk_events', JSON.stringify(state.events))
+    },
+
+    // 累加单个埋点事件 (如果 Key 已存在则数值相加)
+    sumRiskEvent: (state, action: PayloadAction<{ http: string; key: string; value: string | number }>) => {
+      const { http, key, value } = action.payload
+      
+      let eventItem = state.events.find((item) => item.http === http)
+      
+      if (!eventItem) {
+        eventItem = {
+          http: http,
+          bended: [],
+        }
+        state.events.push(eventItem)
+      }
+
+      const existingKeyIndex = eventItem.bended.findIndex(item => item.despot === key.toString())
+      if (existingKeyIndex !== -1) {
+        const oldValue = parseFloat(eventItem.bended[existingKeyIndex].elbrus) || 0
+        const newValue = parseFloat(value.toString()) || 0
+        eventItem.bended[existingKeyIndex].elbrus = (oldValue + newValue).toString()
+      } else {
+        eventItem.bended.push({
+          despot: key.toString(),
+          elbrus: value.toString(),
+        })
+      }
+
       sessionStorage.setItem('risk_events', JSON.stringify(state.events))
     },
 
@@ -120,9 +169,26 @@ export const riskSlice = createSlice({
   },
 })
 
-export const { addRiskEvent, appendRiskEvent, clearRiskEvents, mergeRiskEvents } = riskSlice.actions
+export const { addRiskEvent,overwriteRiskEvent, sumRiskEvent, appendRiskEvent, clearRiskEvents, mergeRiskEvents } = riskSlice.actions
 
 // Selector
 export const selectRiskEvents = (state: RootState) => state.risk.events
+
+// 异步 Thunk: 提交埋点数据
+export const submitRiskData = () => async (dispatch: AppDispatch, getState: () => RootState) => {
+  const { events } = getState().risk
+  
+  if (!events || events.length === 0) {
+    return
+  }
+
+  try {
+    console.log('Submitting Risk Events (Thunk):', events)
+    await toUniversalPoint({ innerInfoList: events })
+    dispatch(clearRiskEvents())
+  } catch (error) {
+    console.error('Failed to submit risk events:', error)
+  }
+}
 
 export default riskSlice.reducer

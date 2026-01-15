@@ -1,8 +1,50 @@
-import type { ReactElement } from 'react'
+import { type ReactElement, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import HeaderNav from "@/components/common/HeaderNav"
 import styles from './LoanAgreement.module.css'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 export default function LoanAgreement(): ReactElement {
+  const location = useLocation()
+  const { eventCode } = (location.state as { eventCode?: string }) || {}
+  
+  const { toSetRiskInfo, getRiskValue } = useReduxRiskTracking()
+  const startTime = useRef(Date.now())
+  const isBottomReached = useRef(false)
+
+  useEffect(() => {
+    if (!eventCode) return
+
+    const handleScroll = () => {
+      if (isBottomReached.current) return
+
+      const scrollTop = window.scrollY || document.documentElement.scrollTop
+      const clientHeight = window.innerHeight || document.documentElement.clientHeight
+      const scrollHeight = document.documentElement.scrollHeight
+      
+      if (scrollTop + clientHeight >= scrollHeight - 50) {
+        isBottomReached.current = true
+      }
+    }
+    
+    window.addEventListener('scroll', handleScroll)
+    handleScroll()
+
+    return () => {
+        window.removeEventListener('scroll', handleScroll)
+        const duration = Date.now() - startTime.current
+        
+        // Accumulate duration (Key 7)
+        const currentTotal = Number(getRiskValue(eventCode, '7') || 0)
+        toSetRiskInfo(eventCode, '7', currentTotal + duration)
+        
+        // Update read status (Key 8). 1 = finished, 2 = not finished.
+        const currentStatus = getRiskValue(eventCode, '8')
+        const newStatus = isBottomReached.current ? '1' : (currentStatus === '1' ? '1' : '2')
+        toSetRiskInfo(eventCode, '8', newStatus)
+    }
+  }, [eventCode, getRiskValue, toSetRiskInfo])
+
   return (
     <div className={styles['loan-agreement']}>
       <HeaderNav title="Acuerdo de Préstamo" />
