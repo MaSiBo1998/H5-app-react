@@ -3,7 +3,7 @@ import type { ReactElement } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button, Space, Input, Checkbox, Toast } from 'antd-mobile'
 import { toSendCode, toLoginByCode, checkPasswordLogin } from '@/services/api/user'
-import { useRiskTracking } from '@/hooks/useRiskTracking'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import styles from './Login.module.css'
 import { collectDeviceInfo } from '@/utils/device'
@@ -30,8 +30,8 @@ export default function Login(): ReactElement {
   // 验证码Token
   const [tokenKey, setTokenKey] = useState('')
 
-  // 埋点相关状态
-  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+  // 埋点相关状态 (使用 Redux Hook)
+  const { toSetRiskInfo, toSubmitRiskPoint, getRiskValue } = useReduxRiskTracking()
   const loginStartTime = useRef<number>(Date.now())
   const lastCompleteMobile = useRef<string>('')
   const lastCompleteCode = useRef<string>('')
@@ -39,7 +39,7 @@ export default function Login(): ReactElement {
   const codeChangeTimer = useRef<number | null>(null)
   const phoneInputData = useRef({ startTime: 0, inputType: 1 })
   const codeInputData = useRef({ startTime: 0, inputType: 1 })
-
+  
   // 获取tokenKey
   useEffect(() => {
     try {
@@ -59,15 +59,11 @@ export default function Login(): ReactElement {
       console.log('金果SDK获取token失败', err)
     }
   }, [])
-  // 页面卸载时清理定时器并上报埋点
+  // 页面卸载时清理定时器
   useEffect(() => {
     return () => {
       if (mobileChangeTimer.current) clearTimeout(mobileChangeTimer.current)
       if (codeChangeTimer.current) clearTimeout(codeChangeTimer.current)
-
-      const loginTime = Date.now() - loginStartTime.current
-      toSetRiskInfo('000003', '2', loginTime)
-      toSubmitRiskPoint()
     }
   }, [])
 
@@ -172,19 +168,13 @@ export default function Login(): ReactElement {
         // 记录停留时长
         const loginTime = Date.now() - loginStartTime.current
         toSetRiskInfo('000003', '2', loginTime)
+        
         // 登录成功上报并清空
         toSubmitRiskPoint()
-
-        // fining为0时跳转设置密码页面
-        // if (res.fining === 0) {
-        //   navigate('/set-password')
-        // } else {
         navigate('/')
-        // }
       } catch (error: any) {
         toSetRiskInfo('000003', '1', '2')
         toSetRiskInfo('000003', '3', error?.message || 'Login failed')
-        // toSubmitRiskPoint()
       }
     })()
   }
@@ -242,6 +232,32 @@ export default function Login(): ReactElement {
       toSetRiskInfo('000002', '2', codeInputData.current.inputType)
       codeInputData.current.startTime = 0
     }
+  }
+
+  // 协议勾选点击
+  const handleAgreementClick = (val: boolean) => {
+    setAccepted(val)
+    // 累加点击次数
+    const currentCount = Number(getRiskValue('000020', '1') || 0)
+    toSetRiskInfo('000020', '1', currentCount + 1)
+  }
+
+  // 条款协议点击
+  const handleTermClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    // 累加点击次数
+    const currentCount = Number(getRiskValue('000021', '1') || 0)
+    toSetRiskInfo('000021', '1', currentCount + 1)
+    navigate('/term')
+  }
+
+  // 隐私协议点击
+  const handlePrivacyClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    // 累加点击次数
+    const currentCount = Number(getRiskValue('000022', '1') || 0)
+    toSetRiskInfo('000022', '1', currentCount + 1)
+    navigate('/privacy')
   }
 
   return (
@@ -372,13 +388,13 @@ export default function Login(): ReactElement {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <Checkbox
                 checked={accepted}
-                onChange={setAccepted}
+                onChange={handleAgreementClick}
                 style={{ marginTop: 2, '--icon-size': '18px', '--font-size': '14px', '--checked-color': '#00897b' } as React.CSSProperties}
               />
               <div className={styles['agreement-text']}>
                 He leído y acepto los
-                <a href="" onClick={() => navigate('/term')} className={styles['agreement-link']}>Términos</a> y
-                <a href="" onClick={() => navigate('/privacy')} className={styles['agreement-link']}>Política de Privacidad</a>
+                <a href="" onClick={handleTermClick} className={styles['agreement-link']}>Términos</a> y
+                <a href="" onClick={handlePrivacyClick} className={styles['agreement-link']}>Política de Privacidad</a>
               </div>
             </div>
           </div>

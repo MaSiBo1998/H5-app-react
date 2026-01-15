@@ -28,6 +28,7 @@ export const useRiskTracking = () => {
       }
       innerInfoList.current.push(eventItem)
     }
+    console.log('toSetRiskInfo', innerInfoList.current)
 
     // 添加具体的键值对
     eventItem.bended.push({
@@ -44,6 +45,7 @@ export const useRiskTracking = () => {
     try {
       // 只有当队列中有数据时才提交
       if (innerInfoList.current.length > 0) {
+        console.log('toSubmitRiskPoint', innerInfoList.current)
         await toUniversalPoint({ innerInfoList: innerInfoList.current })
         // 提交成功后清空队列，防止重复提交
         innerInfoList.current = []

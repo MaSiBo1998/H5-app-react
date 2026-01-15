@@ -44,6 +44,7 @@ export default defineConfig(({ mode }) => {
   },
   server: {
     host: true,
+    port: 3000,
   },
   build: {
     sourcemap: false, // 禁用 SourceMap，防止源码泄露

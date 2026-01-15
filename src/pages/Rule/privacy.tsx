@@ -1,8 +1,39 @@
-import {type ReactElement } from 'react'
+import { type ReactElement, useEffect, useRef } from 'react'
 import HeaderNav from "@/components/common/HeaderNav"
 import styles from './Privacy.module.css'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 export default function Privacy(): ReactElement {
+    const { toAppendRiskInfo } = useReduxRiskTracking()
+    const startTime = useRef(Date.now())
+    const isBottomReached = useRef(false)
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (isBottomReached.current) return
+
+            const scrollTop = window.scrollY || document.documentElement.scrollTop
+            const clientHeight = window.innerHeight || document.documentElement.clientHeight
+            const scrollHeight = document.documentElement.scrollHeight
+
+            if (scrollTop + clientHeight >= scrollHeight - 50) {
+                isBottomReached.current = true
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll)
+        handleScroll()
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+            const duration = Date.now() - startTime.current
+            
+            // 直接追加时长和阅读状态 (不累加，不覆盖)
+            toAppendRiskInfo('000022', '2', duration)
+            toAppendRiskInfo('000022', '3', isBottomReached.current ? 1 : 2)
+        }
+    }, [])
+
     return (
         <div className={styles['content']}>
             <HeaderNav title="Política de Privacidad" />
