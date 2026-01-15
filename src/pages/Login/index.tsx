@@ -24,7 +24,9 @@ export default function Login(): ReactElement {
   // 倒计时
   const [timeLeft, setTimeLeft] = useState(0)
   // 协议同意状态
-  const [accepted, setAccepted] = useState(true)
+  const [accepted, setAccepted] = useState(false)
+  // 协议抖动动画状态
+  const [isShaking, setIsShaking] = useState(false)
   // 验证码Token
   const [tokenKey, setTokenKey] = useState('')
 
@@ -37,7 +39,7 @@ export default function Login(): ReactElement {
   const codeChangeTimer = useRef<number | null>(null)
   const phoneInputData = useRef({ startTime: 0, inputType: 1 })
   const codeInputData = useRef({ startTime: 0, inputType: 1 })
-  
+
   // 获取tokenKey
   useEffect(() => {
     try {
@@ -74,7 +76,7 @@ export default function Login(): ReactElement {
   // 是否可发送验证码
   const canSend = phoneRest.length === 10 && timeLeft === 0
   // 是否可登录
-  const canLogin = phoneRest.length === 10 && code.length === 4 && accepted
+  const canLogin = phoneRest.length === 10 && code.length === 4
   // 密码登录携带的手机号
   useEffect(() => {
     if (mobile) {
@@ -113,6 +115,20 @@ export default function Login(): ReactElement {
   // 登录处理
   const handleLogin = () => {
     if (!canLogin) return
+    // 协议未同意时抖动动画
+    if (!accepted) {
+      setIsShaking(true)
+      Toast.show({
+        content: 'Por favor, acepte los términos y condiciones primero',
+        position: 'center',
+      })
+      toSetRiskInfo('000003', '1', '2')
+      toSetRiskInfo('000003', '3', 'Por favor, acepte los términos y condiciones primero')
+      setTimeout(() => {
+        setIsShaking(false)
+      }, 500)
+      return
+    }
 
     if (!tokenKey) {
       Toast.show({
@@ -142,7 +158,7 @@ export default function Login(): ReactElement {
           code,
           inviteCode: invite || undefined,
           deviceInfo
-        },'参数')
+        }, '参数')
         const res = await toLoginByCode({
           mobile: `${fullPhone}`,
           code,
@@ -151,15 +167,19 @@ export default function Login(): ReactElement {
         })
         setStorage(StorageKeys.LOGIN_INFO, res)
         setStorage(StorageKeys.USER_PHONE, fullPhone)
-        
+
         toSetRiskInfo('000003', '1', '1')
-        // toSubmitRiskPoint()
+        // 记录停留时长
+        const loginTime = Date.now() - loginStartTime.current
+        toSetRiskInfo('000003', '2', loginTime)
+        // 登录成功上报并清空
+        toSubmitRiskPoint()
 
         // fining为0时跳转设置密码页面
         // if (res.fining === 0) {
         //   navigate('/set-password')
         // } else {
-          navigate('/')
+        navigate('/')
         // }
       } catch (error: any) {
         toSetRiskInfo('000003', '1', '2')
@@ -348,7 +368,7 @@ export default function Login(): ReactElement {
           </div>
 
           {/* 协议勾选 */}
-          <div className={styles['agreement-wrapper']}>
+          <div className={`${styles['agreement-wrapper']} ${isShaking ? styles['shake'] : ''}`}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <Checkbox
                 checked={accepted}

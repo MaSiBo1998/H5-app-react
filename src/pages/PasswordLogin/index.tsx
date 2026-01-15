@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import type { ReactElement } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Input, Button, Toast } from 'antd-mobile'
@@ -8,6 +8,7 @@ import { getStorage, setStorage, StorageKeys } from '@/utils/storage'
 import HeaderNav from '@/components/common/HeaderNav'
 import styles from './PasswordLogin.module.css'
 import { collectDeviceInfo } from '@/utils/device'
+import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 /**
  * 密码登录页面
@@ -20,6 +21,9 @@ export default function PasswordLogin(): ReactElement {
   const [loading, setLoading] = useState(false)
   // 验证码Token
   const [tokenKey, setTokenKey] = useState('')
+  // 埋点相关状态
+  const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+  const pageStartTime = useRef<number>(Date.now())
   // 获取tokenKey
   useEffect(() => {
 
@@ -82,9 +86,18 @@ export default function PasswordLogin(): ReactElement {
       }
       const res = await loginByPassword({ mobile, loginPwd: password, deviceInfo })
       setStorage(StorageKeys.LOGIN_INFO, res)
-      navigate('/')
 
-    } catch (error) {
+      // 登录成功埋点上报
+      toSetRiskInfo('000003', '1', '1')
+      const duration = Date.now() - pageStartTime.current
+      toSetRiskInfo('000003', '2', duration)
+      toSubmitRiskPoint()
+
+      navigate('/')
+    } catch (error: any) {
+      // 记录失败但不立即上报，等成功时一起上报
+      toSetRiskInfo('000003', '1', '2')
+      toSetRiskInfo('000003', '3', error?.message || 'Login failed')
       // Error handling usually in interceptor
     } finally {
       setLoading(false)

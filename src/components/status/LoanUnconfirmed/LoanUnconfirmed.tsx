@@ -1,5 +1,5 @@
 import type { ReactElement } from "react"
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { Slider, Toast } from "antd-mobile"
 import { CheckCircleFill, CheckCircleOutline, BillOutline } from "antd-mobile-icons"
 import type { StatusData } from "../types"
@@ -9,6 +9,7 @@ import { collectDeviceInfo } from '@/utils/device'
 import { getStorage, StorageKeys } from '@/utils/storage'
 import LoanDetailPopup from './LoanDetailPopup'
 import { useLocation, useNavigate } from "react-router-dom"
+import { useRiskTracking } from '@/hooks/useRiskTracking'
 
 export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData, onRefresh?: () => void }): ReactElement {
     const location = useLocation()
@@ -16,6 +17,23 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
     console.log('LoanUnconfirmed', location)
     const isFirstLoan = !location.pathname.includes('/status')
     console.log(isFirstLoan, 'isFirstLoan')
+    
+    // 埋点 Hook
+    const { toSetRiskInfo, toSubmitRiskPoint } = useRiskTracking()
+    // 页面开始时间
+    const pageStartTime = useRef(Date.now())
+
+    // 页面停留埋点
+    useEffect(() => {
+      pageStartTime.current = Date.now()
+      return () => {
+        const duration = Date.now() - pageStartTime.current
+        const eventCode = isFirstLoan ? '000016' : '000017'
+        toSetRiskInfo(eventCode, '2', duration)
+        toSubmitRiskPoint()
+      }
+    }, [isFirstLoan])
+
     // 数据提取逻辑
     const productDataList = useMemo(() => {
         return data?.atony?.[0]?.valour?.duodenal ?? data?.atony?.[0]?.duodenal ?? []
@@ -96,6 +114,11 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
 
             await toSubmitOrder(params)
 
+            // 提交成功埋点
+            const eventCode = isFirstLoan ? '000016' : '000017'
+            toSetRiskInfo(eventCode, '1', '1')
+            // toSubmitRiskPoint() // 移除立即上报，由useEffect统一处理
+
             try {
                 await toUploadAuthorDocument({ deviceInfo })
             } catch (uploadError) {
@@ -116,6 +139,10 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
 
         } catch (error: any) {
             console.error(error)
+            // 提交失败埋点
+            const eventCode = isFirstLoan ? '000016' : '000017'
+            toSetRiskInfo(eventCode, '1', '2')
+            toSetRiskInfo(eventCode, '3', error.message || error.msg || 'Error')
             Toast.show({
                 content: error.message || 'Error al enviar solicitud',
             })
@@ -172,7 +199,13 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
                         <div
                             key={index}
                             className={`${styles['term-card']} ${limitIndex === index ? styles['term-card-active'] : ''}`}
-                            onClick={() => setLimitIndex(index)}
+                            onClick={() => {
+                                setLimitIndex(index)
+                                // 埋点：用户最后提交的借款期限（每次点击都记录最新值，最终提交时以最后一次为准，或者这里记录点击行为）
+                                // 需求描述：用户提交 用户最后提交的借款期限 最后选择的借款期限
+                                // 这里先实时记录
+                                toSetRiskInfo('000015', '1', item.fistic)
+                            }}
                         >
                             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
                                 <span className={styles['term-value']}>{item.fistic}</span>
