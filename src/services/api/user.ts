@@ -1,5 +1,5 @@
 import { request } from '@/services/http'
-import { encryptByRSA, rsaPublicKey } from '@/utils/encryption.ts'
+import { encryptByRSA, rsaPublicKey, safeBtoa } from '@/utils/encryption.ts'
 import type { DeviceInfo } from '@/utils/device'
 import { getStorage, StorageKeys } from '@/utils/storage'
 import { getCookie } from '@/utils/cookie'
@@ -79,7 +79,7 @@ export const toLoginByCode = (data: LoginByCodeParams) => {
   const bewail = {
     fugate: null,
     acetated: null,
-    bourne: btoa(
+    bourne: safeBtoa(
       JSON.stringify({
         userAgent: payloadUA,
         adjustId:
@@ -99,7 +99,7 @@ export const toLoginByCode = (data: LoginByCodeParams) => {
         romish: encryptByRSA(data.mobile, rsaPublicKey),
         odds: data.code,
         dubitant: data.inviteCode,
-        blastous: btoa(JSON.stringify(data.deviceInfo)),
+        blastous: safeBtoa(JSON.stringify(data.deviceInfo)),
         bewail,
       },
       isLoading: true,
@@ -130,7 +130,7 @@ export const toUniversalPoint = (data: UniversalPointParams) => {
     {
       method: 'POST',
       body: {
-        majorca: btoa(JSON.stringify({
+        majorca: safeBtoa(JSON.stringify({
           sediment: {
             onding,
             leaving
@@ -250,7 +250,7 @@ export const loginByPassword = (data: LoginByPasswordParams) => {
   const bewail = {
     fugate: null,
     acetated: null,
-    bourne: btoa(
+    bourne: safeBtoa(
       JSON.stringify({
         userAgent: payloadUA,
         adjustId:
@@ -271,7 +271,7 @@ export const loginByPassword = (data: LoginByPasswordParams) => {
       body: {
         romish: encryptByRSA(data.mobile, rsaPublicKey),
         buddhist: data.loginPwd,
-        blastous: btoa(JSON.stringify(deviceInfo)),
+        blastous: safeBtoa(JSON.stringify(deviceInfo)),
         bewail,
       },
       isLoading: true,

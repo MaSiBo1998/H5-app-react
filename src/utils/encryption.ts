@@ -11,6 +11,21 @@ export function encryptByRSA(text: string, key: string): string {
   return encryptor.encrypt(text) || ''
 }
 
+// 安全的 Base64 编码 (支持中文)
+export function safeBtoa(str: string): string {
+  try {
+    return btoa(
+      encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+        console.log(match,'match')
+        return String.fromCharCode(parseInt(p1, 16))
+      }),
+    )
+  } catch (e) {
+    console.error('safeBtoa error', e)
+    return ''
+  }
+}
+
 // 解码响应数据
 export function decodeNautch<T>(resp: unknown): T {
   const obj = resp as Record<string, unknown>

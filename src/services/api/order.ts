@@ -1,7 +1,7 @@
 import { request } from '@/services/http'
 import { getCookie } from '@/utils/cookie'
 import { getStorage, StorageKeys } from '@/utils/storage'
-import { decodeNautch } from '@/utils/encryption'
+import { decodeNautch, safeBtoa } from '@/utils/encryption'
 
 export interface SubmitOrderParams {
   loanNumber?: string
@@ -25,7 +25,7 @@ export const toUploadAuthorDocument = <T = unknown>(data: UploadAuthorDocumentPa
     const bewail = {
         fugate: null,
         acetated: null,
-        bourne: btoa(JSON.stringify({
+        bourne: safeBtoa(JSON.stringify({
             userAgent: navigator.userAgent,
             adjustId: null,
             info: null,
@@ -40,7 +40,7 @@ export const toUploadAuthorDocument = <T = unknown>(data: UploadAuthorDocumentPa
         body: {
             toise: 2,
             intently: [],
-            blastous: btoa(JSON.stringify(data.deviceInfo)),
+            blastous: safeBtoa(JSON.stringify(data.deviceInfo)),
             bewail: bewail
         }
     }).then(decodeNautch<T>)
@@ -52,7 +52,7 @@ export const toSubmitOrder = <T = unknown>(data: SubmitOrderParams) => {
     const bewail = {
         fugate: null,
         acetated: null,
-        bourne: btoa(JSON.stringify({
+        bourne: safeBtoa(JSON.stringify({
             userAgent: navigator.userAgent,
             adjustId: null, // Web doesn't have Adjust usually
             info: null,
@@ -72,7 +72,7 @@ export const toSubmitOrder = <T = unknown>(data: SubmitOrderParams) => {
         gaucho: data.gaucho,
         neophron: data.neophron,
         single: data.single,
-        blastous: btoa(JSON.stringify(data.deviceInfo)),
+        blastous: safeBtoa(JSON.stringify(data.deviceInfo)),
         bewail: bewail
     }
 

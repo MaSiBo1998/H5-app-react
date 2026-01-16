@@ -1,5 +1,5 @@
 {
-  "name": "Facilcredi",
+  "name": "Rapid Credito",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -37,7 +37,8 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "npm:rolldown-vite@7.2.5",
-    "vite-plugin-compression": "^0.5.1"
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-pwa": "^1.2.0"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.2.5"
