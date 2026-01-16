@@ -78,7 +78,13 @@ export default function Login(): ReactElement {
     if (mobile) {
       setPhoneRest(mobile.slice(2))
     } else {
-      setPhoneRest('')
+      // 尝试从缓存获取
+      const cachedPhone = getStorage(StorageKeys.USER_PHONE)
+      if (cachedPhone && cachedPhone.startsWith('57')) {
+        setPhoneRest(cachedPhone.slice(2))
+      } else {
+        setPhoneRest('')
+      }
     }
   }, [mobile])
   // 倒计时逻辑
@@ -242,18 +248,13 @@ export default function Login(): ReactElement {
     toSetRiskInfo('000020', '1',currentCount + 1,'overwrite')
   }
 
-  // 条款协议点击
-  const handleTermClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    // 累加点击次数
-    const currentCount = Number(getRiskValue('000021', '1') || 0)
-    toSetRiskInfo('000021', '1', currentCount + 1,'overwrite')
-    navigate('/term')
-  }
-
   // 隐私协议点击
   const handlePrivacyClick = (e: React.MouseEvent) => {
     e.preventDefault()
+    // 保存当前手机号，以便返回时恢复
+    if (fullPhone.length === 12) {
+      setStorage(StorageKeys.USER_PHONE, fullPhone)
+    }
     // 累加点击次数
     const currentCount = Number(getRiskValue('000022', '1') || 0)
     toSetRiskInfo('000022', '1', currentCount + 1,'overwrite')
@@ -392,9 +393,8 @@ export default function Login(): ReactElement {
                 style={{ marginTop: 2, '--icon-size': '18px', '--font-size': '14px', '--checked-color': '#00897b' } as React.CSSProperties}
               />
               <div className={styles['agreement-text']}>
-                He leído y acepto los
-                <a href="" onClick={handleTermClick} className={styles['agreement-link']}>Términos</a> y
-                <a href="" onClick={handlePrivacyClick} className={styles['agreement-link']}>Política de Privacidad</a>
+                He leído y acepto la
+                <a href="" onClick={handlePrivacyClick} className={styles['agreement-link']}> Política de Privacidad</a>
               </div>
             </div>
           </div>
