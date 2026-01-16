@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { RightOutline, BillOutline, ExclamationCircleFill, CheckCircleFill } from 'antd-mobile-icons'
 import styles from './Payment.module.css'
 import type { PaymentMethod, SpadoItem } from '../types'
@@ -8,9 +8,45 @@ import { toPayMoney, type PayMoneyParams } from '../../../services/api/payment'
 import BankListPopup from '@/pages/Apply/components/BankListPopup'
 import type { BankItem } from '@/pages/Apply/components/BankListPopup'
 import { useNavigate } from 'react-router-dom'
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 export default function Payment({ data }: { data?: any }): ReactElement {
   const navigate = useNavigate()
   const [detailVisible, setDetailVisible] = useState(false)
+  const { toSetRiskInfo, toSubmitRiskPoint } = useReduxRiskTracking()
+  const pageStartTime = useRef(Date.now())
+
+  const appName = data?.atony?.[0]?.lima || data?.lima || ''
+
+  // 埋点: 记录页面信息
+  useEffect(() => {
+    // 1. 所属产品
+    if (appName) {
+      toSetRiskInfo('000024', '1', appName,)
+    }
+
+    // 重置页面开始时间
+    pageStartTime.current = Date.now()
+
+    return () => {
+      // 2. 页面停留时长
+      const duration = Date.now() - pageStartTime.current
+      toSetRiskInfo('000024', '2', duration,)
+      toSubmitRiskPoint()
+    }
+  }, [appName, toSetRiskInfo, toSubmitRiskPoint])
+
+  // 埋点: 记录还款明细停留时长
+  useEffect(() => {
+    if (!detailVisible) return
+
+    const startTime = Date.now()
+
+    return () => {
+      // 4. 还款明细停留时长
+      const duration = Date.now() - startTime
+      toSetRiskInfo('000024', '4', duration,)
+    }
+  }, [detailVisible, toSetRiskInfo])
 
   // 安全地提取数据
   // 首贷: data.atony[0].tailfan
@@ -132,7 +168,11 @@ export default function Payment({ data }: { data?: any }): ReactElement {
               <BillOutline fontSize={24} color="#00897b" />
               <span className={styles['payment-title']}>Plan de pago</span>
             </div>
-            <div className={styles['payment-card-right']} onClick={() => setDetailVisible(true)}>
+            <div className={styles['payment-card-right']} onClick={() => {
+              setDetailVisible(true)
+              // 3. 点击还款明细次数
+              toSetRiskInfo('000024', '3', 1, 'sum')
+            }}>
               <span className={styles['payment-date']}>Detalles del pedido</span>
               <RightOutline fontSize={16} color="#00897b" />
             </div>
