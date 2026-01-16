@@ -343,7 +343,9 @@ export default function PersonalInfo(): ReactElement {
       // 页面卸载时埋点
       const duration = Date.now() - pageStartTime.current
       toSetRiskInfo('000009', '2', duration)
-      toSetRiskInfo('000008', '16', emailCodeClickStatus.current)
+      if (emailCodeClickStatus.current == '2') {
+        toSetRiskInfo('000008', '16', emailCodeClickStatus.current)
+      }
       toSubmitRiskPoint()
       if (emailChangeTimer.current) clearTimeout(emailChangeTimer.current as any)
       if (emailCodeChangeTimer.current) clearTimeout(emailCodeChangeTimer.current as any)

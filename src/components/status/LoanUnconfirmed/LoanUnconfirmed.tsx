@@ -118,7 +118,6 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
             // 提交成功埋点
             const eventCode = isFirstLoan ? '000016' : '000017'
             toSetRiskInfo(eventCode, '1', '1')
-            toSetRiskInfo(eventCode, '4', amount)
             try {
                 await toUploadAuthorDocument({ deviceInfo })
             } catch (uploadError) {
@@ -183,7 +182,11 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
                             max={max}
                             step={step}
                             value={amount}
-                            onChange={(val) => setAmount(val as number)}
+                            onChange={(val) => {
+                                setAmount(val as number)
+                                const eventCode = isFirstLoan ? '000016' : '000017'
+                                toSetRiskInfo(eventCode, '4', fmt(val as number))
+                            }}
                         />
                         <div className={styles['slider-nums']}>
                             <span>${fmt(min)}</span>
@@ -265,8 +268,8 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
                     if (detailStartTime.current > 0) {
                         const duration = Date.now() - detailStartTime.current
                         const eventCode = isFirstLoan ? '000016' : '000017'
-                        const totalDuration = Number(getRiskValue(eventCode, '10') || 0) + duration
-                        toSetRiskInfo(eventCode, '10', totalDuration)
+                        // 分别记录每次时长，不进行累加
+                        toSetRiskInfo(eventCode, '10', duration)
                         detailStartTime.current = 0
                     }
                 }}
