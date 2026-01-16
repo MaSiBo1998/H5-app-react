@@ -6,9 +6,11 @@ import { useNavigate } from "react-router-dom"
 import type { StatusData, StatusItem } from "../types"
 import styles from './EntryForm.module.css'
 import getNextStep from "@/pages/Apply/progress"
+import { useReduxRiskTracking } from '@/hooks/useReduxRiskTracking'
 
 export default function EntryForm({ data }: { data: StatusData }): ReactElement {
   const navigate = useNavigate()
+  const { toSetRiskInfo, toSubmitRiskPoint } = useReduxRiskTracking()
   // 获取第一条额度数据
   const first: StatusItem | undefined = Array.isArray(data?.atony) ? data!.atony![0] : undefined
   const maxAmount = first?.shammash
@@ -58,7 +60,11 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
     }
 
     fetchStatus()
-  }, [])
+
+    return () => {
+      toSubmitRiskPoint()
+    }
+  }, [toSubmitRiskPoint])
 
   // 跳转申请
   const goEntry = async () => {
@@ -112,6 +118,10 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
             step={step}
             value={amount}
             onChange={val => setAmount(val as number)}
+            onAfterChange={() => {
+              // 000023-1 额度拖动
+              toSetRiskInfo('000023', '1', amount)
+            }}
             disabled={!valid}
           />
         </div>
@@ -124,7 +134,13 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
               return (
                 <div
                   key={v}
-                  onClick={() => setAmount(v)}
+                  onClick={() => {
+                    setAmount(v)
+                    // 000023-2 百分比点击
+                    toSetRiskInfo('000023', '2', 1,'sum')
+                    // 000023-4 百分比点击对应额度
+                    toSetRiskInfo('000023', '4', v, )
+                  }}
                   className={`${styles['quick-chip']} ${amount === v ? styles['quick-chip-active'] : ''}`}
                 >
                   {label}
@@ -142,7 +158,11 @@ export default function EntryForm({ data }: { data: StatusData }): ReactElement 
               <div
                 key={opt.value}
                 className={`${styles['term-card']} ${days === opt.value ? styles['term-card-active'] : ''}`}
-                onClick={() => setDays(opt.value)}
+                onClick={() => {
+                  setDays(opt.value)
+                  // 000023-3 天数点击
+                  toSetRiskInfo('000023', '3', opt.value)
+                }}
               >
                 <span className={styles['term-value']}>{opt.value}</span>
                 <span className={styles['term-label']}>días</span>

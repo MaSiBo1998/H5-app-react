@@ -11,6 +11,10 @@ export default function LoanAgreement(): ReactElement {
   const { toSetRiskInfo, getRiskValue } = useReduxRiskTracking()
   const startTime = useRef(Date.now())
   const isBottomReached = useRef(false)
+  
+  // 使用 ref 保存 getRiskValue 以避免 useEffect 依赖循环
+  const getRiskValueRef = useRef(getRiskValue)
+  getRiskValueRef.current = getRiskValue
 
   useEffect(() => {
     if (!eventCode) return
@@ -35,15 +39,16 @@ export default function LoanAgreement(): ReactElement {
         const duration = Date.now() - startTime.current
         
         // Accumulate duration (Key 7)
-        const currentTotal = Number(getRiskValue(eventCode, '7') || 0)
-        toSetRiskInfo(eventCode, '7', currentTotal + duration)
+        // 使用 sum 模式，无需先获取当前值
+        toSetRiskInfo(eventCode, '7', duration, 'sum')
         
         // Update read status (Key 8). 1 = finished, 2 = not finished.
-        const currentStatus = getRiskValue(eventCode, '8')
+        // 通过 ref 获取最新值，避免触发重渲染循环
+        const currentStatus = getRiskValueRef.current(eventCode, '8')
         const newStatus = isBottomReached.current ? '1' : (currentStatus === '1' ? '1' : '2')
         toSetRiskInfo(eventCode, '8', newStatus)
     }
-  }, [eventCode, getRiskValue, toSetRiskInfo])
+  }, [eventCode, toSetRiskInfo]) // 移除 getRiskValue 依赖
 
   return (
     <div className={styles['loan-agreement']}>

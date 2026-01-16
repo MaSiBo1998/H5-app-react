@@ -292,8 +292,8 @@ export default function LoanUnconfirmed({ data, onRefresh }: { data: StatusData,
                         He leído y acepto los <span style={{ color: '#26a69a', marginLeft: 4 }} onClick={(e) => {
                             e.stopPropagation()
                             const eventCode = isFirstLoan ? '000016' : '000017'
-                            const count = Number(getRiskValue(eventCode, '6') || 0) + 1
-                            toSetRiskInfo(eventCode, '6', count)
+                            // 使用 sum 模式累加，避免先读后写
+                            toSetRiskInfo(eventCode, '6', 1, 'sum')
                             navigate('/loan-agreement', { state: { eventCode } })
                         }}>Acuerdo de préstamo</span>
                     </span>
